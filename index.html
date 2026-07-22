@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>ตัวติดตามค่าใช้จ่าย</title>
+<meta name="theme-color" content="#262624">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ค่าใช้จ่าย">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEIUlEQVR4nO3dz1HcMBiHYe1OyuBOSdRABZw4caKC1EBJ3OmDHDIwy7/FXkuW5d/zXDN4Pcn3WvIyoxzKRjzf3bz2vgfWc/34dOh9D6WU0u0mDDynegWx6ocaeqZYM4bmH2ToWaJ1DM0ubvCpqVUI1S9q8GmpdgjHmhcz/LRWe8aq1GTw6aHGarB4BTD89FJj9hYFYPjpbekMXrSEGHy26JIt0ewVwPCzVZfM5qwADD9bN3dGJwdg+BnFnFmt+nsAGM2kADz9Gc3Umf31rdnw57i6/3vxz7483Fa8k3p++2bo7B8a/gxLBv+zLYZwLgLvAOFqDn+L67X2YwCe/vvXali3FsG5Wf42AMO/f62HdJQIbIGI9iUAT//9W+vpPMIqYAUg2ocAPP3Zu88zbgUgmgCI9h6A7Q8pTmfdCkA0ARDtWIrtD3neZt4KQDQBEE0ARDva/5Pq+e7m1QpANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARPvT+wYS7PHU5b0QQEM1DoZ6u4YQ2rAFaiT91OVRCKCBlFOX90AAlaWdujw6ARBNABWlnro8MgEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0YY+HNepyyw1ZABOXaaW4bZATl2mpqECcOoytQ0TgFOXaWGYAKCFIQJw6jKtDBEAtCIAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKINEcDLw+0Qn+M++3zOEkMEAK0ME0Drp0mt67vPda5fyzABlNLuL7X2dd3nGMNfymABlJI7BOn32crh+e7mtfdNXOrq/u/FP7vmP5T73K6hA4ClhtsCQU0CIJoAiCYAogmAaAIgmgCIJgCiCYBoAiDa8frx6dD7JqCH68engxWAaAIgmgCIdizl/16o943Amt5m3gpANAEQ7T0A2yBSnM66FYBoAiDahwBsg9i7zzNuBSDalwCsAuzVd7NtBSDatwFYBdibn2b6xxVABOzFuVm2BSLa2QCsAozutxn+dQUQAaOaMruTtkAiYDRTZ9Y7ANEmB2AVYBRzZnXWCiACtm7ujM7eAomArbpkNhcNs/9eiS1Y8lBe9BJsNaC3pTO4+FsgEdBLjdmrOry2RKyh5kO36u8BrAa0VnvGmg2s1YCaWj1cmz+xhcASrXcVq25ZxMAUa26lu+3ZxcCpXu+Pm3lpFUSWrXxh8g9tgCWZI1Y+MQAAAABJRU5ErkJggg==">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#262624; --panel:#2D2C2A; --panel2:#34322F; --border:#46443F;
+    --text:#F5F4EE; --muted:#A8A296; --accent:#D97757; --accent-hover:#E08A5C;
+    --green:#5FB86B; --red:#E5726A; --amber:#D9A441;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%; text-size-adjust:100%;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai",Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); padding:24px; line-height:1.5;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
+  }
+  @media (max-width:600px){
+    body{padding:14px; overflow-x:hidden;}
+    h1{font-size:19px;}
+    .sub{font-size:12px; margin-bottom:18px;}
+    .card{padding:14px 15px; margin-bottom:12px;}
+    .card h2{margin-bottom:10px;}
+    .modal-card{padding:18px 16px 14px;}
+    .month-nav{gap:6px; margin-bottom:14px;}
+    .month-nav button{padding:9px 10px; font-size:13px;}
+    .month-label{font-size:15px;}
+    .summary{gap:10px; margin-bottom:12px;}
+    .stat{padding:12px 14px;}
+    .chart-wrap{height:240px;}
+  }
+  .wrap{max-width:1000px; margin:0 auto;}
+  h1{font-size:22px; font-weight:600; margin:0 0 4px;}
+  .sub{color:var(--muted); font-size:13px; margin-bottom:24px;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .card h2{font-size:14px; font-weight:600; margin:0 0 14px; color:var(--muted); letter-spacing:.02em;}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:4px;}
+  input,select{
+    width:100%; min-width:0; max-width:100%; padding:10px 11px; border-radius:9px; border:1px solid var(--border);
+    background:var(--panel2); color:var(--text); font-size:16px; margin-bottom:12px;
+    font-family:inherit;
+  }
+  input[type="date"]{
+    -webkit-appearance:none; appearance:none; display:block;
+    min-width:0; width:100%; text-align:left;
+  }
+  input:focus,select:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+  button{
+    background:var(--accent); color:#1a1917; border:none; border-radius:9px;
+    padding:12px 16px; font-size:15px; font-weight:600; cursor:pointer; width:100%;
+    font-family:inherit;
+  }
+  button:hover{background:var(--accent-hover);}
+  button.secondary{background:var(--panel2); color:var(--text); border:1px solid var(--border);}
+  button.secondary:hover{background:var(--border);}
+  button:disabled{opacity:.6; cursor:not-allowed;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  .row2>*,.row3>*,.grid>*{min-width:0;}
+  @media (max-width:600px){
+    .row2{grid-template-columns:1fr;}
+    .row3{grid-template-columns:1fr;}
+  }
+  .fixed-item-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; align-items:center;}
+  .fixed-item-row .fi-name{flex:1 1 140px; margin-bottom:0;}
+  .fixed-item-row .fi-amount{flex:0 1 110px; margin-bottom:0;}
+  .fixed-item-row .del-fixed{
+    flex:0 0 40px; width:40px; padding:9px 0; background:var(--panel2); color:var(--red);
+    border:1px solid var(--border); border-radius:9px; font-size:15px;
+  }
+  .fixed-item-row .del-fixed:hover{background:var(--border);}
+  .add-fixed-btn{margin-top:4px;}
+  .month-nav{display:flex; align-items:center; gap:10px; margin-bottom:20px;}
+  .month-nav button{width:auto; padding:9px 14px;}
+  .month-label{font-size:16px; font-weight:600; flex:1; text-align:center;}
+  .summary{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;}
+  @media (max-width:600px){ .summary{grid-template-columns:1fr;} }
+  .stat{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .stat .label{font-size:11px; color:var(--muted); letter-spacing:.02em; margin-bottom:6px;}
+  .stat .value{font-size:19px; font-weight:700;}
+  .stat.income .value{color:var(--green);}
+  .stat.fixed .value{color:var(--amber);}
+  .stat.variable .value{color:var(--text);}
+  .stat.remaining .value.neg{color:var(--red);}
+  .stat.remaining .value.pos{color:var(--green);}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{text-align:left; padding:9px 6px; border-bottom:1px solid var(--border);}
+  th{color:var(--muted); font-weight:600; font-size:11px;}
+  td.amt{text-align:right; font-variant-numeric:tabular-nums;}
+  .del{background:none; border:none; color:var(--red); cursor:pointer; width:auto; padding:4px 10px; font-size:17px;}
+  .empty{color:var(--muted); text-align:center; padding:20px 0; font-size:13px;}
+  .tag{display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; background:var(--panel2); border:1px solid var(--border); white-space:nowrap;}
+  details summary{cursor:pointer; font-size:13px; color:var(--accent); margin-bottom:12px; font-weight:600;}
+  canvas{max-height:280px;}
+  .chart-wrap{position:relative; height:280px;}
+  .footer-note{color:var(--muted); font-size:11px; text-align:center; margin-top:24px;}
+  .table-scroll{overflow-x:auto;}
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.55);
+    display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;
+  }
+  .modal-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px;
+    padding:22px 22px 18px; max-width:340px; width:100%;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .modal-title{font-size:16px; font-weight:700; margin-bottom:6px;}
+  .modal-desc{font-size:13px; color:var(--muted); margin-bottom:18px;}
+  .modal-actions{display:flex; gap:10px;}
+  .modal-actions button{width:auto; flex:1;}
+  button.danger{background:var(--red); color:#fff;}
+  button.danger:hover{background:#c85f57;}
+  #loadingOverlay{background:var(--bg); flex-direction:column; gap:12px;}
+  .spinner{
+    width:28px; height:28px; border-radius:50%;
+    border:3px solid var(--border); border-top-color:var(--accent);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .save-indicator{
+    position:fixed; bottom:16px; right:16px; background:var(--panel);
+    border:1px solid var(--border); color:var(--muted); font-size:12px;
+    padding:8px 14px; border-radius:20px; box-shadow:0 2px 8px rgba(0,0,0,.3);
+    opacity:0; transition:opacity .25s; pointer-events:none; z-index:900;
+  }
+  .save-indicator.show{opacity:1;}
+  .save-indicator.error{color:var(--red); border-color:var(--red);}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="modal-overlay">
+  <div class="spinner"></div>
+  <div style="color:var(--muted); font-size:13px;">กำลังโหลดข้อมูล...</div>
+</div>
+
+<div class="wrap" id="mainWrap" style="display:none;">
+  <h1>ตัวติดตามค่าใช้จ่าย</h1>
+  <div class="sub">บันทึกรายจ่าย ตั้งรายได้และรายการหักประจำเดือน แล้วดูสรุปรายเดือนอัตโนมัติ ข้อมูลของคุณถูกบันทึกไว้ส่วนตัวและจะพร้อมใช้งานทุกครั้งที่คุณเปิดหน้านี้</div>
+
+  <div class="card">
+    <details id="settingsDetails">
+      <summary>⚙ รายได้และรายการหักประจำเดือน (แตะเพื่อแก้ไข)</summary>
+      <div id="settingsMonthLabel" style="font-size:13px; font-weight:600; margin-bottom:2px;"></div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:12px;">การตั้งค่านี้มีผลตั้งแต่เดือนนี้เป็นต้นไป จนกว่าจะแก้ไขในเดือนถัดไป ค่าเริ่มต้นจะเหมือนเดือนก่อนหน้า ส่วนเดือนก่อนที่ยังไม่เคยตั้งค่าจะไม่มีข้อมูลย้อนหลัง</div>
+      <label>รายได้ต่อเดือน (฿)</label>
+      <input type="number" id="setIncome" min="0" step="1" inputmode="numeric" onchange="updateIncome()">
+
+      <label style="margin-top:4px;">การเงิน (Financing) — เงินลงทุน ผ่อนรถ ฯลฯ</label>
+      <div id="financingList"></div>
+      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('financing')">+ เพิ่มรายการการเงิน</button>
+
+      <label style="margin-top:16px;">ค่าสมาชิก (Subscription) — รายการประจำอื่นๆ</label>
+      <div id="subscriptionList"></div>
+      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('subscription')">+ เพิ่มรายการสมาชิก</button>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>บันทึกรายจ่าย</h2>
+    <div class="row3">
+      <div>
+        <label>วันที่</label>
+        <input type="date" id="entryDate">
+      </div>
+      <div>
+        <label>จำนวนเงิน (฿)</label>
+        <input type="number" id="entryAmount" min="0" step="1" placeholder="0" inputmode="numeric">
+      </div>
+      <div>
+        <label>หมวดหมู่</label>
+        <select id="entryCategory">
+          <option>อาหาร</option>
+          <option>การเดินทาง</option>
+          <option>สาธารณูปโภค</option>
+          <option>ช้อปปิ้ง</option>
+          <option>สุขภาพ</option>
+          <option>บันเทิง</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+    </div>
+    <label>โน้ต (ไม่บังคับ)</label>
+    <input type="text" id="entryNote" placeholder="เช่น ทานข้าวกับทีม">
+    <button id="addEntryBtn" onclick="addEntry()">เพิ่มรายการ</button>
+  </div>
+
+  <div class="month-nav">
+    <button class="secondary" onclick="shiftMonth(-1)">‹ ก่อนหน้า</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="secondary" onclick="shiftMonth(1)">ถัดไป ›</button>
+  </div>
+
+  <div class="summary">
+    <div class="stat fixed"><div class="label">รายการประจำ</div><div class="value" id="statFixed">฿0</div></div>
+    <div class="stat variable"><div class="label">รายจ่ายทั่วไป</div><div class="value" id="statVariable">฿0</div></div>
+    <div class="stat remaining"><div class="label">คงเหลือ</div><div class="value" id="statRemaining">฿0</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>สัดส่วนรายจ่าย (การเงิน / สมาชิก / หมวดหมู่)</h2>
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>แนวโน้ม 6 เดือน</h2>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>รายการเดือนนี้</h2>
+    <div class="table-scroll">
+    <table id="entryTable">
+      <thead><tr><th>วันที่</th><th>หมวดหมู่</th><th>โน้ต</th><th style="text-align:right">จำนวนเงิน</th><th></th></tr></thead>
+      <tbody id="entryBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="emptyMsg" style="display:none;">ยังไม่มีรายการในเดือนนี้</div>
+  </div>
+
+  <div class="card">
+    <h2>สำรองข้อมูล</h2>
+    <div class="row2">
+      <button class="secondary" onclick="exportData()">ดาวน์โหลดข้อมูลสำรอง (.json)</button>
+      <button class="secondary" onclick="document.getElementById('importFile').click()">นำเข้าข้อมูลจากไฟล์</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    <button class="secondary" style="margin-top:10px; color:var(--red);" onclick="clearAllData()">ล้างข้อมูลทั้งหมด</button>
+  </div>
+
+  <div class="footer-note">ข้อมูลของคุณถูกบันทึกไว้เป็นส่วนตัว เฉพาะคุณเท่านั้นที่เห็นข้อมูลนี้ แนะนำให้ดาวน์โหลดข้อมูลสำรองเป็นระยะ</div>
+</div>
+
+<div id="deleteModalOverlay" class="modal-overlay" style="display:none;" onclick="closeDeleteModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-title">ลบรายการนี้ใช่หรือไม่?</div>
+    <div class="modal-desc" id="modalItemName"></div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeDeleteModal()">ยกเลิก</button>
+      <button type="button" class="danger" onclick="confirmDeleteFixedItem()">ลบรายการ</button>
+    </div>
+  </div>
+</div>
+
+<div id="saveIndicator" class="save-indicator">กำลังบันทึก...</div>
+
+<script>
+const STORAGE_KEY = 'spendTrackerState';
+const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube Premium','Netflix','Spotify','Claude'];
+const CATEGORY_COLORS = {
+  'อาหาร':'#E08A5C','การเดินทาง':'#7B9FE0','สาธารณูปโภค':'#5CBFBF','ช้อปปิ้ง':'#E0C04D',
+  'สุขภาพ':'#5FB86B','บันเทิง':'#B08FE0','อื่นๆ':'#C4BBA8'
+};
+const CATEGORY_ORDER = ['อาหาร','การเดินทาง','สาธารณูปโภค','ช้อปปิ้ง','สุขภาพ','บันเทิง','อื่นๆ'];
+// Fixed, non-overlapping colors for the two fixed-item groups, distinct from CATEGORY_COLORS above.
+const GROUP_COLORS = { financing: '#D9A441', subscription: '#8FD1E0' };
+const GROUP_LABELS = { financing: 'การเงิน (ลงทุน/ผ่อนรถ)', subscription: 'ค่าสมาชิก/รายการประจำ' };
+const PALETTE = ['#E08A5C','#7B9FE0','#5CBFBF','#E0C04D','#5FB86B','#B08FE0','#E5726A','#A8A296','#C4BBA8','#E0A9CB','#8FD1E0','#D9A441'];
+
+function genId(){ return Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+
+function freshFixedItems(){
+  const items = [
+    {id:genId(), name:'เงินลงทุน', amount:0, group:'financing'},
+    {id:genId(), name:'ผ่อนรถ', amount:0, group:'financing'},
+    {id:genId(), name:'หักจากบริษัท', amount:0, group:'subscription'},
+  ];
+  SUBSCRIPTION_DEFAULTS.forEach(n => items.push({id:genId(), name:n, amount:0, group:'subscription'}));
+  return items;
+}
+
+// Older saved data (or freshly-imported backups) may not have a `group` on
+// each fixed item. Investment/car map to "financing"; everything else
+// defaults to "subscription", matching how the two groups were defined.
+function inferGroup(name){
+  if(name === 'เงินลงทุน' || name === 'ผ่อนรถ') return 'financing';
+  return 'subscription';
+}
+
+function freshState(){
+  return { monthlySettings: {}, entries: [] };
+}
+
+// Migrates older backups (single global settings object) into the new
+// per-month model. The old global settings become an "anchor" at the
+// earliest month that already had entries (or the current month if there
+// were none) - this preserves existing totals instead of erasing history.
+function migrateState(parsed){
+  if(!parsed.monthlySettings){
+    parsed.monthlySettings = {};
+    if(parsed.settings){
+      let anchorKey;
+      if(Array.isArray(parsed.entries) && parsed.entries.length){
+        anchorKey = parsed.entries.map(e => e.date.slice(0,7)).sort()[0];
+      }else{
+        anchorKey = monthKey(currentMonth);
+      }
+      parsed.monthlySettings[anchorKey] = {
+        income: parsed.settings.income || 0,
+        fixedItems: Array.isArray(parsed.settings.fixedItems) ? parsed.settings.fixedItems.map(i=>({...i, group: i.group || inferGroup(i.name)})) : []
+      };
+    }
+    delete parsed.settings;
+  }
+  Object.keys(parsed.monthlySettings).forEach(k=>{
+    const ms = parsed.monthlySettings[k];
+    if(!Array.isArray(ms.fixedItems)) ms.fixedItems = [];
+    ms.fixedItems.forEach(item=>{
+      if(!item.group) item.group = inferGroup(item.name);
+    });
+    if(typeof ms.income !== 'number') ms.income = parseFloat(ms.income) || 0;
+  });
+  if(!Array.isArray(parsed.entries)) parsed.entries = [];
+  return parsed;
+}
+
+async function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      return migrateState(JSON.parse(raw));
+    }
+  }catch(e){
+    // No saved data yet, or the key doesn't exist - fall back to a fresh state
+  }
+  return freshState();
+}
+
+// Returns the effective {income, fixedItems} for a given "YYYY-MM" key:
+// the most recent explicit setting at or before that month (carried
+// forward). If nothing has ever been configured, offers the friendly
+// starter template. If earlier settings exist but none reach back this
+// far, the month genuinely has no data (as requested: no retroactive
+// backfilling of history before the first configured month).
+function getEffectiveSettings(mKey){
+  const keys = Object.keys(state.monthlySettings).sort();
+  let chosen = null;
+  for(const k of keys){
+    if(k <= mKey) chosen = k; else break;
+  }
+  if(chosen){
+    const ms = state.monthlySettings[chosen];
+    return { income: ms.income || 0, fixedItems: (ms.fixedItems||[]).map(i=>({...i})) };
+  }
+  if(keys.length === 0){
+    return { income:0, fixedItems: freshFixedItems() };
+  }
+  return { income:0, fixedItems: [] };
+}
+
+// Forks an explicit, editable settings entry for this month if one
+// doesn't exist yet, seeded from the effective (carried-forward) values.
+function ensureMonthSettings(mKey){
+  if(!state.monthlySettings[mKey]){
+    const eff = getEffectiveSettings(mKey);
+    state.monthlySettings[mKey] = { income: eff.income, fixedItems: eff.fixedItems };
+  }
+  return state.monthlySettings[mKey];
+}
+
+let saveIndicatorTimer = null;
+function flashSaveIndicator(ok){
+  const el = document.getElementById('saveIndicator');
+  el.textContent = ok ? 'บันทึกแล้ว' : 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง';
+  el.classList.toggle('error', !ok);
+  el.classList.add('show');
+  clearTimeout(saveIndicatorTimer);
+  saveIndicatorTimer = setTimeout(()=> el.classList.remove('show'), 1500);
+}
+
+async function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    flashSaveIndicator(true);
+  }catch(e){
+    console.error('Storage error:', e);
+    flashSaveIndicator(false);
+  }
+}
+
+let state = freshState();
+let currentMonth = new Date();
+currentMonth.setDate(1);
+
+let pieChart, trendChart;
+
+function fmt(n){
+  return '฿' + Math.round(n).toLocaleString('en-US');
+}
+function monthKey(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function monthLabelStr(d){
+  return d.toLocaleString('th-TH',{month:'long', year:'numeric'});
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function hashColor(name){
+  let hash = 0;
+  for(let i=0;i<name.length;i++){ hash = (hash*31 + name.charCodeAt(i)) | 0; }
+  return PALETTE[Math.abs(hash) % PALETTE.length];
+}
+function categoryColor(name){
+  return CATEGORY_COLORS[name] || hashColor(name);
+}
+
+function initForm(){
+  document.getElementById('entryDate').valueAsDate = new Date();
+  renderSettingsForm();
+}
+
+function renderSettingsForm(){
+  const mKey = monthKey(currentMonth);
+  const eff = getEffectiveSettings(mKey);
+
+  const monthLbl = document.getElementById('settingsMonthLabel');
+  if(monthLbl) monthLbl.textContent = 'การตั้งค่าของเดือน: ' + monthLabelStr(currentMonth);
+
+  document.getElementById('setIncome').value = eff.income || '';
+
+  renderFixedGroupList('financingList', eff.fixedItems.filter(i => i.group === 'financing'), 'ยังไม่มีรายการการเงินสำหรับเดือนนี้');
+  renderFixedGroupList('subscriptionList', eff.fixedItems.filter(i => i.group !== 'financing'), 'ยังไม่มีรายการสมาชิกสำหรับเดือนนี้');
+}
+
+function renderFixedGroupList(containerId, items, emptyText){
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if(items.length === 0){
+    container.innerHTML = `<div class="empty" style="padding:6px 0;">${emptyText}</div>`;
+    return;
+  }
+  items.forEach(item=>{
+    const row = document.createElement('div');
+    row.className = 'fixed-item-row';
+    row.setAttribute('data-id', item.id);
+    row.innerHTML = `
+      <input type="text" class="fi-name" value="${escapeHtml(item.name)}" placeholder="ชื่อรายการ" onchange="updateFixedItem('${item.id}')">
+      <input type="number" class="fi-amount" min="0" step="1" inputmode="numeric" value="${item.amount || ''}" placeholder="0" onchange="updateFixedItem('${item.id}')">
+      <button type="button" class="del-fixed" onclick="removeFixedItem('${item.id}')">✕</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+async function addFixedItem(group){
+  const ms = ensureMonthSettings(monthKey(currentMonth));
+  ms.fixedItems.push({id: genId(), name:'', amount:0, group: group === 'financing' ? 'financing' : 'subscription'});
+  await saveData();
+  render();
+}
+
+let pendingDeleteId = null;
+
+function removeFixedItem(id){
+  pendingDeleteId = id;
+  const eff = getEffectiveSettings(monthKey(currentMonth));
+  const item = eff.fixedItems.find(i => i.id === id);
+  document.getElementById('modalItemName').textContent = item && item.name ? `"${item.name}"` : 'รายการนี้';
+  document.getElementById('deleteModalOverlay').style.display = 'flex';
+}
+
+function closeDeleteModal(){
+  pendingDeleteId = null;
+  document.getElementById('deleteModalOverlay').style.display = 'none';
+}
+
+async function confirmDeleteFixedItem(){
+  if(pendingDeleteId){
+    const ms = ensureMonthSettings(monthKey(currentMonth));
+    ms.fixedItems = ms.fixedItems.filter(i => i.id !== pendingDeleteId);
+    await saveData();
+    render();
+  }
+  closeDeleteModal();
+}
+
+async function updateFixedItem(id){
+  const row = document.querySelector(`.fixed-item-row[data-id="${id}"]`);
+  if(!row) return;
+  const ms = ensureMonthSettings(monthKey(currentMonth));
+  const item = ms.fixedItems.find(i => i.id === id);
+  if(!item) return;
+  item.name = row.querySelector('.fi-name').value.trim();
+  item.amount = parseFloat(row.querySelector('.fi-amount').value) || 0;
+  await saveData();
+  render();
+}
+
+async function updateIncome(){
+  const ms = ensureMonthSettings(monthKey(currentMonth));
+  ms.income = parseFloat(document.getElementById('setIncome').value) || 0;
+  await saveData();
+  render();
+}
+
+async function addEntry(){
+  const dateVal = document.getElementById('entryDate').value;
+  const amount = parseFloat(document.getElementById('entryAmount').value);
+  const category = document.getElementById('entryCategory').value;
+  const note = document.getElementById('entryNote').value.trim();
+  if(!dateVal || !amount || amount <= 0){
+    alert('กรุณาระบุวันที่และจำนวนเงินให้ถูกต้อง');
+    return;
+  }
+  const btn = document.getElementById('addEntryBtn');
+  btn.disabled = true;
+  state.entries.push({
+    id: genId(),
+    date: dateVal, amount, category, note
+  });
+  await saveData();
+  btn.disabled = false;
+  document.getElementById('entryAmount').value = '';
+  document.getElementById('entryNote').value = '';
+  const d = new Date(dateVal);
+  currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+  render();
+}
+
+async function deleteEntry(id){
+  state.entries = state.entries.filter(e => e.id !== id);
+  await saveData();
+  render();
+}
+
+function shiftMonth(delta){
+  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+delta, 1);
+  render();
+}
+
+function entriesForMonth(d){
+  const key = monthKey(d);
+  return state.entries.filter(e => e.date.slice(0,7) === key);
+}
+
+function fixedTotal(mKey){
+  return getEffectiveSettings(mKey).fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
+}
+
+function render(){
+  document.getElementById('monthLabel').textContent = monthLabelStr(currentMonth);
+
+  const mKeyStr = monthKey(currentMonth);
+  const eff = getEffectiveSettings(mKeyStr);
+
+  const monthEntries = entriesForMonth(currentMonth).sort((a,b)=> a.date < b.date ? 1 : -1);
+  const income = eff.income || 0;
+  const fixed = eff.fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
+  const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
+  const remaining = income - fixed - variable;
+
+  document.getElementById('statFixed').textContent = fmt(fixed);
+  document.getElementById('statVariable').textContent = fmt(variable);
+  const remEl = document.getElementById('statRemaining');
+  remEl.textContent = fmt(remaining);
+  remEl.className = 'value ' + (remaining < 0 ? 'neg' : 'pos');
+
+  const body = document.getElementById('entryBody');
+  body.innerHTML = '';
+  document.getElementById('emptyMsg').style.display = monthEntries.length ? 'none' : 'block';
+  monthEntries.forEach(e=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${e.date}</td><td><span class="tag">${escapeHtml(e.category)}</span></td><td>${escapeHtml(e.note||'')}</td><td class="amt">${fmt(e.amount)}</td><td><button class="del" onclick="deleteEntry('${e.id}')">✕</button></td>`;
+    body.appendChild(tr);
+  });
+
+  renderPieChart(monthEntries, eff.fixedItems);
+  renderTrendChart();
+  renderSettingsForm();
+}
+
+function renderPieChart(monthEntries, fixedItems){
+  const labels = [];
+  const data = [];
+  const colors = [];
+
+  const financingTotal = (fixedItems||[]).filter(i => i.group === 'financing').reduce((s,i)=> s + (i.amount||0), 0);
+  const subscriptionTotal = (fixedItems||[]).filter(i => i.group !== 'financing').reduce((s,i)=> s + (i.amount||0), 0);
+
+  if(financingTotal > 0){
+    labels.push(GROUP_LABELS.financing);
+    data.push(financingTotal);
+    colors.push(GROUP_COLORS.financing);
+  }
+  if(subscriptionTotal > 0){
+    labels.push(GROUP_LABELS.subscription);
+    data.push(subscriptionTotal);
+    colors.push(GROUP_COLORS.subscription);
+  }
+
+  const byCat = {};
+  monthEntries.forEach(e=>{ byCat[e.category] = (byCat[e.category]||0) + e.amount; });
+  // Walk the predetermined category order first so colors/order stay stable,
+  // then append any leftover (e.g. custom/legacy) category names.
+  CATEGORY_ORDER.forEach(cat=>{
+    if(byCat[cat]){
+      labels.push(cat);
+      data.push(byCat[cat]);
+      colors.push(categoryColor(cat));
+      delete byCat[cat];
+    }
+  });
+  Object.keys(byCat).forEach(cat=>{
+    labels.push(cat);
+    data.push(byCat[cat]);
+    colors.push(categoryColor(cat));
+  });
+
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if(pieChart) pieChart.destroy();
+  if(labels.length === 0){
+    ctx.clearRect(0,0,9999,9999);
+    return;
+  }
+  pieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#2D2C2A', borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { color: '#F5F4EE', boxWidth: 12, font:{size:11} } } }
+    }
+  });
+}
+
+function renderTrendChart(){
+  const months = [];
+  for(let i=5;i>=0;i--){
+    months.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth()-i, 1));
+  }
+  const labels = months.map(d => d.toLocaleString('th-TH',{month:'short'}));
+  const spendData = months.map(d=>{
+    const variable = entriesForMonth(d).reduce((s,e)=>s+e.amount,0);
+    return variable + fixedTotal(monthKey(d));
+  });
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'รายจ่ายรวม', data: spendData, backgroundColor: '#E5726A' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#F5F4EE', font:{size:11} } } },
+      scales: {
+        x: { ticks:{color:'#A8A296'}, grid:{color:'#46443F'} },
+        y: { ticks:{color:'#A8A296'}, grid:{color:'#46443F'} }
+      }
+    }
+  });
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `spend-tracker-backup-${today}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if((!parsed.settings && !parsed.monthlySettings) || !Array.isArray(parsed.entries)){
+        alert('ไฟล์นี้ไม่ใช่ไฟล์สำรองข้อมูลที่ถูกต้อง');
+        return;
+      }
+      if(!confirm('นำเข้าข้อมูลนี้จะแทนที่ข้อมูลปัจจุบันทั้งหมด ต้องการดำเนินการต่อหรือไม่?')){
+        return;
+      }
+      state = migrateState(parsed);
+      await saveData();
+      initForm();
+      render();
+      alert('นำเข้าข้อมูลสำเร็จ');
+    }catch(err){
+      alert('ไม่สามารถอ่านไฟล์นี้ได้ กรุณาตรวจสอบไฟล์อีกครั้ง');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+async function clearAllData(){
+  if(!confirm('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้ แนะนำให้ดาวน์โหลดข้อมูลสำรองไว้ก่อน')){
+    return;
+  }
+  try{
+    localStorage.removeItem(STORAGE_KEY);
+  }catch(e){
+    console.error('Clear error:', e);
+  }
+  state = freshState();
+  initForm();
+  render();
+}
+
+async function init(){
+  state = await loadData();
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('mainWrap').style.display = 'block';
+  initForm();
+  render();
+}
+init();
+</script>
+</body>
+</html>
