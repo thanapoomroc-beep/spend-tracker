@@ -22,6 +22,7 @@
     --red-text:#F2918A;
     --radius:16px;
     --ease:cubic-bezier(.22,1,.36,1);
+    --tabbar-h:56px;
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%; text-size-adjust:100%; accent-color:var(--accent); scrollbar-color:var(--border) var(--bg);}
@@ -53,7 +54,7 @@
     .chip{min-height:52px;}
   }
   .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
-  .wrap{max-width:720px; margin:0 auto;}
+  .wrap{max-width:720px; margin:0 auto; padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom));}
 
   /* Header */
   .top{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;}
@@ -164,7 +165,6 @@
   details.card>.body{padding:2px 16px 16px;}
   details[open]>summary .chev{transform:rotate(180deg);}
   .chev{transition:transform .2s var(--ease); color:var(--muted); flex:0 0 auto;}
-  .ov-sec{margin-bottom:22px;} .ov-sec:last-child{margin-bottom:0;}
 
   /* Entry list */
   .day-head{display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); padding:12px 4px 4px; font-weight:500;}
@@ -184,7 +184,7 @@
   .del:hover{background:var(--panel2); color:var(--red-text);}
   .empty{color:var(--muted); text-align:center; padding:18px 0; font-size:14px;}
   .empty button{width:auto; margin:12px auto 0; padding:0 20px; display:block;}
-  #showAllBtn{margin-top:10px;}
+  #recentAllBtn{margin-top:10px;}
 
   /* Budgets */
   .budget-row{margin-bottom:16px;}
@@ -214,6 +214,9 @@
   .add-fixed-btn{margin-top:4px;}
   .set-note{font-size:12.5px; color:var(--muted); margin-bottom:12px;}
   .danger-zone{margin-top:20px; padding-top:16px; border-top:1px solid var(--border);}
+  .set-banner{border-left:4px solid var(--accent);}
+  .set-banner-title{font-size:17px; font-weight:700; margin-bottom:4px; line-height:1.4;}
+  .set-banner .set-note{margin-bottom:0;}
 
   /* Charts, heatmap, compare */
   canvas{max-height:280px;}
@@ -269,17 +272,129 @@
   .spinner{width:28px; height:28px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .8s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
   .save-indicator{
-    position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(8px);
+    position:fixed; left:50%; bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px); transform:translateX(-50%) translateY(8px);
     max-width:calc(100% - 32px); text-align:center; background:var(--panel2);
     border:1px solid var(--border); color:var(--text); font-size:14px;
     padding:10px 18px; border-radius:24px; box-shadow:0 6px 20px rgba(0,0,0,.45);
     opacity:0; transition:opacity .25s, transform .3s var(--ease); pointer-events:none; z-index:1200;
   }
   .save-indicator.show{opacity:1; transform:translateX(-50%);}
+  body.kb-open .save-indicator{bottom:calc(16px + env(safe-area-inset-bottom));}
   .save-indicator.has-action{pointer-events:auto; display:flex; align-items:center; gap:12px; padding:6px 8px 6px 18px;}
   .save-indicator .toast-action{width:auto; min-height:44px; padding:0 14px; background:none; color:var(--accent-hover); font-size:14px; font-weight:700; border-radius:20px;}
   .save-indicator .toast-action:hover{background:var(--border);}
   .save-indicator.error{color:var(--red-text); border-color:var(--red);}
+
+  /* ---------- v3a ---------- */
+  input[type=search]{-webkit-appearance:none; appearance:none;}
+  .fchip{display:inline-flex; align-items:center; justify-content:center; gap:6px; width:auto; min-height:44px; padding:0 14px; font-size:13.5px; font-weight:500; background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:22px;}
+  .fchip:hover{background:var(--border);}
+  .fchip .dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
+  .fchip[aria-pressed="true"]{background:var(--accent); color:#1a1917; border-color:var(--accent);}
+  .fchip[aria-pressed="true"]::before{content:"\2713"; font-weight:700;}
+  .fchip[aria-pressed="true"] .dot{box-shadow:0 0 0 1.5px #1a1917;}
+  .fchips{display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 6px;}
+  .result-line{font-size:13px; color:var(--muted); margin:0 0 8px;}
+  .result-line:empty{display:none;}
+  #entrySearch{margin-bottom:8px;}
+  .more.filters{margin-bottom:6px;}
+  .more.filters .muted{display:block;}
+
+  .plain-list{list-style:none; margin:0; padding:0;}
+  .plain-list li{padding:10px 0; border-bottom:1px solid var(--border); font-size:15px; overflow-wrap:anywhere;}
+  .plain-list li:last-child{border-bottom:none; padding-bottom:0;}
+  .plain-list li:first-child{padding-top:0;}
+  .plain-list li.today{font-weight:700;}
+  .bar.inst>span{background:var(--accent);}
+
+  .fi-block{margin-bottom:12px;}
+  .fi-block .fixed-item-row{margin-bottom:4px;}
+  .fi-extra{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+  .fi-due{display:flex; align-items:center; gap:8px;}
+  .fi-due label{margin:0; font-size:12.5px; white-space:nowrap;}
+  .fi-due input{width:72px; margin:0;}
+  .fi-extra .fi-inst-toggle{width:auto; min-height:44px; padding:0 14px; font-size:13.5px;}
+  .fi-extra .fi-inst-toggle[aria-pressed="true"]::before{content:"\2713 "; font-weight:700;}
+  .fi-extra .fi-inst-toggle[aria-pressed="true"]{border-color:var(--accent);}
+  .fi-inst{margin-top:4px;}
+  .fi-inst input{margin-bottom:6px;}
+  .fi-info{font-size:12.5px; color:var(--muted); margin:0 0 4px; overflow-wrap:anywhere;}
+  .year-note{font-size:13px; color:var(--muted); margin-top:6px;}
+
+  .cat-block{margin-bottom:8px;}
+  .cat-row{display:grid; grid-template-columns:44px minmax(0,1fr) 44px 44px 44px; gap:4px; align-items:center;}
+  .cat-row input{margin-bottom:0; padding:10px 8px;}
+  .cat-row button{width:44px; height:44px; padding:0; font-size:13px; display:grid; place-items:center;}
+  .cat-row .swatch{width:20px; height:20px; border-radius:50%; display:block; border:2px solid var(--panel);}
+  .cat-row .cat-act.hide{font-size:12.5px; font-weight:600;}
+  .cat-row .del-fixed,.arch-row .del-fixed{background:var(--panel2); color:var(--red-text); border:1px solid var(--border); border-radius:10px;}
+  .cat-row .del-fixed:hover,.arch-row .del-fixed:hover{background:var(--border);}
+  .cat-picker{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 4px 48px;}
+  .cat-add{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; margin-top:8px;}
+  .cat-add input{margin-bottom:0;}
+  .cat-add button{width:auto; padding:0 16px;}
+  .cat-msg{font-size:13px; color:var(--red-text); min-height:18px; margin-top:4px;}
+  .cat-sub{font-size:12.5px; color:var(--muted); margin:12px 0 6px;}
+  .arch-row{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .arch-row .nm{flex:1; min-width:0; overflow-wrap:anywhere; font-size:14px; display:flex; align-items:center; gap:8px;}
+  .arch-row .nm .dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
+  .arch-row button{width:auto; padding:0 12px; font-size:13px;}
+  .arch-row .del-fixed{width:44px; padding:0;}
+
+  .trend-head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .trend-head h2{margin:0;}
+  .seg{display:inline-flex; border:1px solid var(--border); border-radius:12px; overflow:hidden;}
+  .seg button{width:auto; min-height:44px; padding:0 16px; border-radius:0; font-size:14px; background:var(--panel2); color:var(--text);}
+  .seg button+button{border-left:1px solid var(--border);}
+  .seg button:hover{background:var(--border);}
+  .seg button[aria-pressed="true"]{background:var(--accent); color:#1a1917;}
+  .chart-wrap.tall{height:340px;}
+  .chart-wrap.tall canvas{max-height:none;}
+  .table-scroll{overflow-x:auto; border:1px solid var(--border); border-radius:10px;}
+  .table-scroll table{border-collapse:collapse; font-size:12.5px; width:100%;}
+  .table-scroll th,.table-scroll td{padding:8px 10px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--border);}
+  .table-scroll th:first-child,.table-scroll td:first-child{text-align:left; position:sticky; left:0; background:var(--panel);}
+  .table-scroll th{color:var(--muted); font-weight:500;}
+  .table-scroll tr:last-child td{border-bottom:none;}
+
+  /* ---------- Tabs ---------- */
+  .tab-panel[hidden]{display:none;}
+  .tabbar{
+    position:fixed; left:0; right:0; bottom:0; margin:0 auto; max-width:720px; z-index:50;
+    display:flex; height:calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding:0 max(0px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px,env(safe-area-inset-left));
+    background:var(--panel); border-top:1px solid var(--border);
+  }
+  @media (min-width:721px){ .tabbar{border-left:1px solid var(--border); border-right:1px solid var(--border); border-radius:16px 16px 0 0;} }
+  .tabbar button{
+    flex:1; min-width:0; width:auto; height:var(--tabbar-h); min-height:44px; padding:6px 2px 4px; border-radius:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    background:none; color:var(--muted); font-size:12.5px; font-weight:500; line-height:1.2; position:relative;
+  }
+  .tabbar button:hover{background:var(--panel2);}
+  .tabbar button:active{transform:none;}
+  .tabbar button:focus-visible{outline-offset:-4px;}
+  .tabbar button[aria-current="page"]{color:var(--accent-hover); font-weight:700;}
+  .tabbar button[aria-current="page"]::before{content:""; position:absolute; top:0; left:25%; right:25%; height:3px; border-radius:0 0 3px 3px; background:var(--accent);}
+  .tabbar svg{display:block; flex:0 0 auto;}
+  body.kb-open .tabbar{display:none;}
+
+  /* Budget alert (วันนี้) */
+  .budget-alert{
+    display:flex; align-items:center; gap:10px; text-align:left; width:100%;
+    background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 14px; margin-bottom:14px; font-size:14px; font-weight:500; min-height:52px;
+    box-shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px -8px rgba(0,0,0,.35);
+  }
+  .budget-alert:hover{background:var(--panel2);}
+  .budget-alert.warn{border-color:rgba(217,164,65,.55);}
+  .budget-alert.neg{border-color:rgba(229,114,106,.6);}
+  .budget-alert .ba-lines{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; line-height:1.4;}
+  .budget-alert .ba-line{overflow-wrap:anywhere;}
+  .budget-alert .ba-line.warn{color:var(--amber);}
+  .budget-alert .ba-line.neg{color:var(--red-text);}
+  .budget-alert .ba-more{font-size:13px; color:var(--muted); font-weight:400;}
+  .budget-alert .chev{flex:0 0 auto;}
+  @media (max-width:600px){ .budget-alert{margin-bottom:12px;} }
 
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}
@@ -290,148 +405,219 @@
 
 <div id="loadingOverlay" class="modal-overlay">
   <div class="spinner"></div>
-  <div style="color:var(--muted); font-size:13px;">กำลังโหลดข้อมูล...</div>
+  <div style="color:var(--muted); font-size:13px;">กำลังโหลด...</div>
 </div>
 
 <div class="wrap" id="mainWrap" style="display:none;">
-  <header class="top">
-    <div>
-      <h1>ตัวติดตามค่าใช้จ่าย</h1>
-      <div class="sub">บันทึกรายจ่ายและดูว่าวันนี้ใช้ได้อีกเท่าไหร่</div>
+
+  <!-- 1. วันนี้ -->
+  <section class="tab-panel" id="panel-today" data-tab="today" aria-labelledby="h-today">
+    <header class="top">
+      <div>
+        <h1 id="h-today">ตัวติดตามค่าใช้จ่าย</h1>
+      </div>
+    </header>
+
+    <div class="card hero" id="heroCard">
+      <div class="hero-label" id="heroLabel"></div>
+      <div class="hero-valuewrap"><div class="hero-value" id="heroValue"></div><span class="hero-delta" id="heroDelta" aria-hidden="true"></span></div>
+      <div class="hero-meter" id="heroMeter" role="progressbar" aria-label="ใช้ไปแล้วเท่าไหร่จากที่ใช้ได้วันนี้" aria-valuemin="0" style="display:none;"><span id="heroMeterFill"></span></div>
+      <div class="hero-sub" id="heroSub"></div>
+      <div class="hero-sub2" id="heroSub2"></div>
+      <button type="button" class="hero-cta" id="heroCta" onclick="openSettings(true)" style="display:none;">ตั้งรายได้</button>
     </div>
-    <button type="button" class="secondary icon-btn" onclick="openSettings()" aria-label="ตั้งค่า รายได้ รายการประจำ และงบ"><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-  </header>
 
-  <div class="month-nav">
-    <button type="button" class="secondary icon-btn" onclick="shiftMonth(-1)" aria-label="เดือนก่อนหน้า"><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <div class="month-center">
-      <div class="month-label" id="monthLabel" aria-live="polite"></div>
-      <button type="button" class="pill" id="todayBtn" onclick="goToday()" style="display:none;">กลับเดือนนี้</button>
-    </div>
-    <button type="button" class="secondary icon-btn" onclick="shiftMonth(1)" aria-label="เดือนถัดไป"><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
-  </div>
-
-  <div class="card hero" id="heroCard">
-    <div class="hero-label" id="heroLabel"></div>
-    <div class="hero-valuewrap"><div class="hero-value" id="heroValue"></div><span class="hero-delta" id="heroDelta" aria-hidden="true"></span></div>
-    <div class="hero-meter" id="heroMeter" role="progressbar" aria-label="ใช้ไปวันนี้เทียบกับที่ใช้ได้วันละ" aria-valuemin="0" style="display:none;"><span id="heroMeterFill"></span></div>
-    <div class="hero-sub" id="heroSub"></div>
-    <div class="hero-sub2" id="heroSub2"></div>
-    <button type="button" class="hero-cta" id="heroCta" onclick="openSettings(true)" style="display:none;">ตั้งรายได้</button>
-  </div>
-
-  <div class="card">
-    <h2>บันทึกรายจ่าย</h2>
-    <label for="entryAmount">จำนวนเงิน (฿)</label>
-    <input type="number" id="entryAmount" class="amount-input" min="0" step="0.01" placeholder="0" inputmode="decimal" aria-describedby="amountError" oninput="clearAmountError()">
-    <div class="field-error" id="amountError"></div>
-    <label id="chipsLabel">หมวดหมู่</label>
-    <div class="chips" id="categoryChips" role="radiogroup" aria-labelledby="chipsLabel"></div>
-    <details class="more" id="moreDetails">
-      <summary><span><span id="dateSummary">วันนี้</span> <span class="muted">· เพิ่มโน้ตหรือเปลี่ยนวันที่</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="row2">
-        <div>
-          <label for="entryDate">วันที่</label>
-          <input type="date" id="entryDate">
+    <div class="card">
+      <h2>จดรายจ่าย</h2>
+      <label for="entryAmount">จำนวนเงิน</label>
+      <input type="number" id="entryAmount" class="amount-input" min="0" step="0.01" placeholder="0" inputmode="decimal" aria-describedby="amountError" oninput="clearAmountError()">
+      <div class="field-error" id="amountError"></div>
+      <label id="chipsLabel">หมวด</label>
+      <div class="chips" id="categoryChips" role="radiogroup" aria-labelledby="chipsLabel"></div>
+      <details class="more" id="moreDetails">
+        <summary><span><span id="dateSummary">วันนี้</span> <span class="muted" id="dateHint">เพิ่มโน้ต/เปลี่ยนวัน</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="row2">
+          <div>
+            <label for="entryDate">วันที่</label>
+            <input type="date" id="entryDate">
+          </div>
+          <div>
+            <label for="entryNote">โน้ต (ไม่ใส่ก็ได้)</label>
+            <input type="text" id="entryNote" placeholder="เช่น ข้าวเที่ยง">
+          </div>
         </div>
-        <div>
-          <label for="entryNote">โน้ต (ไม่บังคับ)</label>
-          <input type="text" id="entryNote" placeholder="เช่น ทานข้าวกับทีม">
+      </details>
+      <button id="addEntryBtn" onclick="addEntry()">บันทึก</button>
+    </div>
+
+    <div class="card" id="dueCard" style="display:none;">
+      <h2>ใกล้ถึงวันตัดเงิน</h2>
+      <ul class="plain-list" id="dueList"></ul>
+    </div>
+
+    <button type="button" class="budget-alert" id="budgetAlert" style="display:none;" onclick="openBudgetOverview()"></button>
+
+    <div class="card" id="recentCard">
+      <h2><span>รายการล่าสุด</span> <span class="h2-note" id="recentCount"></span></h2>
+      <div id="recentList"></div>
+      <div class="empty" id="recentEmpty" style="display:none;">ยังไม่มีรายการเดือนนี้<button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
+      <button type="button" class="secondary" id="recentAllBtn" style="display:none;" onclick="showAllEntriesTab()">ดูทั้งหมด</button>
+    </div>
+  </section>
+
+  <!-- 2. รายการ -->
+  <section class="tab-panel" id="panel-entries" data-tab="entries" aria-labelledby="h-entries" hidden>
+    <header class="top"><h1 id="h-entries">รายการ</h1></header>
+    <div class="month-nav" data-month-nav></div>
+
+    <div class="card">
+      <h2><span id="entriesTitle">รายการเดือนนี้</span> <span class="h2-note" id="entryCount"></span></h2>
+      <label for="entrySearch" class="sr-only">ค้นหาโน้ตหรือหมวด</label>
+      <input type="search" id="entrySearch" placeholder="ค้นหาโน้ตหรือหมวด" autocomplete="off" enterkeyhint="search" maxlength="60">
+      <details class="more filters" id="filterDetails">
+        <summary><span>ตัวกรอง <span class="muted" id="filterSummary"></span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="fchips" style="margin-top:6px;"><button type="button" class="fchip" id="searchAllBtn" aria-pressed="false">ค้นหาทุกเดือน</button></div>
+        <div class="fchips" id="filterChips" role="group" aria-label="กรองตามหมวด"></div>
+      </details>
+      <div class="result-line" id="resultLine" role="status" aria-live="polite"></div>
+      <div id="entryList"></div>
+      <div class="empty" id="emptyMsg" style="display:none;"><span id="emptyMsgTxt">ยังไม่มีรายการเดือนนี้</span><button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
+    </div>
+  </section>
+
+  <!-- 3. ภาพรวม -->
+  <section class="tab-panel" id="panel-overview" data-tab="overview" aria-labelledby="h-overview" hidden>
+    <header class="top"><h1 id="h-overview">ภาพรวม</h1></header>
+    <div class="month-nav" data-month-nav></div>
+
+    <div class="card strip" role="group" aria-label="สรุปเดือนนี้" id="stripGroup">
+      <div><span class="k">รายการประจำ</span><span class="v" id="statFixed">฿0</span></div>
+      <div><span class="k">ใช้จ่ายรายวัน</span><span class="v" id="statVariable">฿0</span></div>
+      <div><span class="k">คงเหลือ</span><span class="v" id="statRemaining">฿0</span></div>
+    </div>
+
+    <div class="card" id="budgetCard">
+      <h2>งบแต่ละหมวด</h2>
+      <div id="budgetBody"></div>
+    </div>
+
+    <div class="card" id="installCard" style="display:none;">
+      <h2>ผ่อนชำระ</h2>
+      <div id="installBody"></div>
+    </div>
+
+    <div class="card">
+      <h2>ใช้ไปเทียบกับเดือนก่อน</h2>
+      <div class="compare-note" id="compareNote"></div>
+      <div class="chart-wrap"><canvas id="compareChart" role="img" aria-label="กราฟเส้นรายจ่ายสะสมเทียบกับเดือนก่อน"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
+    </div>
+
+    <div class="card">
+      <h2>ปฏิทินรายจ่าย</h2>
+      <div class="heat-grid" id="heatmap" role="group" aria-label="ปฏิทินรายจ่าย"></div>
+      <div class="heat-legend"><span>น้อย</span><i style="background:rgba(217,119,87,.2)"></i><i style="background:rgba(217,119,87,.5)"></i><i style="background:rgba(217,119,87,.8)"></i><i style="background:rgba(217,119,87,1)"></i><span>มาก</span></div>
+    </div>
+
+    <div class="card">
+      <h2>สัดส่วนรายจ่าย</h2>
+      <div class="chart-wrap"><canvas id="pieChart" role="img" aria-label="กราฟวงกลมสัดส่วนรายจ่าย"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
+    </div>
+
+    <div class="card">
+      <div class="trend-head">
+        <h2 id="trendTitle">รายจ่ายรายเดือน</h2>
+        <div class="seg" role="group" aria-label="ช่วงเวลาของกราฟ">
+          <button type="button" id="trend6" aria-pressed="true">6 เดือน</button><button type="button" id="trend12" aria-pressed="false">12 เดือน</button>
         </div>
       </div>
-    </details>
-    <button id="addEntryBtn" onclick="addEntry()">เพิ่มรายการ</button>
-  </div>
-
-  <div class="card strip" role="group" aria-label="สรุปเดือนนี้">
-    <div><span class="k">รายการประจำ</span><span class="v" id="statFixed">฿0</span></div>
-    <div><span class="k">รายจ่ายทั่วไป</span><span class="v" id="statVariable">฿0</span></div>
-    <div><span class="k">คงเหลือ</span><span class="v" id="statRemaining">฿0</span></div>
-  </div>
-
-  <div class="card">
-    <h2>รายการเดือนนี้ <span class="h2-note" id="entryCount"></span></h2>
-    <div id="entryList"></div>
-    <button type="button" class="secondary" id="showAllBtn" style="display:none;" onclick="toggleShowAll()"></button>
-    <div class="empty" id="emptyMsg" style="display:none;">ยังไม่มีรายการในเดือนนี้<button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
-  </div>
-
-  <div class="card" id="budgetCard">
-    <h2>งบรายหมวด</h2>
-    <div id="budgetBody"></div>
-  </div>
-
-  <details class="card" id="overviewDetails">
-    <summary><span class="ttl">ดูภาพรวม<span class="muted">เทียบเดือนก่อน · heatmap · สัดส่วน · แนวโน้ม</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-    <div class="body">
-      <section class="ov-sec">
-        <h3>รายจ่ายสะสมเทียบเดือนก่อน</h3>
-        <div class="compare-note" id="compareNote"></div>
-        <div class="chart-wrap"><canvas id="compareChart" role="img" aria-label="กราฟเส้นรายจ่ายสะสมรายวัน เทียบเดือนนี้กับเดือนก่อน"></canvas><div class="chart-fallback">กราฟจะแสดงเมื่อออนไลน์</div></div>
-      </section>
-      <section class="ov-sec">
-        <h3>Heatmap รายจ่ายรายวัน</h3>
-        <div class="heat-grid" id="heatmap" role="group" aria-label="ปฏิทินรายจ่ายรายวัน"></div>
-        <div class="heat-legend"><span>น้อย</span><i style="background:rgba(217,119,87,.2)"></i><i style="background:rgba(217,119,87,.5)"></i><i style="background:rgba(217,119,87,.8)"></i><i style="background:rgba(217,119,87,1)"></i><span>มาก</span></div>
-      </section>
-      <div class="grid">
-        <section class="ov-sec">
-          <h3>สัดส่วนรายจ่าย (รายการประจำ / หมวดหมู่)</h3>
-          <div class="chart-wrap"><canvas id="pieChart" role="img" aria-label="กราฟโดนัทสัดส่วนรายจ่าย"></canvas><div class="chart-fallback">กราฟจะแสดงเมื่อออนไลน์</div></div>
-        </section>
-        <section class="ov-sec">
-          <h3>แนวโน้ม 6 เดือน</h3>
-          <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="กราฟแท่งรายจ่ายรวม 6 เดือนล่าสุด"></canvas><div class="chart-fallback">กราฟจะแสดงเมื่อออนไลน์</div></div>
-        </section>
-      </div>
+      <div class="chart-wrap tall"><canvas id="trendChart" role="img" aria-label="กราฟแท่งรายจ่ายรายเดือน มีเส้นรายได้ ดูตัวเลขในตารางด้านล่าง"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
+      <details class="more" id="trendTableDetails" style="margin-top:10px;">
+        <summary><span>ดูเป็นตาราง</span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="ตารางรายจ่ายรายเดือนแยกหมวด"><table id="trendTable"></table></div>
+      </details>
     </div>
-  </details>
+  </section>
 
-  <details class="card" id="settingsDetails">
-    <summary><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="ttl">รายได้ รายการประจำ และงบ<span class="muted">แตะเพื่อแก้ไข</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-    <div class="body">
-      <div id="settingsMonthLabel" style="font-size:14px; font-weight:600; margin-bottom:2px;"></div>
-      <div class="set-note">การตั้งค่านี้มีผลตั้งแต่เดือนนี้เป็นต้นไป จนกว่าจะแก้ไขในเดือนถัดไป ค่าเริ่มต้นจะเหมือนเดือนก่อนหน้า ส่วนเดือนก่อนที่ยังไม่เคยตั้งค่าจะไม่มีข้อมูลย้อนหลัง</div>
-      <label for="setIncome">รายได้ต่อเดือน (฿)</label>
+  <!-- 4. ตั้งค่า -->
+  <section class="tab-panel" id="panel-settings" data-tab="settings" aria-labelledby="h-settings" hidden>
+    <header class="top"><h1 id="h-settings">ตั้งค่า</h1></header>
+    <div class="month-nav" data-month-nav></div>
+
+    <div class="card set-banner">
+      <div class="set-banner-title" id="settingsMonthLabel"></div>
+      <div class="set-note">ใช้ตั้งแต่เดือนนี้ไปเรื่อยๆ จนกว่าจะแก้ใหม่</div>
+    </div>
+
+    <div class="card">
+      <h2>รายได้</h2>
+      <label for="setIncome">รายได้ต่อเดือน</label>
       <input type="number" id="setIncome" min="0" step="1" inputmode="numeric" onchange="updateIncome()">
+    </div>
 
-      <label style="margin-top:4px;">การเงิน (Financing) — เงินลงทุน ผ่อนรถ ฯลฯ</label>
+    <div class="card">
+      <h2>ผ่อน / ลงทุน</h2>
       <div id="financingList"></div>
-      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('financing')">+ เพิ่มรายการการเงิน</button>
+      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('financing')">+ เพิ่มรายการผ่อน/ลงทุน</button>
+    </div>
 
-      <label style="margin-top:18px;">ค่าสมาชิก (Subscription) — รายการประจำอื่นๆ</label>
+    <div class="card">
+      <h2>ค่าสมาชิกรายเดือน</h2>
       <div id="subscriptionList"></div>
-      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('subscription')">+ เพิ่มรายการสมาชิก</button>
+      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('subscription')">+ เพิ่มค่าสมาชิก</button>
+      <div class="year-note" id="subYearly"></div>
+    </div>
 
-      <label id="budgetSettings" style="margin-top:18px;">งบรายหมวด (ต่อเดือน)</label>
-      <div class="budget-hint">มีผลตั้งแต่เดือนนี้เป็นต้นไป</div>
-      <div id="budgetSettingsList"></div>
-
-      <div class="danger-zone">
-        <button class="ghost-danger" onclick="clearAllData()">ล้างข้อมูลทั้งหมด</button>
+    <div class="card">
+      <h2 id="categorySettings">หมวด</h2>
+      <div class="budget-hint">มีสีได้ 6 หมวด หมวดที่เกินจะเป็นสีเทา และไปรวมกับ "อื่นๆ" ในกราฟ</div>
+      <div id="categoryList"></div>
+      <div id="archivedWrap" style="display:none;"><div class="cat-sub">หมวดที่ซ่อนไว้ (ยังเห็นในประวัติและกราฟ)</div><div id="archivedList"></div></div>
+      <div class="cat-add">
+        <div>
+          <label for="newCatName" class="sr-only">ชื่อหมวดใหม่</label>
+          <input type="text" id="newCatName" placeholder="ชื่อหมวดใหม่" maxlength="24" aria-describedby="catMsg" autocomplete="off">
+        </div>
+        <button type="button" class="secondary" id="addCatBtn">+ เพิ่มหมวด</button>
       </div>
+      <div class="cat-msg" id="catMsg" role="alert"></div>
     </div>
-  </details>
 
-  <div class="card">
-    <h2>สำรองข้อมูล</h2>
-    <div class="row2">
-      <button class="secondary" onclick="exportData()">ดาวน์โหลดข้อมูลสำรอง (.json)</button>
-      <button class="secondary" onclick="document.getElementById('importFile').click()">นำเข้าข้อมูลจากไฟล์</button>
+    <div class="card">
+      <h2 id="budgetSettings">งบแต่ละหมวด (ต่อเดือน)</h2>
+      <div id="budgetSettingsList"></div>
     </div>
-    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)" aria-label="เลือกไฟล์สำรองข้อมูล">
-  </div>
 
-  <div class="footer-note">ข้อมูลของคุณถูกบันทึกไว้เป็นส่วนตัว เฉพาะคุณเท่านั้นที่เห็นข้อมูลนี้ แนะนำให้ดาวน์โหลดข้อมูลสำรองเป็นระยะ</div>
+    <div class="card">
+      <h2>สำรองข้อมูล</h2>
+      <div class="row2">
+        <button class="secondary" onclick="exportData()">ดาวน์โหลดไฟล์สำรอง</button>
+        <button class="secondary" onclick="document.getElementById('importFile').click()">นำเข้าจากไฟล์สำรอง</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)" aria-label="เลือกไฟล์สำรองข้อมูล">
+    </div>
+
+    <div class="footer-note">ข้อมูลเก็บในเครื่องนี้เท่านั้น อย่าลืมสำรองไว้เป็นระยะ</div>
+
+    <div class="danger-zone">
+      <button class="ghost-danger" onclick="clearAllData()">ล้างข้อมูลทั้งหมด</button>
+    </div>
+  </section>
+
+  <nav class="tabbar" id="tabBar" aria-label="เมนูหลัก">
+    <button type="button" data-tab="today" id="tabbtn-today" aria-label="วันนี้" aria-current="page"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1.6" fill="currentColor"/></svg><span>วันนี้</span></button>
+    <button type="button" data-tab="entries" id="tabbtn-entries" aria-label="รายการ"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>รายการ</span></button>
+    <button type="button" data-tab="overview" id="tabbtn-overview" aria-label="ภาพรวม"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span>ภาพรวม</span></button>
+    <button type="button" data-tab="settings" id="tabbtn-settings" aria-label="ตั้งค่า"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>ตั้งค่า</span></button>
+  </nav>
 </div>
 
 <!-- Edit entry -->
 <div id="editModalOverlay" class="modal-overlay" style="display:none;" onclick="closeEdit()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle" onclick="event.stopPropagation()">
     <div class="modal-title" id="editTitle">แก้ไขรายการ</div>
-    <label for="editAmount" style="margin-top:10px;">จำนวนเงิน (฿)</label>
+    <label for="editAmount" style="margin-top:10px;">จำนวนเงิน</label>
     <input type="number" id="editAmount" min="0" step="0.01" inputmode="decimal" aria-describedby="editError" oninput="document.getElementById('editError').textContent=''">
-    <label id="editChipsLabel">หมวดหมู่</label>
+    <label id="editChipsLabel">หมวด</label>
     <div class="chips" id="editChips" role="radiogroup" aria-labelledby="editChipsLabel"></div>
     <label for="editDate">วันที่</label>
     <input type="date" id="editDate">
@@ -453,7 +639,7 @@
     <div class="modal-desc" id="confirmDesc"></div>
     <div class="modal-actions">
       <button type="button" class="secondary" onclick="closeConfirm()">ยกเลิก</button>
-      <button type="button" class="danger" id="confirmOkBtn" onclick="runConfirm()">ลบรายการ</button>
+      <button type="button" class="danger" id="confirmOkBtn" onclick="runConfirm()">ตกลง</button>
     </div>
   </div>
 </div>
@@ -465,13 +651,16 @@ const STORAGE_KEY = 'spendTrackerState';
 const LAST_CAT_KEY = 'spendTrackerLastCategory';
 const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube Premium','Netflix','Spotify','Claude'];
 // 6 validated hue slots in fixed order (never cycled, never by rank). Status colours stay reserved for status.
-const CATEGORY_COLORS = {
-  'อาหาร':'#d95926', 'การเดินทาง':'#3987e5', 'สาธารณูปโภค':'#199e70', 'ช้อปปิ้ง':'#c98500',
-  'สุขภาพ':'#d55181', 'บันเทิง':'#9085e9', 'อื่นๆ':'#C4BBA8'
-};
+const SLOT_COLORS = ['#d95926','#3987e5','#199e70','#c98500','#d55181','#9085e9'];
+const SLOT_NAMES = ['ส้ม','น้ำเงิน','เขียว','เหลือง','ชมพู','ม่วง'];
+const NEUTRAL_COLOR = '#C4BBA8';   // อื่นๆ / categories without a colour slot
 const FIXED_COLOR = '#807B71';
-const CATEGORY_ORDER = ['อาหาร','การเดินทาง','สาธารณูปโภค','ช้อปปิ้ง','สุขภาพ','บันเทิง','อื่นๆ'];
+const DEFAULT_CATEGORIES = ['อาหาร','การเดินทาง','สาธารณูปโภค','ช้อปปิ้ง','สุขภาพ','บันเทิง','อื่นๆ'];
+const EPOCH = '1970-01-01T00:00:00Z';
+const TREND_KEY = 'spendTrackerTrendRange';
+const SCHEMA_VERSION = 3;
 
+function nowISO(){ return new Date().toISOString(); }
 function genId(){ return Date.now() + '-' + Math.random().toString(36).slice(2,7); }
 
 // Local-time date helpers (Thailand is UTC+7; never go through UTC).
@@ -488,14 +677,19 @@ function fmtThaiDate(str){
   return parseISODate(str).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
 }
 
+// Starter template. Built once so item ids stay stable between calls
+// (an edit forks the template into a month; fresh ids would break the lookup).
+let starterItems = null;
 function freshFixedItems(){
-  const items = [
-    {id:genId(), name:'เงินลงทุน', amount:0, group:'financing'},
-    {id:genId(), name:'ผ่อนรถ', amount:0, group:'financing'},
-    {id:genId(), name:'หักจากบริษัท', amount:0, group:'subscription'},
-  ];
-  SUBSCRIPTION_DEFAULTS.forEach(n => items.push({id:genId(), name:n, amount:0, group:'subscription'}));
-  return items;
+  if(!starterItems){
+    starterItems = [
+      {id:genId(), name:'เงินลงทุน', amount:0, group:'financing'},
+      {id:genId(), name:'ผ่อนรถ', amount:0, group:'financing'},
+      {id:genId(), name:'หักจากเงินเดือน', amount:0, group:'subscription'},
+    ];
+    SUBSCRIPTION_DEFAULTS.forEach(n => starterItems.push({id:genId(), name:n, amount:0, group:'subscription'}));
+  }
+  return starterItems.map(i => ({...i}));
 }
 
 // Older saved data (or freshly-imported backups) may not have a `group` on
@@ -506,8 +700,20 @@ function inferGroup(name){
   return 'subscription';
 }
 
+// Seeds the category list: the v2 names in order, slots 0-5, and `อื่นๆ` with slot null (neutral).
+function seedCategories(stamp){
+  return DEFAULT_CATEGORIES.map((name,i)=>({ name, slot: i < SLOT_COLORS.length ? i : null, archived:false, updatedAt: stamp }));
+}
+
+// Data shape (v3a). Everything beyond v1 is additive:
+//   schemaVersion: 3
+//   categories: [{ name, slot: 0-5|null, archived, updatedAt }]   (array order = display order)
+//   monthlySettings[m]: { income, fixedItems:[{id,name,amount,group, dueDay?, startMonth?, totalTerms?}], updatedAt }
+//   budgetSettings[m]:  { [category]: number }  - a plain map, so it must hold budgets only.
+//   budgetUpdatedAt[m]: ISO string              - the updatedAt of budgetSettings[m] lives here for that reason.
+//   entries: [{ id, date, amount, category, note, updatedAt }]  (category is stored by name)
 function freshState(){
-  return { monthlySettings: {}, budgetSettings: {}, entries: [] };
+  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), entries: [] };
 }
 
 function cleanBudgets(b){
@@ -547,6 +753,7 @@ function migrateState(parsed){
       if(!item.group) item.group = inferGroup(item.name);
     });
     if(typeof ms.income !== 'number') ms.income = parseFloat(ms.income) || 0;
+    if(!ms.updatedAt) ms.updatedAt = EPOCH;
     // Early v2 builds kept budgets inside monthlySettings; move them to budgetSettings.
     if(ms.budgets){
       const moved = cleanBudgets(ms.budgets);
@@ -555,7 +762,33 @@ function migrateState(parsed){
     }
   });
   Object.keys(parsed.budgetSettings).forEach(k=>{ parsed.budgetSettings[k] = cleanBudgets(parsed.budgetSettings[k]); });
+  if(!parsed.budgetUpdatedAt || typeof parsed.budgetUpdatedAt !== 'object' || Array.isArray(parsed.budgetUpdatedAt)) parsed.budgetUpdatedAt = {};
+  Object.keys(parsed.budgetSettings).forEach(k=>{ if(!parsed.budgetUpdatedAt[k]) parsed.budgetUpdatedAt[k] = EPOCH; });
   if(!Array.isArray(parsed.entries)) parsed.entries = [];
+  parsed.entries.forEach(e=>{ if(!e.updatedAt) e.updatedAt = EPOCH; });
+
+  // Categories: seed from the v2 list when absent, then validate and add any unknown names.
+  if(!Array.isArray(parsed.categories)) parsed.categories = seedCategories(EPOCH);
+  const seen = new Set(), usedSlots = new Set(), cats = [];
+  parsed.categories.forEach(c=>{
+    if(!c || typeof c.name !== 'string') return;
+    const name = c.name.trim();
+    if(!name || seen.has(name)) return;
+    seen.add(name);
+    let slot = (Number.isInteger(c.slot) && c.slot >= 0 && c.slot < SLOT_COLORS.length) ? c.slot : null;
+    if(slot !== null && usedSlots.has(slot)) slot = null;   // a slot belongs to one category
+    if(slot !== null) usedSlots.add(slot);
+    cats.push({ name, slot, archived: !!c.archived, updatedAt: c.updatedAt || EPOCH });
+  });
+  const addUnknown = name => {
+    if(typeof name !== 'string' || !name.trim() || seen.has(name)) return;
+    seen.add(name);
+    cats.push({ name, slot:null, archived:false, updatedAt: EPOCH });
+  };
+  parsed.entries.forEach(e => addUnknown(e.category));
+  Object.keys(parsed.budgetSettings).forEach(k => Object.keys(parsed.budgetSettings[k]).forEach(addUnknown));
+  parsed.categories = cats;
+  parsed.schemaVersion = SCHEMA_VERSION;
   return parsed;
 }
 
@@ -577,7 +810,7 @@ async function loadData(){
 // starter template. If earlier settings exist but none reach back this
 // far, the month genuinely has no data (as requested: no retroactive
 // backfilling of history before the first configured month).
-function getEffectiveSettings(mKey){
+function getRawSettings(mKey){
   const keys = Object.keys(state.monthlySettings).sort();
   let chosen = null;
   for(const k of keys){
@@ -593,13 +826,50 @@ function getEffectiveSettings(mKey){
   return { income:0, fixedItems: [] };
 }
 
+/* ---------- Installment terms (F2) ---------- */
+function monthIdx(key){ const p = key.split('-'); return (+p[0]) * 12 + (+p[1]) - 1; }
+function addMonths(key, n){
+  const i = monthIdx(key) + n;
+  return Math.floor(i / 12) + '-' + pad2((i % 12) + 1);
+}
+function thaiMonthYear(key){
+  const p = key.split('-');
+  return new Date(+p[0], +p[1]-1, 1).toLocaleDateString('th-TH', { month:'short', year:'numeric' });
+}
+// null when the item has no (complete) installment terms.
+function installmentInfo(item, mKey){
+  if(!item || !/^\d{4}-\d{2}$/.test(item.startMonth || '')) return null;
+  const total = parseInt(item.totalTerms, 10);
+  if(!(total >= 1)) return null;
+  const termNo = monthIdx(mKey) - monthIdx(item.startMonth) + 1;
+  const status = termNo < 1 ? 'before' : (termNo > total ? 'ended' : 'active');
+  return { start:item.startMonth, end:addMonths(item.startMonth, total - 1), total, termNo, status, left: Math.max(0, total - termNo) };
+}
+function installmentText(item, mKey){
+  const inf = installmentInfo(item, mKey);
+  if(!inf) return '';
+  if(inf.status === 'before') return `ยังไม่เริ่มผ่อน (เริ่ม ${thaiMonthYear(inf.start)})`;
+  if(inf.status === 'ended') return `ผ่อนครบแล้ว (${thaiMonthYear(inf.end)})`;
+  return `งวดที่ ${inf.termNo} จาก ${inf.total}\nผ่อนถึง ${thaiMonthYear(inf.end)} เหลืออีก ${fmt((item.amount||0) * inf.left)}`;
+}
+
+// Fixed items that count in mKey: items with complete terms only count inside their term window.
+function getEffectiveSettings(mKey){
+  const r = getRawSettings(mKey);
+  r.fixedItems = r.fixedItems.filter(i => { const inf = installmentInfo(i, mKey); return !inf || inf.status === 'active'; });
+  return r;
+}
+
 // Forks an explicit, editable settings entry for this month if one
-// doesn't exist yet, seeded from the effective (carried-forward) values.
+// doesn't exist yet, seeded from the RAW (unfiltered) carried-forward values, so
+// installments that have not started yet are not dropped from later months.
+// Only called when something is about to be edited, so it also stamps updatedAt.
 function ensureMonthSettings(mKey){
   if(!state.monthlySettings[mKey]){
-    const eff = getEffectiveSettings(mKey);
-    state.monthlySettings[mKey] = { income: eff.income, fixedItems: eff.fixedItems };
+    const raw = getRawSettings(mKey);
+    state.monthlySettings[mKey] = { income: raw.income, fixedItems: raw.fixedItems };
   }
+  state.monthlySettings[mKey].updatedAt = nowISO();
   return state.monthlySettings[mKey];
 }
 
@@ -635,7 +905,7 @@ function flashToast(msg, ok, action){
   saveIndicatorTimer = setTimeout(()=> el.classList.remove('show'), action ? 6000 : (ok ? 1500 : 3000));
 }
 function flashSaveIndicator(ok){
-  flashToast(ok ? 'บันทึกแล้ว' : 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', ok);
+  flashToast(ok ? 'บันทึกแล้ว' : 'บันทึกไม่ได้ ลองใหม่อีกครั้ง', ok);
 }
 
 async function saveData(){
@@ -656,8 +926,6 @@ let editCategory = 'อาหาร';
 let editingId = null;
 
 let pieChart, trendChart, compareChart;
-let showAllEntries = false;
-const OVERVIEW_KEY = 'spendTrackerOverviewOpen';
 const ICON_X = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 
 function fmt(n){
@@ -669,12 +937,41 @@ function monthKey(d){
 function monthLabelStr(d){
   return d.toLocaleString('th-TH',{month:'long', year:'numeric'});
 }
+// Label for "the month being viewed": เดือนนี้ for the current month, otherwise short month + BE year.
+function viewedMonthWord(){
+  return monthKey(currentMonth) === monthKey(new Date()) ? 'เดือนนี้' : thaiMonthYear(monthKey(currentMonth));
+}
+// Toast date: year only when it is not the current year.
+function fmtToastDate(str){
+  const d = parseISODate(str);
+  const o = { day:'numeric', month:'short' };
+  if(d.getFullYear() !== new Date().getFullYear()) o.year = 'numeric';
+  return d.toLocaleDateString('th-TH', o);
+}
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 }
-// Unknown/legacy category names fold into the neutral colour; never invent new hues.
+/* ---------- Categories (F1) ---------- */
+function findCat(name){ return state.categories.find(c => c.name === name); }
+function activeCats(){ return state.categories.filter(c => !c.archived); }
+function catSlot(name){ const c = findCat(name); return c ? c.slot : null; }
+// Colour follows the category's stored slot, never its rank. Unknown names and slot-less categories are neutral.
 function categoryColor(name){
-  return CATEGORY_COLORS[name] || CATEGORY_COLORS['อื่นๆ'];
+  const s = catSlot(name);
+  return s === null || s === undefined ? NEUTRAL_COLOR : SLOT_COLORS[s];
+}
+// Charts group every category without a colour slot under `อื่นๆ`.
+function chartGroup(name){ return catSlot(name) === null || catSlot(name) === undefined ? 'อื่นๆ' : name; }
+function colouredCatsBySlot(){ return state.categories.filter(c => c.slot !== null).sort((a,b)=> a.slot - b.slot); }
+function categoryUsed(name){ return state.entries.some(e => e.category === name); }
+function firstFreeSlot(){
+  const used = new Set(state.categories.map(c => c.slot));
+  for(let i = 0; i < SLOT_COLORS.length; i++) if(!used.has(i)) return i;
+  return null;
+}
+function ensureSelectedCategory(){
+  const act = activeCats();
+  if(!act.some(c => c.name === selectedCategory)) selectedCategory = act.length ? act[0].name : '';
 }
 
 function initForm(){
@@ -689,39 +986,109 @@ function updateDateSummary(){
   const d = document.getElementById('entryDate').value;
   const note = document.getElementById('entryNote').value.trim();
   let t = (!d || d === todayISO()) ? 'วันนี้' : fmtThaiDate(d);
-  if(note) t += ' · มีโน้ต';
+  if(note) t += ' (มีโน้ต)';
   document.getElementById('dateSummary').textContent = t;
+  document.getElementById('dateHint').textContent = note ? '' : 'เพิ่มโน้ต/เปลี่ยนวัน';
 }
 function openSettings(focusIncome){
-  const det = document.getElementById('settingsDetails');
-  det.open = true;
-  det.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth', block:'start' });
-  if(focusIncome) setTimeout(()=> document.getElementById('setIncome').focus({ preventScroll:true }), 300);
+  goTab('settings', { keepScroll:true });
+  const el = document.getElementById('setIncome');
+  if(focusIncome){
+    el.scrollIntoView({ block:'center' });
+    el.focus({ preventScroll:true });
+  }else{
+    window.scrollTo(0, 0);
+  }
 }
 function goToday(){
   currentMonth = new Date(); currentMonth.setDate(1);
   render();
 }
 function focusAmount(){
+  goTab('today', { keepScroll:true });
   const el = document.getElementById('entryAmount');
   el.scrollIntoView({ block:'center' });
   el.focus({ preventScroll:true });
 }
-function toggleShowAll(){ showAllEntries = !showAllEntries; render(); }
+// The "ดูทั้งหมด" button on วันนี้ and the budget alert both look at the current calendar month.
+function showAllEntriesTab(){
+  currentMonth = new Date(); currentMonth.setDate(1);
+  render();
+  goTab('entries');
+}
+function openBudgetOverview(){
+  currentMonth = new Date(); currentMonth.setDate(1);
+  render();
+  goTab('overview');
+}
+function openBudgetSettings(){
+  goTab('settings', { keepScroll:true });
+  document.getElementById('budgetSettings').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block:'start' });
+}
+
+/* ---------- Tabs ---------- */
+const TABS = ['today','entries','overview','settings'];
+const MONTH_NAV_HTML = `<button type="button" class="secondary icon-btn" onclick="shiftMonth(-1)" aria-label="เดือนก่อนหน้า"><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="month-center">
+      <div class="month-label" aria-live="polite"></div>
+      <button type="button" class="pill today-pill" onclick="goToday()" style="display:none;">กลับมาเดือนนี้</button>
+    </div>
+    <button type="button" class="secondary icon-btn" onclick="shiftMonth(1)" aria-label="เดือนถัดไป"><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>`;
+let activeTab = null;
+const scrollPos = {};
+function reducedMotion(){ return matchMedia('(prefers-reduced-motion:reduce)').matches; }
+function tabFromHash(){
+  const h = location.hash.replace(/^#/, '');
+  return TABS.includes(h) ? h : 'today';
+}
+// Shows one panel. Saves the old tab's scroll first (hiding it changes the page height), restores the new tab's.
+function applyTab(name, opts){
+  opts = opts || {};
+  if(activeTab) scrollPos[activeTab] = window.scrollY;
+  activeTab = name;
+  TABS.forEach(t=>{
+    const panel = document.getElementById('panel-' + t);
+    const btn = document.getElementById('tabbtn-' + t);
+    panel.hidden = t !== name;
+    if(t === name) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
+  });
+  if(!opts.keepScroll) window.scrollTo(0, scrollPos[name] || 0);
+  if(name === 'overview'){
+    // Charts built while the panel was hidden have no size yet.
+    resizeCharts();
+    requestAnimationFrame(resizeCharts);
+  }
+}
+function resizeCharts(){
+  [compareChart, pieChart, trendChart].forEach(c=>{ if(c){ try{ c.resize(); }catch(e){} } });
+}
+function goTab(name, opts){
+  if(!TABS.includes(name)) name = 'today';
+  if(name === activeTab){
+    if(!(opts && opts.keepScroll)) window.scrollTo({ top:0, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    return;
+  }
+  applyTab(name, opts);
+  if(tabFromHash() !== name || (location.hash === '' && name !== 'today')) location.hash = name;
+}
 
 /* ---------- Category chips (radiogroup) ---------- */
 function loadLastCategory(){
   try{
     const c = localStorage.getItem(LAST_CAT_KEY);
-    if(c && CATEGORY_ORDER.includes(c)) selectedCategory = c;
+    if(c && activeCats().some(x => x.name === c)) selectedCategory = c;
   }catch(e){}
+  ensureSelectedCategory();
 }
-function buildChips(container, selected, onSelect){
+// `extra`: a name to include even if archived (so editing an old entry keeps its category visible).
+function buildChips(container, selected, onSelect, extra){
   const hadFocus = container.contains(document.activeElement);
   container.innerHTML = '';
-  const n = CATEGORY_ORDER.length;
-  const hasActive = CATEGORY_ORDER.includes(selected);
-  CATEGORY_ORDER.forEach((cat,i)=>{
+  const names = activeCats().map(c => c.name);
+  if(extra && !names.includes(extra) && findCat(extra)) names.push(extra);
+  const n = names.length;
+  const hasActive = names.includes(selected);
+  names.forEach((cat,i)=>{
     const on = cat === selected;
     const b = document.createElement('button');
     b.type = 'button';
@@ -733,7 +1100,7 @@ function buildChips(container, selected, onSelect){
     b.addEventListener('click', ()=> onSelect(cat));
     b.addEventListener('keydown', ev=>{
       const step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1 : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
-      if(step){ ev.preventDefault(); onSelect(CATEGORY_ORDER[(i + step + n) % n]); }
+      if(step){ ev.preventDefault(); onSelect(names[(i + step + n) % n]); }
     });
     container.appendChild(b);
   });
@@ -748,21 +1115,30 @@ function selectCategory(cat){
   renderChips();
 }
 function renderEditChips(){
-  buildChips(document.getElementById('editChips'), editCategory, c=>{ editCategory = c; renderEditChips(); });
+  const orig = state.entries.find(x => x.id === editingId);
+  buildChips(document.getElementById('editChips'), editCategory, c=>{ editCategory = c; renderEditChips(); }, orig && orig.category);
 }
 
 /* ---------- Settings form ---------- */
+const instOpen = new Set();   // item ids whose installment fields are shown before both values exist
+let openPickerFor = null;     // category name whose colour picker is open
+
 function renderSettingsForm(){
   const mKey = monthKey(currentMonth);
-  const eff = getEffectiveSettings(mKey);
+  const raw = getRawSettings(mKey);
 
   const monthLbl = document.getElementById('settingsMonthLabel');
-  if(monthLbl) monthLbl.textContent = 'การตั้งค่าของเดือน: ' + monthLabelStr(currentMonth);
+  if(monthLbl) monthLbl.textContent = 'ตั้งค่าเดือน ' + thaiMonthYear(mKey);
 
-  document.getElementById('setIncome').value = eff.income || '';
+  document.getElementById('setIncome').value = raw.income || '';
 
-  renderFixedGroupList('financingList', eff.fixedItems.filter(i => i.group === 'financing'), 'ยังไม่มีรายการการเงินสำหรับเดือนนี้');
-  renderFixedGroupList('subscriptionList', eff.fixedItems.filter(i => i.group !== 'financing'), 'ยังไม่มีรายการสมาชิกสำหรับเดือนนี้');
+  // Settings list every item of the month (even installments outside their term, marked as such);
+  // only items inside their term are counted elsewhere.
+  renderFixedGroupList('financingList', raw.fixedItems.filter(i => i.group === 'financing'), 'ยังไม่มีรายการ');
+  renderFixedGroupList('subscriptionList', raw.fixedItems.filter(i => i.group !== 'financing'), 'ยังไม่มีรายการ');
+  const subSum = getEffectiveSettings(mKey).fixedItems.filter(i => i.group !== 'financing').reduce((s,i)=> s + (i.amount||0), 0);
+  document.getElementById('subYearly').textContent = subSum > 0 ? `ค่าสมาชิกรวมปีละ ${fmt(subSum * 12)}` : '';
+  renderCategorySettings();
   renderBudgetSettings(getEffectiveBudgets(mKey));
 }
 
@@ -773,33 +1149,281 @@ function renderFixedGroupList(containerId, items, emptyText){
     container.innerHTML = `<div class="empty" style="padding:6px 0;">${emptyText}</div>`;
     return;
   }
+  const mKey = monthKey(currentMonth);
   const head = document.createElement('div');
   head.className = 'fi-head';
   head.setAttribute('aria-hidden','true');
-  head.innerHTML = '<span>ชื่อรายการ</span><span>จำนวนเงิน (฿)</span><span></span>';
+  head.innerHTML = '<span>ชื่อรายการ</span><span>จำนวนเงิน</span><span></span>';
   container.appendChild(head);
   items.forEach(item=>{
-    const row = document.createElement('div');
-    row.className = 'fixed-item-row';
-    row.setAttribute('data-id', item.id);
-    row.innerHTML = `
-      <input type="text" class="fi-name" value="${escapeHtml(item.name)}" placeholder="ชื่อรายการ" aria-label="ชื่อรายการ" onchange="updateFixedItem('${item.id}')">
-      <input type="number" class="fi-amount" min="0" step="1" inputmode="numeric" value="${item.amount || ''}" placeholder="0" aria-label="จำนวนเงิน" onchange="updateFixedItem('${item.id}')">
-      <button type="button" class="del-fixed" aria-label="ลบ ${escapeHtml(item.name || 'รายการ')}" onclick="removeFixedItem('${item.id}')">${ICON_X}</button>
-    `;
-    container.appendChild(row);
+    const isFin = item.group === 'financing';
+    const instOn = isFin && (item.startMonth || item.totalTerms || instOpen.has(item.id));
+    const nm = escapeHtml(item.name || 'รายการ');
+    const block = document.createElement('div');
+    block.className = 'fi-block';
+    block.setAttribute('data-id', item.id);
+    let instHtml = '';
+    if(instOn){
+      const info = installmentText(item, mKey);
+      const partial = !installmentInfo(item, mKey);
+      instHtml = `
+        <div class="row2 fi-inst">
+          <div><label for="st-${item.id}">เริ่มเดือน</label><input type="month" class="fi-start" id="st-${item.id}" value="${escapeHtml(item.startMonth || mKey)}"></div>
+          <div><label for="tt-${item.id}">จำนวนงวด</label><input type="number" class="fi-terms" id="tt-${item.id}" min="1" max="600" step="1" inputmode="numeric" placeholder="เช่น 48" value="${item.totalTerms || ''}"></div>
+        </div>
+        <div class="fi-info">${partial ? 'ใส่จำนวนงวดก่อน จะได้นับงวดให้' : escapeHtml(info).replace(/\n/g, '<br>')}</div>`;
+    }
+    block.innerHTML = `
+      <div class="fixed-item-row">
+        <input type="text" class="fi-name" value="${escapeHtml(item.name)}" placeholder="ชื่อรายการ" aria-label="ชื่อรายการ" onchange="updateFixedItem('${item.id}')">
+        <input type="number" class="fi-amount" min="0" step="1" inputmode="numeric" value="${item.amount || ''}" placeholder="0" aria-label="จำนวนเงิน" onchange="updateFixedItem('${item.id}')">
+        <button type="button" class="del-fixed" aria-label="ลบ ${nm}" onclick="removeFixedItem('${item.id}')">${ICON_X}</button>
+      </div>
+      <div class="fi-extra">
+        <div class="fi-due"><label for="due-${item.id}">ตัดทุกวันที่</label><input type="number" class="fi-dueday" id="due-${item.id}" min="1" max="31" step="1" inputmode="numeric" placeholder="-" value="${item.dueDay || ''}" aria-label="ตัดทุกวันที่ ${nm}" onchange="updateFixedItem('${item.id}')"></div>
+        ${isFin ? `<button type="button" class="secondary fi-inst-toggle" aria-pressed="${instOn ? 'true' : 'false'}" aria-label="ผ่อนเป็นงวด ${nm}" onclick="toggleInstallment('${item.id}')">ผ่อนเป็นงวด</button>` : ''}
+      </div>
+      ${instHtml}`;
+    block.querySelectorAll('.fi-start,.fi-terms').forEach(el => el.addEventListener('change', ()=> updateFixedItem(item.id)));
+    container.appendChild(block);
   });
 }
 
-// Budget inputs are built once and only have their values refreshed afterwards,
-// so tapping from one budget field to the next never loses focus to a re-render.
+function toggleInstallment(id){
+  const raw = getRawSettings(monthKey(currentMonth));
+  const item = raw.fixedItems.find(i => i.id === id);
+  if(!item) return;
+  const on = item.startMonth || item.totalTerms || instOpen.has(id);
+  if(on){
+    instOpen.delete(id);
+    const ms = ensureMonthSettings(monthKey(currentMonth));
+    const it = ms.fixedItems.find(i => i.id === id);
+    if(it){ delete it.startMonth; delete it.totalTerms; }
+    saveData().then(()=>{
+      render();
+      const t = document.querySelector(`.fi-block[data-id="${id}"] .fi-inst-toggle`); if(t) t.focus();
+    });
+  }else{
+    instOpen.add(id);
+    renderSettingsForm();
+    const s = document.querySelector(`.fi-block[data-id="${id}"] .fi-start`); if(s) s.focus();
+  }
+}
+
+/* ---------- Category management (F1) ---------- */
+function setCatMsg(t){ document.getElementById('catMsg').textContent = t || ''; }
+
+function renderCategorySettings(){
+  const list = document.getElementById('categoryList');
+  const act = activeCats();
+  const hadFocusIn = list.contains(document.activeElement);
+  list.innerHTML = '';
+  act.forEach((c,i)=>{
+    const used = categoryUsed(c.name);
+    const nm = escapeHtml(c.name);
+    const slotLabel = c.slot === null ? 'เทา' : SLOT_NAMES[c.slot];
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    block.dataset.name = c.name;
+    block.setAttribute('role','group');
+    block.setAttribute('aria-label','หมวด ' + c.name);
+    block.innerHTML = `
+      <div class="cat-row">
+        <button type="button" class="secondary cat-dot" aria-label="เลือกสีของ ${nm} ตอนนี้สี${slotLabel}" aria-expanded="${openPickerFor === c.name}"><span class="swatch" style="background:${categoryColor(c.name)}"></span></button>
+        <input type="text" class="cat-name" value="${nm}" maxlength="24" aria-label="ชื่อหมวด" autocomplete="off">
+        <button type="button" class="secondary cat-up" aria-label="เลื่อนขึ้น" title="เลื่อนขึ้น"${i === 0 ? ' disabled' : ''}>▲</button>
+        <button type="button" class="secondary cat-down" aria-label="เลื่อนลง" title="เลื่อนลง"${i === act.length-1 ? ' disabled' : ''}>▼</button>
+        ${used
+          ? `<button type="button" class="secondary cat-act hide" aria-label="ซ่อนหมวด ${nm}" title="ซ่อนหมวดนี้">ซ่อน</button>`
+          : `<button type="button" class="del-fixed cat-act" aria-label="ลบหมวด ${nm}" title="ลบหมวด">${ICON_X}</button>`}
+      </div>`;
+    if(openPickerFor === c.name){
+      const pick = document.createElement('div');
+      pick.className = 'cat-picker';
+      pick.setAttribute('role','group');
+      pick.setAttribute('aria-label','เลือกสีของ ' + c.name);
+      const used6 = new Set(state.categories.map(x => x.slot));
+      for(let s = 0; s < SLOT_COLORS.length; s++){
+        if(used6.has(s) && c.slot !== s) continue;     // only free slots (plus its own)
+        pick.appendChild(slotChip(c, s, SLOT_NAMES[s], SLOT_COLORS[s]));
+      }
+      pick.appendChild(slotChip(c, null, 'เทา (อื่นๆ)', NEUTRAL_COLOR));
+      block.appendChild(pick);
+    }
+    const nameInp = block.querySelector('.cat-name');
+    nameInp.addEventListener('change', ()=> renameCategory(c.name, nameInp));
+    block.querySelector('.cat-dot').addEventListener('click', ()=>{ openPickerFor = openPickerFor === c.name ? null : c.name; renderCategorySettings(); focusCat(c.name, '.cat-dot'); });
+    block.querySelector('.cat-up').addEventListener('click', ()=> moveCategory(c.name, -1));
+    block.querySelector('.cat-down').addEventListener('click', ()=> moveCategory(c.name, 1));
+    block.querySelector('.cat-act').addEventListener('click', ()=> used ? askArchiveCategory(c.name) : askDeleteCategory(c.name));
+    list.appendChild(block);
+  });
+  void hadFocusIn;
+
+  const arch = state.categories.filter(c => c.archived);
+  document.getElementById('archivedWrap').style.display = arch.length ? '' : 'none';
+  const al = document.getElementById('archivedList');
+  al.innerHTML = '';
+  arch.forEach(c=>{
+    const nm = escapeHtml(c.name);
+    const row = document.createElement('div');
+    row.className = 'arch-row';
+    row.innerHTML = `<span class="nm"><span class="dot" style="background:${categoryColor(c.name)}" aria-hidden="true"></span>${nm}</span><button type="button" class="secondary" aria-label="แสดงหมวด ${nm} อีกครั้ง">แสดงอีกครั้ง</button>${categoryUsed(c.name) ? '' : `<button type="button" class="del-fixed" aria-label="ลบหมวด ${nm}">${ICON_X}</button>`}`;
+    row.querySelector('.secondary').addEventListener('click', ()=> unarchiveCategory(c.name));
+    const d = row.querySelector('.del-fixed'); if(d) d.addEventListener('click', ()=> askDeleteCategory(c.name));
+    al.appendChild(row);
+  });
+}
+function slotChip(cat, slot, label, color){
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'fchip';
+  b.setAttribute('aria-pressed', cat.slot === slot ? 'true' : 'false');
+  b.innerHTML = `<span class="dot" style="background:${color}" aria-hidden="true"></span>${escapeHtml(label)}`;
+  b.addEventListener('click', ()=> setCategorySlot(cat.name, slot));
+  return b;
+}
+function focusCat(name, sel){
+  const blk = [...document.querySelectorAll('#categoryList .cat-block')].find(b => b.dataset.name === name);
+  if(!blk) return;
+  const el = blk.querySelector(sel);
+  if(el && !el.disabled) el.focus();
+}
+
+async function afterCategoryChange(){
+  ensureSelectedCategory();
+  renderChips();
+  await saveData();
+  render();
+}
+
+async function setCategorySlot(name, slot){
+  const c = findCat(name);
+  if(!c || c.slot === slot) { openPickerFor = null; renderCategorySettings(); focusCat(name, '.cat-dot'); return; }
+  if(slot !== null && state.categories.some(x => x !== c && x.slot === slot)) return;
+  c.slot = slot;
+  c.updatedAt = nowISO();
+  openPickerFor = null;
+  await afterCategoryChange();
+  focusCat(name, '.cat-dot');
+}
+
+async function moveCategory(name, dir){
+  const arr = state.categories;
+  const i = arr.findIndex(c => c.name === name);
+  if(i < 0) return;
+  let j = i + dir;
+  while(j >= 0 && j < arr.length && arr[j].archived) j += dir;   // skip hidden ones
+  if(j < 0 || j >= arr.length) return;
+  const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  const stamp = nowISO();
+  arr[i].updatedAt = stamp; arr[j].updatedAt = stamp;
+  await afterCategoryChange();
+  focusCat(name, dir < 0 ? '.cat-up' : '.cat-down');
+  const blk = [...document.querySelectorAll('#categoryList .cat-block')].find(b => b.dataset.name === name);
+  if(blk && blk.querySelector(dir < 0 ? '.cat-up' : '.cat-down').disabled) focusCat(name, dir < 0 ? '.cat-down' : '.cat-up');
+}
+
+async function addCategory(){
+  const inp = document.getElementById('newCatName');
+  const name = inp.value.trim();
+  if(!name){ setCatMsg('ใส่ชื่อหมวดก่อน'); inp.setAttribute('aria-invalid','true'); inp.focus(); return; }
+  if(state.categories.some(c => c.name.toLowerCase() === name.toLowerCase())){ setCatMsg('มีหมวดชื่อนี้แล้ว'); inp.setAttribute('aria-invalid','true'); inp.focus(); return; }
+  setCatMsg(''); inp.removeAttribute('aria-invalid');
+  const slot = firstFreeSlot();
+  state.categories.push({ name, slot, archived:false, updatedAt: nowISO() });
+  inp.value = '';
+  await afterCategoryChange();
+  if(slot === null) flashToast('สีครบ 6 หมวดแล้ว หมวดนี้เลยเป็นสีเทาและรวมกับ "อื่นๆ" ในกราฟ', true);
+}
+
+function renameCategory(oldName, inp){
+  const newName = inp.value.trim();
+  inp.value = oldName;                         // restore; the confirmed rename re-renders with the new name
+  if(!newName || newName === oldName){ setCatMsg(newName ? '' : 'ใส่ชื่อหมวดก่อน'); return; }
+  if(state.categories.some(c => c.name !== oldName && c.name.toLowerCase() === newName.toLowerCase())){ setCatMsg('มีหมวดชื่อนี้แล้ว'); return; }
+  setCatMsg('');
+  openConfirm({
+    title: `เปลี่ยนชื่อ "${oldName}" เป็น "${newName}" ไหม?`,
+    desc: 'รายการเก่าและงบทุกเดือนจะเปลี่ยนตามด้วย',
+    confirmLabel: 'เปลี่ยนชื่อ',
+    onConfirm: async ()=>{
+      const stamp = nowISO();
+      const c = findCat(oldName);
+      if(!c) return;
+      c.name = newName; c.updatedAt = stamp;
+      state.entries.forEach(e=>{ if(e.category === oldName){ e.category = newName; e.updatedAt = stamp; } });
+      Object.keys(state.budgetSettings).forEach(m=>{
+        const b = state.budgetSettings[m];
+        if(Object.prototype.hasOwnProperty.call(b, oldName)){ b[newName] = b[oldName]; delete b[oldName]; state.budgetUpdatedAt[m] = stamp; }
+      });
+      if(selectedCategory === oldName){ selectedCategory = newName; try{ localStorage.setItem(LAST_CAT_KEY, newName); }catch(e){} }
+      if(filterCats.has(oldName)){ filterCats.delete(oldName); filterCats.add(newName); }
+      if(openPickerFor === oldName) openPickerFor = newName;
+      await afterCategoryChange();
+      flashToast('เปลี่ยนชื่อหมวดแล้ว', true);
+    }
+  });
+}
+
+function askArchiveCategory(name){
+  if(activeCats().length <= 1){ setCatMsg('ต้องมีหมวดอย่างน้อย 1 หมวด'); return; }
+  setCatMsg('');
+  openConfirm({
+    title: `ซ่อนหมวด "${name}" ไหม?`,
+    desc: 'จะไม่โชว์ตอนจดรายการและตั้งงบ แต่ยังเห็นในประวัติและกราฟ',
+    confirmLabel: 'ซ่อน',
+    onConfirm: async ()=>{
+      const c = findCat(name); if(!c) return;
+      c.archived = true; c.updatedAt = nowISO();
+      if(openPickerFor === name) openPickerFor = null;
+      await afterCategoryChange();
+    }
+  });
+}
+async function unarchiveCategory(name){
+  const c = findCat(name); if(!c) return;
+  c.archived = false; c.updatedAt = nowISO();
+  await afterCategoryChange();
+}
+function askDeleteCategory(name){
+  if(categoryUsed(name)){ askArchiveCategory(name); return; }
+  const c = findCat(name);
+  if(c && !c.archived && activeCats().length <= 1){ setCatMsg('ต้องมีหมวดอย่างน้อย 1 หมวด'); return; }
+  setCatMsg('');
+  openConfirm({
+    title: `ลบหมวด "${name}" ไหม?`,
+    desc: 'หมวดนี้ยังไม่มีรายการ',
+    confirmLabel: 'ลบ',
+    onConfirm: async ()=>{
+      const stamp = nowISO();
+      state.categories = state.categories.filter(x => x.name !== name);
+      Object.keys(state.budgetSettings).forEach(m=>{
+        if(Object.prototype.hasOwnProperty.call(state.budgetSettings[m], name)){ delete state.budgetSettings[m][name]; state.budgetUpdatedAt[m] = stamp; }
+      });
+      filterCats.delete(name);
+      if(openPickerFor === name) openPickerFor = null;
+      await afterCategoryChange();
+    }
+  });
+}
+
+// Budget inputs are rebuilt only when the list of active categories changes, and otherwise only
+// have their values refreshed, so tapping from one budget field to the next never loses focus.
 function renderBudgetSettings(budgets){
   const list = document.getElementById('budgetSettingsList');
-  if(!list.children.length){
-    CATEGORY_ORDER.forEach(cat=>{
+  const act = activeCats();
+  const sig = act.map(c => c.name).join('\u0001');
+  if(list.dataset.sig !== sig){
+    list.dataset.sig = sig;
+    list.innerHTML = '';
+    act.forEach(c=>{
       const row = document.createElement('div');
       row.className = 'budget-set-row';
-      row.innerHTML = `<span aria-hidden="true">${escapeHtml(cat)}</span><input type="number" class="budget-input" data-cat="${escapeHtml(cat)}" min="0" step="1" inputmode="numeric" placeholder="ไม่ตั้งงบ" aria-label="งบ ${escapeHtml(cat)}" onchange="updateBudget('${cat}')">`;
+      row.innerHTML = `<span aria-hidden="true">${escapeHtml(c.name)}</span><input type="number" class="budget-input" min="0" step="1" inputmode="numeric" placeholder="ไม่ตั้งงบ" aria-label="งบ ${escapeHtml(c.name)}">`;
+      const inp = row.querySelector('input');
+      inp.dataset.cat = c.name;
+      inp.addEventListener('change', ()=> updateBudget(c.name, inp));
       list.appendChild(row);
     });
   }
@@ -809,13 +1433,13 @@ function renderBudgetSettings(budgets){
   });
 }
 
-async function updateBudget(cat){
-  const inp = document.querySelector('#budgetSettingsList .budget-input[data-cat="' + cat + '"]');
+async function updateBudget(cat, inp){
   if(!inp) return;
   const key = monthKey(currentMonth);
   if(!state.budgetSettings[key]) state.budgetSettings[key] = getEffectiveBudgets(key);
   const v = parseFloat(inp.value);
   if(v > 0) state.budgetSettings[key][cat] = v; else delete state.budgetSettings[key][cat];
+  state.budgetUpdatedAt[key] = nowISO();
   await saveData();
   render();
 }
@@ -833,7 +1457,7 @@ function openConfirm({ title, desc, confirmLabel, onConfirm }){
   confirmHandler = onConfirm || null;
   document.getElementById('confirmTitle').textContent = title || '';
   document.getElementById('confirmDesc').textContent = desc || '';
-  document.getElementById('confirmOkBtn').textContent = confirmLabel || 'ลบรายการ';
+  document.getElementById('confirmOkBtn').textContent = confirmLabel || 'ตกลง';
   document.getElementById('editModalOverlay').style.visibility = 'hidden';
   document.getElementById('confirmModalOverlay').style.display = 'flex';
   document.querySelector('#confirmModalOverlay .secondary').focus();
@@ -850,12 +1474,12 @@ async function runConfirm(){
 }
 
 function removeFixedItem(id){
-  const eff = getEffectiveSettings(monthKey(currentMonth));
-  const item = eff.fixedItems.find(i => i.id === id);
+  const raw = getRawSettings(monthKey(currentMonth));
+  const item = raw.fixedItems.find(i => i.id === id);
   openConfirm({
-    title: 'ลบรายการนี้?',
+    title: 'ลบรายการนี้ไหม?',
     desc: item && item.name ? `"${item.name}"` : 'รายการนี้',
-    confirmLabel: 'ลบรายการ',
+    confirmLabel: 'ลบ',
     onConfirm: async ()=>{
       const ms = ensureMonthSettings(monthKey(currentMonth));
       ms.fixedItems = ms.fixedItems.filter(i => i.id !== id);
@@ -866,13 +1490,21 @@ function removeFixedItem(id){
 }
 
 async function updateFixedItem(id){
-  const row = document.querySelector(`.fixed-item-row[data-id="${id}"]`);
+  const row = document.querySelector(`.fi-block[data-id="${id}"]`);
   if(!row) return;
   const ms = ensureMonthSettings(monthKey(currentMonth));
   const item = ms.fixedItems.find(i => i.id === id);
   if(!item) return;
   item.name = row.querySelector('.fi-name').value.trim();
   item.amount = parseFloat(row.querySelector('.fi-amount').value) || 0;
+  const due = parseInt(row.querySelector('.fi-dueday').value, 10);
+  if(due >= 1 && due <= 31) item.dueDay = due; else delete item.dueDay;
+  const startEl = row.querySelector('.fi-start'), termsEl = row.querySelector('.fi-terms');
+  if(startEl && termsEl){
+    const s = startEl.value, t = parseInt(termsEl.value, 10);
+    if(/^\d{4}-\d{2}$/.test(s)) item.startMonth = s; else delete item.startMonth;
+    if(t >= 1) item.totalTerms = t; else delete item.totalTerms;
+  }
   await saveData();
   render();
 }
@@ -897,19 +1529,20 @@ async function addEntry(){
   const note = document.getElementById('entryNote').value.trim();
   const err = document.getElementById('amountError');
   if(!amount || amount <= 0){
-    err.textContent = 'ใส่จำนวนเงินก่อนบันทึก';
+    err.textContent = 'ใส่จำนวนเงินก่อน';
     amountEl.setAttribute('aria-invalid','true');
     amountEl.focus();
     return;
   }
   if(!dateVal){
-    err.textContent = 'เลือกวันที่ก่อนบันทึก';
+    err.textContent = 'เลือกวันที่ก่อน';
     document.getElementById('moreDetails').open = true;
     return;
   }
   const btn = document.getElementById('addEntryBtn');
   btn.disabled = true;
-  const entry = { id: genId(), date: dateVal, amount, category: selectedCategory, note };
+  ensureSelectedCategory();
+  const entry = { id: genId(), date: dateVal, amount, category: selectedCategory, note, updatedAt: nowISO() };
   state.entries.push(entry);
   await saveData();
   btn.disabled = false;
@@ -917,11 +1550,12 @@ async function addEntry(){
   document.getElementById('entryNote').value = '';
   err.textContent = '';
   const d = parseISODate(dateVal);
-  currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+  currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);   // รายการ shows the month the entry went to
   amountEl.blur();
   updateDateSummary();
   render();
-  heroFeedback(amount, entry);
+  if(dateVal.slice(0,7) === monthKey(new Date())) heroFeedback(amount, entry);
+  else flashToast(`บันทึกแล้ว วันที่ ${fmtToastDate(dateVal)}`, true, { label:'เลิกทำ', onClick: ()=> undoEntry(entry) });
 }
 
 // After logging: show what changed in the hero (delta, pulse, readable toast) and bring it into view.
@@ -929,15 +1563,15 @@ async function undoEntry(entry){
   state.entries = state.entries.filter(x => x.id !== entry.id);
   await saveData();
   render();
-  flashToast('ยกเลิกรายการแล้ว', true);
+  flashToast('เลิกทำแล้ว', true);
 }
 
 function heroFeedback(amount, entry){
   const hero = document.getElementById('heroCard');
   const value = document.getElementById('heroValue');
   const undo = { label:'เลิกทำ', onClick: ()=> undoEntry(entry) };
-  if(monthKey(currentMonth) !== monthKey(new Date()) || value.style.display === 'none'){
-    flashToast(`บันทึกแล้ว · ${fmt(amount)}`, true, undo);
+  if(value.style.display === 'none'){
+    flashToast(`บันทึกแล้ว ${fmt(amount)}`, true, undo);
     return;
   }
   const delta = document.getElementById('heroDelta');
@@ -945,13 +1579,14 @@ function heroFeedback(amount, entry){
   delta.classList.remove('show'); value.classList.remove('pulse');
   void value.offsetWidth;
   delta.classList.add('show'); value.classList.add('pulse');
-  flashToast(`บันทึกแล้ว · ${document.getElementById('heroLabel').textContent} ${value.textContent}`, true, undo);
-  hero.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth', block:'nearest' });
+  flashToast(`บันทึกแล้ว ${document.getElementById('heroLabel').textContent} ${value.textContent}`, true, undo);
+  goTab('today', { keepScroll:true });
+  hero.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block:'nearest' });
 }
 
 function describeEntry(e){
-  let s = `${e.category} · ${fmt(e.amount)} · ${fmtThaiDate(e.date)}`;
-  if(e.note) s += ` · ${e.note}`;
+  let s = `${e.category} ${fmt(e.amount)} วันที่ ${fmtThaiDate(e.date)}`;
+  if(e.note) s += ` ${e.note}`;
   return s;
 }
 
@@ -959,9 +1594,9 @@ function askDeleteEntry(id, afterDelete){
   const e = state.entries.find(x => x.id === id);
   if(!e) return;
   openConfirm({
-    title: 'ลบรายการนี้?',
+    title: 'ลบรายการนี้ไหม?',
     desc: describeEntry(e),
-    confirmLabel: 'ลบรายการ',
+    confirmLabel: 'ลบ',
     onConfirm: async ()=>{
       state.entries = state.entries.filter(x => x.id !== id);
       await saveData();
@@ -971,10 +1606,12 @@ function askDeleteEntry(id, afterDelete){
   });
 }
 
-function openEdit(id){
+let editOpenerList = 'entryList';
+function openEdit(id, listId){
   const e = state.entries.find(x => x.id === id);
   if(!e) return;
   editingId = id;
+  editOpenerList = listId || 'entryList';
   editCategory = e.category;
   document.getElementById('editDate').value = e.date;
   document.getElementById('editAmount').value = e.amount;
@@ -990,7 +1627,7 @@ function closeEdit(){
   document.getElementById('editModalOverlay').style.display = 'none';
   // Return focus to the row that opened the dialog (if it still exists).
   setTimeout(()=>{
-    const row = [...document.querySelectorAll('#entryList .entry-row')].find(r => r.dataset.id === id);
+    const row = [...document.querySelectorAll('#' + editOpenerList + ' .entry-row')].find(r => r.dataset.id === id);
     if(row) row.querySelector('.entry-main').focus();
   }, 0);
 }
@@ -1000,17 +1637,19 @@ async function saveEdit(){
   const dateVal = document.getElementById('editDate').value;
   const amount = parseFloat(document.getElementById('editAmount').value);
   const err = document.getElementById('editError');
-  if(!amount || amount <= 0){ err.textContent = 'ใส่จำนวนเงินก่อนบันทึก'; return; }
-  if(!dateVal){ err.textContent = 'เลือกวันที่ก่อนบันทึก'; return; }
+  if(!amount || amount <= 0){ err.textContent = 'ใส่จำนวนเงินก่อน'; return; }
+  if(!dateVal){ err.textContent = 'เลือกวันที่ก่อน'; return; }
   e.date = dateVal;
   e.amount = amount;
   e.category = editCategory;
   e.note = document.getElementById('editNote').value.trim();
+  e.updatedAt = nowISO();
   await saveData();
   const d = parseISODate(dateVal);
   currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
   closeEdit();
   render();
+  if(dateVal.slice(0,7) !== monthKey(new Date())) flashToast(`บันทึกแล้ว วันที่ ${fmtToastDate(dateVal)}`, true);
 }
 function askDeleteEditing(){
   if(editingId) askDeleteEntry(editingId, closeEdit);
@@ -1038,30 +1677,60 @@ function fixedTotal(mKey){
 
 /* ---------- Render ---------- */
 function render(){
-  document.getElementById('monthLabel').textContent = monthLabelStr(currentMonth);
+  renderToday();
+  renderMonthViews();
+}
 
-  const mKeyStr = monthKey(currentMonth);
+// วันนี้ is always the current calendar month and never reads currentMonth.
+function renderToday(){
+  const now = new Date();
+  const mKeyStr = monthKey(now);
   const eff = getEffectiveSettings(mKeyStr);
-
-  // newest day first; within a day, most recently added first
-  const monthEntries = entriesForMonth(currentMonth).map((e,i)=>[e,i]).sort((a,b)=> a[0].date < b[0].date ? 1 : a[0].date > b[0].date ? -1 : b[1]-a[1]).map(x=>x[0]);
+  const monthEntries = sortEntries(entriesForMonth(now));
   const income = eff.income || 0;
   const fixed = eff.fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
   const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
   const remaining = income - fixed - variable;
 
-    document.getElementById('statFixed').textContent = fmt(fixed);
+  renderHero(income, remaining, variable, monthEntries);
+  renderDueCard();
+  renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries);
+
+  const RECENT = 5;
+  renderEntryList(document.getElementById('recentList'), monthEntries, RECENT, false);
+  document.getElementById('recentEmpty').style.display = monthEntries.length === 0 ? 'block' : 'none';
+  document.getElementById('recentAllBtn').style.display = monthEntries.length ? '' : 'none';
+  document.getElementById('recentCount').textContent = monthEntries.length ? `${monthEntries.length} รายการ` : '';
+}
+
+// Month-scoped tabs (รายการ, ภาพรวม, ตั้งค่า) all follow currentMonth.
+function renderMonthViews(){
+  const label = monthLabelStr(currentMonth);
+  document.querySelectorAll('.month-label').forEach(el => el.textContent = label);
+  const isNow = monthKey(currentMonth) === monthKey(new Date());
+  document.querySelectorAll('.today-pill').forEach(el => el.style.display = isNow ? 'none' : '');
+  document.getElementById('stripGroup').setAttribute('aria-label', isNow ? 'สรุปเดือนนี้' : 'สรุป ' + viewedMonthWord());
+
+  const mKeyStr = monthKey(currentMonth);
+  const eff = getEffectiveSettings(mKeyStr);
+  const monthEntries = sortEntries(entriesForMonth(currentMonth));
+  const income = eff.income || 0;
+  const fixed = eff.fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
+  const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
+  const remaining = income - fixed - variable;
+
+  document.getElementById('statFixed').textContent = fmt(fixed);
   document.getElementById('statVariable').textContent = fmt(variable);
   const remEl = document.getElementById('statRemaining');
   remEl.textContent = fmt(remaining);
   remEl.className = 'v' + (remaining < 0 ? ' neg' : '');
-  document.getElementById('todayBtn').style.display = mKeyStr === monthKey(new Date()) ? 'none' : '';
 
-  renderHero(income, remaining, variable, monthEntries);
-
-  renderEntryList(monthEntries);
+  pruneFilters();
+  renderFilterChips();
+  renderEntriesTab(monthEntries);
 
   renderBudgetCard(getEffectiveBudgets(mKeyStr), monthEntries);
+  renderInstallCard(eff.fixedItems);
   renderCompareChart();
   renderHeatmap();
   renderPieChart(monthEntries, eff.fixedItems);
@@ -1071,16 +1740,90 @@ function render(){
 
 function isoOf(d){ return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); }
 
-function renderEntryList(monthEntries){
-  const list = document.getElementById('entryList');
+// newest day first; within a day, most recently added first
+function sortEntries(arr){
+  return arr.map((e,i)=>[e,i]).sort((a,b)=> a[0].date < b[0].date ? 1 : a[0].date > b[0].date ? -1 : b[1]-a[1]).map(x=>x[0]);
+}
+
+/* ---------- Search & filter (F5) ---------- */
+let filterText = '', filterCats = new Set(), searchAll = false;
+let filterTimer = null;
+function filterActive(){ return !!filterText.trim() || filterCats.size > 0 || searchAll; }
+function pruneFilters(){ [...filterCats].forEach(n => { if(!findCat(n)) filterCats.delete(n); }); }
+function refreshEntryList(){ renderEntriesTab(sortEntries(entriesForMonth(currentMonth))); }
+function updateFilterSummary(){
+  const parts = [];
+  if(searchAll) parts.push('ทุกเดือน');
+  if(filterCats.size) parts.push(filterCats.size + ' หมวด');
+  document.getElementById('filterSummary').textContent = parts.length ? '(' + parts.join(', ') + ')' : '';
+  const b = document.getElementById('searchAllBtn');
+  b.setAttribute('aria-pressed', searchAll ? 'true' : 'false');
+}
+function renderFilterChips(){
+  const box = document.getElementById('filterChips');
+  box.innerHTML = '';
+  const mk = (label, color, pressed, fn)=>{
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'fchip';
+    b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    b.innerHTML = (color ? `<span class="dot" style="background:${color}" aria-hidden="true"></span>` : '') + escapeHtml(label);
+    b.addEventListener('click', fn);
+    box.appendChild(b);
+    return b;
+  };
+  const all = mk('ทั้งหมด', null, filterCats.size === 0, ()=>{ filterCats.clear(); syncFilterChips(); refreshEntryList(); });
+  all.dataset.all = '1';
+  state.categories.forEach(c=>{
+    const b = mk(c.name + (c.archived ? ' (ซ่อน)' : ''), categoryColor(c.name), filterCats.has(c.name), ()=>{
+      if(filterCats.has(c.name)) filterCats.delete(c.name); else filterCats.add(c.name);
+      syncFilterChips(); refreshEntryList();
+    });
+    b.dataset.cat = c.name;
+  });
+  updateFilterSummary();
+}
+// Update pressed state in place so focus is never lost while toggling.
+function syncFilterChips(){
+  document.querySelectorAll('#filterChips .fchip').forEach(b=>{
+    const on = b.dataset.all ? filterCats.size === 0 : filterCats.has(b.dataset.cat);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  updateFilterSummary();
+}
+function fmtThaiDateYear(str){
+  return parseISODate(str).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
+}
+
+// รายการ tab: full list of currentMonth with search/filter, plus its title and counters.
+function renderEntriesTab(monthEntries){
+  const { active, source } = renderEntryList(document.getElementById('entryList'), monthEntries, null, true);
+  const word = viewedMonthWord();
+  document.getElementById('entriesTitle').textContent = active && searchAll ? 'รายการทุกเดือน' : (word === 'เดือนนี้' ? 'รายการเดือนนี้' : 'รายการ ' + word);
+  document.getElementById('emptyMsgTxt').textContent = 'ยังไม่มีรายการ' + word;
+  const result = document.getElementById('resultLine');
+  if(active){
+    const sum = source.reduce((s,e)=> s + e.amount, 0);
+    result.textContent = source.length ? `${source.length} รายการ รวม ${fmt(sum)}` : 'ไม่เจอรายการที่ค้นหา';
+  }else{
+    result.textContent = '';
+  }
+  document.getElementById('emptyMsg').style.display = (!active && monthEntries.length === 0) ? 'block' : 'none';
+  document.getElementById('entryCount').textContent = (!active && monthEntries.length) ? `${monthEntries.length} รายการ` : '';
+}
+
+// Day-grouped rows into `list`. `limit`: max rows (null = all). `useFilters`: apply search/filter (F5).
+function renderEntryList(list, monthEntries, limit, useFilters){
   list.innerHTML = '';
-  document.getElementById('emptyMsg').style.display = monthEntries.length ? 'none' : 'block';
-  document.getElementById('entryCount').textContent = monthEntries.length ? `${monthEntries.length} รายการ · แตะเพื่อแก้ไข` : '';
-  const LIMIT = 8;
-  const showBtn = document.getElementById('showAllBtn');
-  showBtn.style.display = monthEntries.length > LIMIT ? '' : 'none';
-  showBtn.textContent = showAllEntries ? 'แสดงน้อยลง' : `ดูทั้งหมด (${monthEntries.length} รายการ)`;
-  const shown = showAllEntries ? monthEntries : monthEntries.slice(0, LIMIT);
+  const active = !!useFilters && filterActive();
+  let source = monthEntries;
+  if(active){
+    source = searchAll ? sortEntries(state.entries) : monthEntries;
+    const q = filterText.trim().toLowerCase();
+    source = source.filter(e =>
+      (!filterCats.size || filterCats.has(e.category)) &&
+      (!q || String(e.note || '').toLowerCase().includes(q) || String(e.category).toLowerCase().includes(q)));
+  }
+  const shown = limit ? source.slice(0, limit) : source;
   const today = todayISO();
   const y = new Date(); y.setDate(y.getDate()-1);
   const yesterday = isoOf(y);
@@ -1088,8 +1831,8 @@ function renderEntryList(monthEntries){
   shown.forEach(e=>{
     if(e.date !== lastDate){
       lastDate = e.date;
-      const total = monthEntries.filter(x => x.date === e.date).reduce((s,x)=> s + x.amount, 0);
-      const label = (e.date === today ? 'วันนี้ · ' : e.date === yesterday ? 'เมื่อวาน · ' : '') + fmtThaiDate(e.date);
+      const total = source.filter(x => x.date === e.date).reduce((s,x)=> s + x.amount, 0);
+      const label = (e.date === today ? 'วันนี้ ' : e.date === yesterday ? 'เมื่อวาน ' : '') + (active && searchAll ? fmtThaiDateYear(e.date) : fmtThaiDate(e.date));
       const head = document.createElement('div');
       head.className = 'day-head';
       head.innerHTML = `<span>${escapeHtml(label)}</span><span>${fmt(total)}</span>`;
@@ -1098,11 +1841,12 @@ function renderEntryList(monthEntries){
     const row = document.createElement('div');
     row.className = 'entry-row';
     row.dataset.id = e.id;
-    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไขรายการ ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${e.note ? `<span class="entry-note">${escapeHtml(e.note)}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button><button type="button" class="del" aria-label="ลบ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`;
-    row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id));
+    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${e.note ? `<span class="entry-note">${escapeHtml(e.note)}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button><button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`;
+    row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, list.id));
     row.querySelector('.del').addEventListener('click', ()=> askDeleteEntry(e.id));
     list.appendChild(row);
   });
+  return { active, source, shown };
 }
 
 function renderHero(income, remaining, variable, monthEntries){
@@ -1119,18 +1863,17 @@ function renderHero(income, remaining, variable, monthEntries){
 
   // No income yet: a prompt instead of a hidden card, so first-run isn't a wall of ฿0.
   if(!(income > 0)){
-    label.textContent = 'ตั้งรายได้ก่อน เพื่อดูว่าวันนี้ใช้ได้เท่าไหร่';
+    label.textContent = 'ตั้งรายได้ก่อน จะได้รู้ว่าวันนี้ใช้ได้เท่าไหร่';
     value.style.display = 'none';
     cta.style.display = '';
     return;
   }
 
-  const dim = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate();
   const now = new Date();
-  const viewKey = monthKey(currentMonth), todayKey = monthKey(now);
+  const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
 
   let cls = '', html = '', html2 = '';
-  if(viewKey === todayKey){
+  {
     const d = now.getDate();
     const today = todayISO();
     const todaySpent = monthEntries.filter(e => e.date === today).reduce((s,e)=> s + e.amount, 0);
@@ -1140,7 +1883,7 @@ function renderHero(income, remaining, variable, monthEntries){
       label.textContent = 'ใช้เกินรายได้แล้ว';
       value.textContent = fmt(Math.abs(remaining));
       cls = 'neg';
-      html = `ที่ผ่านมาใช้เฉลี่ย ${fmt(avg)}/วัน`;
+      html = `เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)}`;
     }else{
       // Stable for the whole day: today's spending is added back before dividing.
       const dailyAllowance = (remaining + todaySpent) / daysLeft;
@@ -1150,15 +1893,15 @@ function renderHero(income, remaining, variable, monthEntries){
         value.textContent = fmt(todayLeft);
         cls = 'pos';
       }else{
-        label.textContent = 'วันนี้ใช้เกินไป';
+        label.textContent = 'วันนี้ใช้เกินแล้ว';
         value.textContent = fmt(Math.abs(todayLeft));
         cls = 'warn';
       }
-      html = `ใช้ได้วันละ ${fmt(dailyAllowance)} · เหลือ ${daysLeft} วัน`;
+      html = `ใช้ได้วันละ ${fmt(dailyAllowance)} อีก ${daysLeft} วันจะสิ้นเดือน`;
       if(d >= 3){
         html2 = avg > dailyAllowance
-          ? `<span class="warn">ที่ผ่านมาใช้เฉลี่ย ${fmt(avg)}/วัน — ใช้เร็วกว่าที่ควร</span>`
-          : `ที่ผ่านมาใช้เฉลี่ย ${fmt(avg)}/วัน`;
+          ? `<span class="warn">เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)} เร็วกว่าที่ควร</span>`
+          : `เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)}`;
       }
       // Meter: how much of today's allowance is already used.
       if(dailyAllowance > 0){
@@ -1170,16 +1913,6 @@ function renderHero(income, remaining, variable, monthEntries){
         fill.className = todayLeft >= 0 ? '' : 'warn';
       }
     }
-  }else if(viewKey < todayKey){
-    label.textContent = 'ใช้เฉลี่ยต่อวัน (ทั้งเดือน)';
-    value.textContent = fmt(variable / dim);
-    html = remaining >= 0
-      ? `<span class="pos">เหลือเก็บ ${fmt(remaining)}</span>`
-      : `<span class="neg">ใช้เกินรายได้ ${fmt(Math.abs(remaining))}</span>`;
-  }else{
-    label.textContent = 'ใช้ได้วันละ (ประมาณการ)';
-    value.textContent = fmt(Math.max(remaining, 0) / dim);
-    html = `ทั้งเดือน ${dim} วัน`;
   }
   value.className = 'hero-value ' + cls;
   card.className = 'card hero ' + cls;
@@ -1190,17 +1923,15 @@ function renderHero(income, remaining, variable, monthEntries){
 function renderBudgetCard(budgets, monthEntries){
   const body = document.getElementById('budgetBody');
   body.innerHTML = '';
-  const cats = CATEGORY_ORDER.filter(c => budgets[c] > 0);
+  // All categories with a budget, archived ones included (so past months still show their budgets).
+  const cats = state.categories.map(c => c.name).filter(c => budgets[c] > 0);
   if(!cats.length){
-    body.innerHTML = '<div class="empty" style="padding:4px 0 12px;">ยังไม่ได้ตั้งงบรายหมวด — ตั้งงบเพื่อดูว่าแต่ละหมวดใช้ไปเท่าไหร่</div>';
+    body.innerHTML = '<div class="empty" style="padding:4px 0 12px;">ยังไม่ได้ตั้งงบ ตั้งไว้จะได้เห็นว่าแต่ละหมวดใช้ไปเท่าไหร่</div>';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'secondary';
     btn.textContent = 'ตั้งงบ';
-    btn.addEventListener('click', ()=>{
-      document.getElementById('settingsDetails').open = true;
-      document.getElementById('budgetSettings').scrollIntoView({ behavior:'smooth', block:'start' });
-    });
+    btn.addEventListener('click', openBudgetSettings);
     body.appendChild(btn);
     return;
   }
@@ -1216,6 +1947,80 @@ function renderBudgetCard(budgets, monthEntries){
       <div class="budget-head"><span class="name"><span class="dot" style="background:${categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}</span><span class="nums">${fmt(spent)} / ${fmt(budget)}</span></div>
       <div class="bar" role="progressbar" aria-label="งบ ${escapeHtml(cat)}" aria-valuemin="0" aria-valuemax="${budget}" aria-valuenow="${Math.min(Math.round(spent), budget)}"><span class="${barCls}" style="width:${Math.min(ratio,1)*100}%"></span></div>
       <div class="budget-foot${over ? ' neg' : ''}">${over ? 'เกิน ' + fmt(spent - budget) : 'เหลือ ' + fmt(budget - spent)}</div>`;
+    body.appendChild(row);
+  });
+}
+
+/* ---------- Budget alert (วันนี้) ---------- */
+// Categories at 80% or more of their budget this calendar month. Colour plus the words เหลือ / เกิน.
+function renderBudgetAlert(budgets, monthEntries){
+  const btn = document.getElementById('budgetAlert');
+  const spentBy = {};
+  monthEntries.forEach(e=>{ spentBy[e.category] = (spentBy[e.category]||0) + e.amount; });
+  const hits = state.categories.map(c => c.name).filter(n => budgets[n] > 0 && spentBy[n] / budgets[n] >= 0.8)
+    .map(n => ({ name:n, budget:budgets[n], spent:spentBy[n], ratio:spentBy[n] / budgets[n] }))
+    .sort((a,b)=> b.ratio - a.ratio);
+  btn.style.display = hits.length ? '' : 'none';
+  if(!hits.length){ btn.innerHTML = ''; return; }
+  const anyOver = hits.some(h => h.spent > h.budget);
+  btn.className = 'budget-alert ' + (anyOver ? 'neg' : 'warn');
+  const lines = hits.slice(0, 2).map(h=>{
+    const over = h.spent > h.budget;
+    const tail = over ? `เกิน ${fmt(h.spent - h.budget)}` : `เหลือ ${fmt(h.budget - h.spent)}`;
+    return `<span class="ba-line ${over ? 'neg' : 'warn'}">${escapeHtml(h.name)} ใช้ไป ${Math.round(h.ratio * 100)}% ${tail}</span>`;
+  });
+  if(hits.length > 2) lines.push(`<span class="ba-more">อีก ${hits.length - 2} หมวด</span>`);
+  btn.innerHTML = `<span class="ba-lines"><span class="sr-only">ดูภาพรวมงบ </span>${lines.join('')}</span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
+}
+
+/* ---------- Upcoming payments (F3) ---------- */
+// Items due within the next 7 days (today included), wrapping into next month.
+// dueDay beyond the month's length falls on the last day of that month.
+function upcomingPayments(now){
+  const out = [];
+  const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  for(let off = 0; off <= 7; off++){
+    const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + off);
+    const dim = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    getEffectiveSettings(monthKey(d)).fixedItems.forEach(it=>{
+      if(!(it.dueDay >= 1) || !(it.amount > 0)) return;
+      if(Math.min(it.dueDay, dim) === d.getDate()) out.push({ off, name: it.name || 'รายการ', amount: it.amount });
+    });
+  }
+  return out;
+}
+function renderDueCard(){
+  const card = document.getElementById('dueCard');
+  const list = document.getElementById('dueList');
+  list.innerHTML = '';
+  const now = new Date();
+  const items = upcomingPayments(now);
+  card.style.display = items.length ? '' : 'none';
+  items.forEach(p=>{
+    const li = document.createElement('li');
+    if(p.off === 0) li.className = 'today';
+    li.textContent = `${p.name} ${fmt(p.amount)} ${p.off === 0 ? 'ตัดวันนี้' : 'ตัดอีก ' + p.off + ' วัน'}`;
+    list.appendChild(li);
+  });
+}
+
+/* ---------- Installments card (F2) ---------- */
+function renderInstallCard(fixedItems){
+  const mKey = monthKey(currentMonth);
+  const card = document.getElementById('installCard');
+  const body = document.getElementById('installBody');
+  body.innerHTML = '';
+  const items = fixedItems.filter(i => { const inf = installmentInfo(i, mKey); return inf && inf.status === 'active'; });
+  card.style.display = items.length ? '' : 'none';
+  items.forEach(it=>{
+    const inf = installmentInfo(it, mKey);
+    const nm = escapeHtml(it.name || 'รายการ');
+    const row = document.createElement('div');
+    row.className = 'budget-row';
+    row.innerHTML = `
+      <div class="budget-head"><span class="name">${nm}</span><span class="nums">เดือนละ ${fmt(it.amount || 0)}</span></div>
+      <div class="bar inst" role="progressbar" aria-label="${nm} ผ่อนไปแล้วงวดที่ ${inf.termNo} จาก ${inf.total}" aria-valuemin="0" aria-valuemax="${inf.total}" aria-valuenow="${inf.termNo}"><span style="width:${inf.termNo / inf.total * 100}%"></span></div>
+      <div class="budget-foot">${escapeHtml(installmentText(it, mKey)).replace(/\n/g, '<br>')}</div>`;
     body.appendChild(row);
   });
 }
@@ -1259,13 +2064,13 @@ function renderCompareChart(){
   const prevCum = cumulative(prev, prev.length);
 
   if(upto === 0){
-    note.textContent = 'เดือนนี้ยังไม่เริ่ม';
+    note.textContent = viewedMonthWord() + ' ยังไม่เริ่ม';
   }else{
     const prevAt = prevCum[Math.min(upto, prev.length) - 1];
     const diff = curCum[upto-1] - prevAt;
     const when = upto === cur.length && monthKey(currentMonth) !== monthKey(new Date()) ? 'ทั้งเดือน' : `ถึงวันที่ ${upto}`;
     note.innerHTML = diff === 0
-      ? `${when} ใช้เท่ากับเดือนก่อน`
+      ? `${when} ใช้เท่าเดือนก่อน`
       : `${when} ใช้<span class="${diff > 0 ? 'more' : 'less'}">${diff > 0 ? 'มากกว่า' : 'น้อยกว่า'}เดือนก่อน ${fmt(Math.abs(diff))}</span>`;
   }
 
@@ -1340,26 +2145,28 @@ function renderPieChart(monthEntries, fixedItems){
     colors.push(FIXED_COLOR);
   }
 
-  const byCat = {};
-  monthEntries.forEach(e=>{ byCat[e.category] = (byCat[e.category]||0) + e.amount; });
-  // Walk the predetermined category order first so colors/order stay stable,
-  // then append any leftover (e.g. legacy) category names in the neutral colour.
-  CATEGORY_ORDER.forEach(cat=>{
-    if(byCat[cat]){
-      labels.push(cat);
-      data.push(byCat[cat]);
-      colors.push(categoryColor(cat));
-      delete byCat[cat];
+  // Coloured categories in fixed slot order; every category without a slot is grouped as `อื่นๆ`.
+  const byCat = {}, otherParts = {};
+  monthEntries.forEach(e=>{
+    const g = chartGroup(e.category);
+    byCat[g] = (byCat[g]||0) + e.amount;
+    if(g === 'อื่นๆ') otherParts[e.category] = (otherParts[e.category]||0) + e.amount;
+  });
+  colouredCatsBySlot().forEach(c=>{
+    if(byCat[c.name]){
+      labels.push(c.name);
+      data.push(byCat[c.name]);
+      colors.push(categoryColor(c.name));
     }
   });
-  Object.keys(byCat).forEach(cat=>{
-    labels.push(cat);
-    data.push(byCat[cat]);
-    colors.push(categoryColor(cat));
-  });
+  if(byCat['อื่นๆ']){
+    labels.push('อื่นๆ');
+    data.push(byCat['อื่นๆ']);
+    colors.push(NEUTRAL_COLOR);
+  }
 
   const ctx = document.getElementById('pieChart').getContext('2d');
-  if(pieChart) pieChart.destroy();
+  if(pieChart){ pieChart.destroy(); pieChart = null; }
   if(labels.length === 0){
     ctx.clearRect(0,0,9999,9999);
     return;
@@ -1373,41 +2180,114 @@ function renderPieChart(monthEntries, fixedItems){
         legend: { position: 'right', labels: { color: '#F5F4EE', boxWidth: 12, font:{size:11} } },
         tooltip: { callbacks: {
           label: it => ` ${it.label}: ${fmt(it.parsed)}`,
-          afterLabel: it => it.label === 'รายการประจำ' ? [`การเงิน ${fmt(financingTotal)} · ค่าสมาชิก ${fmt(subscriptionTotal)}`] : []
+          afterLabel: it => it.label === 'รายการประจำ' ? [`ผ่อน/ลงทุน ${fmt(financingTotal)}, ค่าสมาชิก ${fmt(subscriptionTotal)}`]
+            : (it.label === 'อื่นๆ' && Object.keys(otherParts).some(n => n !== 'อื่นๆ')) ? Object.keys(otherParts).map(n => `${n} ${fmt(otherParts[n])}`) : []
         } }
       }
     }
   });
 }
 
-function renderTrendChart(){
-  if(!chartAvailable('trendChart')) return;
+/* ---------- Trend (F4): stacked bars + income line ---------- */
+let trendRange = 6;
+
+// Month-by-month data shared by the chart and the text table.
+function trendSeries(n){
   const months = [];
-  for(let i=5;i>=0;i--){
-    months.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth()-i, 1));
-  }
-  const labels = months.map(d => d.toLocaleString('th-TH',{month:'short'}));
-  const spendData = months.map(d=>{
-    const variable = entriesForMonth(d).reduce((s,e)=>s+e.amount,0);
-    return variable + fixedTotal(monthKey(d));
+  for(let i = n-1; i >= 0; i--) months.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth()-i, 1));
+  const keys = months.map(monthKey);
+  const fixed = keys.map(k => fixedTotal(k));
+  const income = keys.map(k => getEffectiveSettings(k).income || 0);
+  const series = colouredCatsBySlot().map(c => ({ label:c.name, color:SLOT_COLORS[c.slot], data: keys.map(()=>0) }));
+  const idx = new Map(series.map((s,i)=>[s.label, i]));
+  const other = keys.map(()=>0);
+  state.entries.forEach(e=>{
+    const mi = keys.indexOf(e.date.slice(0,7));
+    if(mi < 0) return;
+    const si = idx.get(e.category);
+    if(si !== undefined) series[si].data[mi] += e.amount; else other[mi] += e.amount;
+  });
+  const bars = [{ label:'รายการประจำ', color:FIXED_COLOR, data:fixed }]
+    .concat(series.filter(s => s.data.some(v => v > 0)));
+  if(other.some(v => v > 0)) bars.push({ label:'อื่นๆ', color:NEUTRAL_COLOR, data:other });
+  const totals = keys.map((_,i)=> bars.reduce((s,b)=> s + b.data[i], 0));
+  return { months, keys, bars, income, totals };
+}
+
+function renderTrendTable(t){
+  const tbl = document.getElementById('trendTable');
+  const mlabel = d => d.toLocaleString('th-TH', { month:'short', year:'numeric' });
+  let html = '<thead><tr><th scope="col">เดือน</th>' + t.bars.map(b => `<th scope="col">${escapeHtml(b.label)}</th>`).join('') + '<th scope="col">รวม</th><th scope="col">รายได้</th></tr></thead><tbody>';
+  t.months.forEach((d,i)=>{
+    html += `<tr><td>${escapeHtml(mlabel(d))}</td>` + t.bars.map(b => `<td>${b.data[i] > 0 ? fmt(b.data[i]) : '-'}</td>`).join('') + `<td>${fmt(t.totals[i])}</td><td>${t.income[i] > 0 ? fmt(t.income[i]) : '-'}</td></tr>`;
+  });
+  tbl.innerHTML = html + '</tbody>';
+}
+
+function setTrendRange(n){
+  trendRange = n === 12 ? 12 : 6;
+  try{ localStorage.setItem(TREND_KEY, String(trendRange)); }catch(e){}
+  document.getElementById('trend6').setAttribute('aria-pressed', trendRange === 6 ? 'true' : 'false');
+  document.getElementById('trend12').setAttribute('aria-pressed', trendRange === 12 ? 'true' : 'false');
+  renderTrendChart();
+}
+
+function renderTrendChart(){
+  const t = trendSeries(trendRange);
+  renderTrendTable(t);
+  if(!chartAvailable('trendChart')) return;
+
+  const TEXT = '#F5F4EE', MUTED = '#A8A296';
+  // top-most non-zero bar segment of each month gets the rounded corners
+  const topIdx = t.keys.map((_,mi)=>{ let top = -1; t.bars.forEach((b,di)=>{ if(b.data[mi] > 0) top = di; }); return top; });
+  const datasets = t.bars.map(b => ({
+    type:'bar', label:b.label, data:b.data, stack:'spend', order:1,
+    backgroundColor:b.color, borderColor:'#2D2C2A', borderWidth:2, borderSkipped:false,
+    borderRadius: c => topIdx[c.dataIndex] === c.datasetIndex ? { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } : 0
+  }));
+  // Income is baht too: same y-axis as the bars (never a second axis).
+  datasets.push({
+    type:'line', label:'รายได้', data:t.income.map(v => v > 0 ? v : null), order:0,
+    borderColor:TEXT, backgroundColor:TEXT, borderWidth:2, borderDash:[6,4], tension:0, fill:false, spanGaps:false,
+    pointRadius:5, pointHoverRadius:6, pointStyle:'circle'
   });
 
   const ctx = document.getElementById('trendChart').getContext('2d');
   if(trendChart) trendChart.destroy();
   trendChart = new Chart(ctx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'รายจ่ายรวม', data: spendData, backgroundColor: '#E5726A' }
-      ]
-    },
+    data: { labels: t.months.map(d => d.toLocaleString('th-TH', { month:'short' })), datasets },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#F5F4EE', font:{size:11} } } },
-      scales: {
-        x: { ticks:{color:'#A8A296'}, grid:{color:'#46443F'} },
-        y: { ticks:{color:'#A8A296'}, grid:{color:'#46443F'} }
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      onClick:(evt, els, chart)=>{
+        const hit = chart.getElementsAtEventForMode(evt, 'nearest', { intersect:true }, true);
+        if(!hit.length) return;
+        const d = t.months[hit[0].index];
+        if(monthKey(d) === monthKey(currentMonth)) return;
+        // Deferred: render() rebuilds this chart, which must not happen inside its own event handler.
+        setTimeout(()=>{ currentMonth = new Date(d.getFullYear(), d.getMonth(), 1); render(); }, 0);
+      },
+      plugins:{
+        legend:{ position:'bottom', labels:{ color:TEXT, boxWidth:12, font:{size:11}, padding:12 } },
+        tooltip:{
+          backgroundColor:'#34322F', borderColor:'#46443F', borderWidth:1,
+          titleColor:TEXT, bodyColor:TEXT, footerColor:TEXT, footerFont:{ weight:'bold' },
+          itemSort:(a,b)=>{
+            const la = a.dataset.type === 'line', lb = b.dataset.type === 'line';
+            return la !== lb ? (la ? 1 : -1) : b.datasetIndex - a.datasetIndex;
+          },
+          filter: it => it.dataset.type === 'line' ? it.parsed.y !== null : it.parsed.y > 0,
+          callbacks:{
+            title: items => items.length ? monthLabelStr(t.months[items[0].dataIndex]) : '',
+            label: it => ` ${it.dataset.label}: ${fmt(it.parsed.y)}`,
+            footer: items => items.length ? `รวม ${fmt(t.totals[items[0].dataIndex])}` : ''
+          }
+        }
+      },
+      scales:{
+        x:{ stacked:true, ticks:{ color:MUTED, maxRotation:0, autoSkip:false, font:{ size: t.months.length > 6 ? 10 : 12 } }, grid:{ color:'#46443F' } },
+        y:{ stacked:true, beginAtZero:true, ticks:{ color:MUTED, callback:v => compactMoney(v) }, grid:{ color:'#46443F' } }
       }
     }
   });
@@ -1436,28 +2316,28 @@ async function importData(event){
     try{
       parsed = JSON.parse(e.target.result);
     }catch(err){
-      flashToast('ไม่สามารถอ่านไฟล์นี้ได้ ตรวจสอบไฟล์อีกครั้ง', false);
+      flashToast('อ่านไฟล์นี้ไม่ได้ ลองเช็กไฟล์อีกที', false);
       return;
     }
     if(!parsed || (!parsed.settings && !parsed.monthlySettings) || !Array.isArray(parsed.entries)){
-      flashToast('ไฟล์นี้ไม่ใช่ไฟล์สำรองข้อมูลที่ถูกต้อง', false);
+      flashToast('ไฟล์นี้ใช้เป็นไฟล์สำรองไม่ได้', false);
       return;
     }
     openConfirm({
-      title: 'นำเข้าข้อมูลนี้?',
-      desc: 'ข้อมูลปัจจุบันทั้งหมดจะถูกแทนที่ด้วยข้อมูลในไฟล์',
+      title: 'นำเข้าไฟล์นี้ไหม?',
+      desc: 'ข้อมูลที่มีตอนนี้จะถูกแทนด้วยข้อมูลในไฟล์',
       confirmLabel: 'นำเข้า',
       onConfirm: async ()=>{
         try{
           state = migrateState(parsed);
         }catch(err){
-          flashToast('ไม่สามารถอ่านไฟล์นี้ได้ ตรวจสอบไฟล์อีกครั้ง', false);
+          flashToast('อ่านไฟล์นี้ไม่ได้ ลองเช็กไฟล์อีกที', false);
           return;
         }
         await saveData();
         initForm();
         render();
-        flashToast('นำเข้าข้อมูลสำเร็จ', true);
+        flashToast('นำเข้าแล้ว', true);
       }
     });
   };
@@ -1466,8 +2346,8 @@ async function importData(event){
 
 function clearAllData(){
   openConfirm({
-    title: 'ล้างข้อมูลทั้งหมด?',
-    desc: 'ย้อนกลับไม่ได้ แนะนำให้ดาวน์โหลดข้อมูลสำรองไว้ก่อน',
+    title: 'ล้างข้อมูลทั้งหมดไหม?',
+    desc: 'ล้างแล้วเอากลับมาไม่ได้ ควรสำรองข้อมูลไว้ก่อน',
     confirmLabel: 'ล้างข้อมูล',
     onConfirm: ()=>{
       try{
@@ -1485,12 +2365,36 @@ function clearAllData(){
 function setupUi(){
   document.getElementById('entryDate').addEventListener('input', updateDateSummary);
   document.getElementById('entryNote').addEventListener('input', updateDateSummary);
-  const ov = document.getElementById('overviewDetails');
-  try{ if(localStorage.getItem(OVERVIEW_KEY) === '1') ov.open = true; }catch(e){}
-  ov.addEventListener('toggle', ()=>{
-    try{ localStorage.setItem(OVERVIEW_KEY, ov.open ? '1' : '0'); }catch(e){}
-    if(ov.open) [compareChart, pieChart, trendChart].forEach(c => c && c.resize());
+  document.querySelectorAll('[data-month-nav]').forEach(el => { el.innerHTML = MONTH_NAV_HTML; });
+  document.querySelectorAll('#tabBar button').forEach(b => b.addEventListener('click', ()=> goTab(b.dataset.tab)));
+  window.addEventListener('hashchange', ()=>{ const t = tabFromHash(); if(t !== activeTab) applyTab(t); });
+  try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
+  // The bottom bar would float above the iOS keyboard: hide it while a field has focus.
+  const isField = el => !!el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=file]):not([type=range]), select, textarea');
+  let kbTimer = null;
+  document.addEventListener('focusin', ev=>{
+    clearTimeout(kbTimer);
+    document.body.classList.toggle('kb-open', isField(ev.target));
   });
+  document.addEventListener('focusout', ()=>{
+    clearTimeout(kbTimer);
+    kbTimer = setTimeout(()=>{ if(!isField(document.activeElement)) document.body.classList.remove('kb-open'); }, 150);
+  });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) renderToday(); });
+  try{ if(localStorage.getItem(TREND_KEY) === '12') trendRange = 12; }catch(e){}
+  document.getElementById('trend6').setAttribute('aria-pressed', trendRange === 6 ? 'true' : 'false');
+  document.getElementById('trend12').setAttribute('aria-pressed', trendRange === 12 ? 'true' : 'false');
+  document.getElementById('trend6').addEventListener('click', ()=> setTrendRange(6));
+  document.getElementById('trend12').addEventListener('click', ()=> setTrendRange(12));
+  document.getElementById('entrySearch').addEventListener('input', ev=>{
+    const v = ev.target.value;
+    clearTimeout(filterTimer);
+    filterTimer = setTimeout(()=>{ filterText = v; updateFilterSummary(); refreshEntryList(); }, 150);
+  });
+  document.getElementById('searchAllBtn').addEventListener('click', ()=>{ searchAll = !searchAll; updateFilterSummary(); refreshEntryList(); });
+  document.getElementById('addCatBtn').addEventListener('click', addCategory);
+  document.getElementById('newCatName').addEventListener('keydown', ev=>{ if(ev.key === 'Enter'){ ev.preventDefault(); addCategory(); } });
+  document.getElementById('newCatName').addEventListener('input', ()=>{ setCatMsg(''); document.getElementById('newCatName').removeAttribute('aria-invalid'); });
 }
 
 async function init(){
@@ -1501,6 +2405,8 @@ async function init(){
   setupUi();
   initForm();
   render();
+  // Always open on วันนี้ unless the URL carries a valid tab hash.
+  applyTab(TABS.includes(location.hash.replace(/^#/, '')) ? tabFromHash() : 'today', { keepScroll:true });
 }
 init();
 

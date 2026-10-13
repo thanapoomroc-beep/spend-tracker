@@ -1,4 +1,4 @@
-const CACHE = 'spend-tracker-v3';
+const CACHE = 'spend-tracker-v5';
 const CHART_URL = 'https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js';
 const LOCAL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
