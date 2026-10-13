@@ -1,4 +1,4 @@
-const CACHE = 'spend-tracker-v2';
+const CACHE = 'spend-tracker-v3';
 const CHART_URL = 'https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js';
 const LOCAL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -6,8 +6,8 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await cache.addAll(LOCAL);
-    // The page loads Chart.js with crossorigin=anonymous (CORS + SRI), so cache a CORS response, not an opaque one.
-    try { await cache.add(new Request(CHART_URL, { mode: 'cors' })); } catch (e) {}
+    // Cache the CDN script separately so a CDN hiccup can never fail the whole install.
+    await cache.add(CHART_URL).catch(() => {});
     await self.skipWaiting();
   })());
 });
@@ -45,7 +45,7 @@ self.addEventListener('fetch', event => {
     if (hit) return hit;
     try {
       const res = await fetch(req);
-      if (res && (res.ok || res.type === 'opaque')) {
+      if (res && res.ok) {
         const cache = await caches.open(CACHE);
         cache.put(req, res.clone());
       }
