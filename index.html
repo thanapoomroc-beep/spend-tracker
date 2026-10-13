@@ -9,8 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ค่าใช้จ่าย">
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEIUlEQVR4nO3dz1HcMBiHYe1OyuBOSdRABZw4caKC1EBJ3OmDHDIwy7/FXkuW5d/zXDN4Pcn3WvIyoxzKRjzf3bz2vgfWc/34dOh9D6WU0u0mDDynegWx6ocaeqZYM4bmH2ToWaJ1DM0ubvCpqVUI1S9q8GmpdgjHmhcz/LRWe8aq1GTw6aHGarB4BTD89FJj9hYFYPjpbekMXrSEGHy26JIt0ewVwPCzVZfM5qwADD9bN3dGJwdg+BnFnFmt+nsAGM2kADz9Gc3Umf31rdnw57i6/3vxz7483Fa8k3p++2bo7B8a/gxLBv+zLYZwLgLvAOFqDn+L67X2YwCe/vvXali3FsG5Wf42AMO/f62HdJQIbIGI9iUAT//9W+vpPMIqYAUg2ocAPP3Zu88zbgUgmgCI9h6A7Q8pTmfdCkA0ARDtWIrtD3neZt4KQDQBEE0ARDva/5Pq+e7m1QpANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARPvT+wYS7PHU5b0QQEM1DoZ6u4YQ2rAFaiT91OVRCKCBlFOX90AAlaWdujw6ARBNABWlnro8MgEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0YY+HNepyyw1ZABOXaaW4bZATl2mpqECcOoytQ0TgFOXaWGYAKCFIQJw6jKtDBEAtCIAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKINEcDLw+0Qn+M++3zOEkMEAK0ME0Drp0mt67vPda5fyzABlNLuL7X2dd3nGMNfymABlJI7BOn32crh+e7mtfdNXOrq/u/FP7vmP5T73K6hA4ClhtsCQU0CIJoAiCYAogmAaAIgmgCIJgCiCYBoAiDa8frx6dD7JqCH68engxWAaAIgmgCIdizl/16o943Amt5m3gpANAEQ7T0A2yBSnM66FYBoAiDahwBsg9i7zzNuBSDalwCsAuzVd7NtBSDatwFYBdibn2b6xxVABOzFuVm2BSLa2QCsAozutxn+dQUQAaOaMruTtkAiYDRTZ9Y7ANEmB2AVYBRzZnXWCiACtm7ujM7eAomArbpkNhcNs/9eiS1Y8lBe9BJsNaC3pTO4+FsgEdBLjdmrOry2RKyh5kO36u8BrAa0VnvGmg2s1YCaWj1cmz+xhcASrXcVq25ZxMAUa26lu+3ZxcCpXu+Pm3lpFUSWrXxh8g9tgCWZI1Y+MQAAAABJRU5ErkJggg==">
-
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
   :root{
@@ -89,11 +89,11 @@
   .month-nav{display:flex; align-items:center; gap:10px; margin-bottom:20px;}
   .month-nav button{width:auto; padding:9px 14px;}
   .month-label{font-size:16px; font-weight:600; flex:1; text-align:center;}
-  .summary{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;}
-  @media (max-width:600px){ .summary{grid-template-columns:1fr;} }
-  .stat{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .summary{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;}
+  @media (max-width:600px){ .summary{grid-template-columns:1fr 1fr;} }
+  .stat{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.25); min-width:0;}
   .stat .label{font-size:11px; color:var(--muted); letter-spacing:.02em; margin-bottom:6px;}
-  .stat .value{font-size:19px; font-weight:700;}
+  .stat .value{font-size:19px; font-weight:700; overflow-wrap:anywhere;}
   .stat.income .value{color:var(--green);}
   .stat.fixed .value{color:var(--amber);}
   .stat.variable .value{color:var(--text);}
@@ -103,7 +103,10 @@
   th,td{text-align:left; padding:9px 6px; border-bottom:1px solid var(--border);}
   th{color:var(--muted); font-weight:600; font-size:11px;}
   td.amt{text-align:right; font-variant-numeric:tabular-nums;}
+  tr.clickable{cursor:pointer;}
+  tr.clickable:hover td{background:var(--panel2);}
   .del{background:none; border:none; color:var(--red); cursor:pointer; width:auto; padding:4px 10px; font-size:17px;}
+  .del:hover{background:none;}
   .empty{color:var(--muted); text-align:center; padding:20px 0; font-size:13px;}
   .tag{display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; background:var(--panel2); border:1px solid var(--border); white-space:nowrap;}
   details summary{cursor:pointer; font-size:13px; color:var(--accent); margin-bottom:12px; font-weight:600;}
@@ -115,17 +118,20 @@
     position:fixed; inset:0; background:rgba(0,0,0,.55);
     display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;
   }
+  #confirmModalOverlay{z-index:1100;}
   .modal-card{
     background:var(--panel); border:1px solid var(--border); border-radius:16px;
-    padding:22px 22px 18px; max-width:340px; width:100%;
+    padding:22px 22px 18px; max-width:340px; width:100%; max-height:90vh; overflow-y:auto;
     box-shadow:0 8px 24px rgba(0,0,0,.4);
   }
   .modal-title{font-size:16px; font-weight:700; margin-bottom:6px;}
-  .modal-desc{font-size:13px; color:var(--muted); margin-bottom:18px;}
+  .modal-desc{font-size:13px; color:var(--muted); margin-bottom:18px; overflow-wrap:anywhere;}
   .modal-actions{display:flex; gap:10px;}
   .modal-actions button{width:auto; flex:1;}
   button.danger{background:var(--red); color:#fff;}
   button.danger:hover{background:#c85f57;}
+  button.link-danger{background:none; color:var(--red); width:auto; padding:10px 0 0; font-size:13px; font-weight:500; display:block; margin:6px auto 0;}
+  button.link-danger:hover{background:none; text-decoration:underline;}
   #loadingOverlay{background:var(--bg); flex-direction:column; gap:12px;}
   .spinner{
     width:28px; height:28px; border-radius:50%;
@@ -137,10 +143,47 @@
     position:fixed; bottom:16px; right:16px; background:var(--panel);
     border:1px solid var(--border); color:var(--muted); font-size:12px;
     padding:8px 14px; border-radius:20px; box-shadow:0 2px 8px rgba(0,0,0,.3);
-    opacity:0; transition:opacity .25s; pointer-events:none; z-index:900;
+    opacity:0; transition:opacity .25s; pointer-events:none; z-index:1200;
   }
   .save-indicator.show{opacity:1;}
   .save-indicator.error{color:var(--red); border-color:var(--red);}
+
+  /* Hero (daily allowance) */
+  .hero{text-align:center; padding:20px 20px 18px;}
+  .hero-label{font-size:13px; color:var(--muted);}
+  .hero-value{font-size:36px; font-weight:700; line-height:1.25; margin:2px 0 4px; overflow-wrap:anywhere;}
+  .hero-sub{font-size:13px; color:var(--muted);}
+  .hero .pos,.hero-sub .pos{color:var(--green);}
+  .hero .warn{color:var(--amber);}
+  .hero .neg,.hero-sub .neg{color:var(--red);}
+
+  /* Entry form */
+  .amount-input{font-size:28px; font-weight:700; padding:12px 14px; margin-bottom:6px;}
+  .field-error{color:var(--red); font-size:12px; min-height:18px; margin-bottom:6px;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .chip{
+    width:auto; display:inline-flex; align-items:center; gap:7px; padding:8px 13px; font-size:14px; font-weight:500;
+    background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:20px;
+  }
+  .chip:hover{background:var(--border);}
+  .chip .dot{width:9px; height:9px; border-radius:50%; flex:0 0 9px;}
+  .chip.active,.chip.active:hover{background:var(--accent); color:#1a1917; border-color:var(--accent);}
+  .chip.active .dot{box-shadow:0 0 0 1.5px #1a1917;}
+
+  /* Budgets */
+  .budget-row{margin-bottom:14px;}
+  .budget-row:last-child{margin-bottom:0;}
+  .budget-head{display:flex; justify-content:space-between; gap:8px; font-size:13px; margin-bottom:5px;}
+  .budget-head .nums{color:var(--muted); font-variant-numeric:tabular-nums; text-align:right;}
+  .bar{height:8px; border-radius:6px; background:var(--panel2); overflow:hidden;}
+  .bar>span{display:block; height:100%; border-radius:6px; background:var(--green);}
+  .bar>span.warn{background:var(--amber);}
+  .bar>span.neg{background:var(--red);}
+  .budget-foot{font-size:12px; color:var(--muted); margin-top:4px;}
+  .budget-foot.neg{color:var(--red);}
+  .budget-set-row{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .budget-set-row span{flex:0 0 110px; font-size:14px;}
+  .budget-set-row input{margin-bottom:0; flex:1;}
 </style>
 </head>
 <body>
@@ -152,54 +195,7 @@
 
 <div class="wrap" id="mainWrap" style="display:none;">
   <h1>ตัวติดตามค่าใช้จ่าย</h1>
-  <div class="sub">บันทึกรายจ่าย ตั้งรายได้และรายการหักประจำเดือน แล้วดูสรุปรายเดือนอัตโนมัติ ข้อมูลของคุณถูกบันทึกไว้ส่วนตัวและจะพร้อมใช้งานทุกครั้งที่คุณเปิดหน้านี้</div>
-
-  <div class="card">
-    <details id="settingsDetails">
-      <summary>⚙ รายได้และรายการหักประจำเดือน (แตะเพื่อแก้ไข)</summary>
-      <div id="settingsMonthLabel" style="font-size:13px; font-weight:600; margin-bottom:2px;"></div>
-      <div style="font-size:11px; color:var(--muted); margin-bottom:12px;">การตั้งค่านี้มีผลตั้งแต่เดือนนี้เป็นต้นไป จนกว่าจะแก้ไขในเดือนถัดไป ค่าเริ่มต้นจะเหมือนเดือนก่อนหน้า ส่วนเดือนก่อนที่ยังไม่เคยตั้งค่าจะไม่มีข้อมูลย้อนหลัง</div>
-      <label>รายได้ต่อเดือน (฿)</label>
-      <input type="number" id="setIncome" min="0" step="1" inputmode="numeric" onchange="updateIncome()">
-
-      <label style="margin-top:4px;">การเงิน (Financing) — เงินลงทุน ผ่อนรถ ฯลฯ</label>
-      <div id="financingList"></div>
-      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('financing')">+ เพิ่มรายการการเงิน</button>
-
-      <label style="margin-top:16px;">ค่าสมาชิก (Subscription) — รายการประจำอื่นๆ</label>
-      <div id="subscriptionList"></div>
-      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('subscription')">+ เพิ่มรายการสมาชิก</button>
-    </details>
-  </div>
-
-  <div class="card">
-    <h2>บันทึกรายจ่าย</h2>
-    <div class="row3">
-      <div>
-        <label>วันที่</label>
-        <input type="date" id="entryDate">
-      </div>
-      <div>
-        <label>จำนวนเงิน (฿)</label>
-        <input type="number" id="entryAmount" min="0" step="1" placeholder="0" inputmode="numeric">
-      </div>
-      <div>
-        <label>หมวดหมู่</label>
-        <select id="entryCategory">
-          <option>อาหาร</option>
-          <option>การเดินทาง</option>
-          <option>สาธารณูปโภค</option>
-          <option>ช้อปปิ้ง</option>
-          <option>สุขภาพ</option>
-          <option>บันเทิง</option>
-          <option>อื่นๆ</option>
-        </select>
-      </div>
-    </div>
-    <label>โน้ต (ไม่บังคับ)</label>
-    <input type="text" id="entryNote" placeholder="เช่น ทานข้าวกับทีม">
-    <button id="addEntryBtn" onclick="addEntry()">เพิ่มรายการ</button>
-  </div>
+  <div class="sub">บันทึกรายจ่ายและดูว่าเหลือใช้ได้วันละเท่าไหร่</div>
 
   <div class="month-nav">
     <button class="secondary" onclick="shiftMonth(-1)">‹ ก่อนหน้า</button>
@@ -207,10 +203,42 @@
     <button class="secondary" onclick="shiftMonth(1)">ถัดไป ›</button>
   </div>
 
+  <div class="card hero" id="heroCard" style="display:none;">
+    <div class="hero-label" id="heroLabel"></div>
+    <div class="hero-value" id="heroValue"></div>
+    <div class="hero-sub" id="heroSub"></div>
+  </div>
+
   <div class="summary">
+    <div class="stat income"><div class="label">รายได้</div><div class="value" id="statIncome">฿0</div></div>
     <div class="stat fixed"><div class="label">รายการประจำ</div><div class="value" id="statFixed">฿0</div></div>
     <div class="stat variable"><div class="label">รายจ่ายทั่วไป</div><div class="value" id="statVariable">฿0</div></div>
     <div class="stat remaining"><div class="label">คงเหลือ</div><div class="value" id="statRemaining">฿0</div></div>
+  </div>
+
+  <div class="card">
+    <h2>บันทึกรายจ่าย</h2>
+    <label for="entryAmount">จำนวนเงิน (฿)</label>
+    <input type="number" id="entryAmount" class="amount-input" min="0" step="0.01" placeholder="0" inputmode="decimal" oninput="clearAmountError()">
+    <div class="field-error" id="amountError"></div>
+    <label>หมวดหมู่</label>
+    <div class="chips" id="categoryChips"></div>
+    <div class="row2">
+      <div>
+        <label for="entryDate">วันที่</label>
+        <input type="date" id="entryDate">
+      </div>
+      <div>
+        <label for="entryNote">โน้ต (ไม่บังคับ)</label>
+        <input type="text" id="entryNote" placeholder="เช่น ทานข้าวกับทีม">
+      </div>
+    </div>
+    <button id="addEntryBtn" onclick="addEntry()">เพิ่มรายการ</button>
+  </div>
+
+  <div class="card" id="budgetCard">
+    <h2>งบรายหมวด</h2>
+    <div id="budgetBody"></div>
   </div>
 
   <div class="grid">
@@ -236,6 +264,27 @@
   </div>
 
   <div class="card">
+    <details id="settingsDetails">
+      <summary>⚙ รายได้และรายการหักประจำเดือน (แตะเพื่อแก้ไข)</summary>
+      <div id="settingsMonthLabel" style="font-size:13px; font-weight:600; margin-bottom:2px;"></div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:12px;">การตั้งค่านี้มีผลตั้งแต่เดือนนี้เป็นต้นไป จนกว่าจะแก้ไขในเดือนถัดไป ค่าเริ่มต้นจะเหมือนเดือนก่อนหน้า ส่วนเดือนก่อนที่ยังไม่เคยตั้งค่าจะไม่มีข้อมูลย้อนหลัง</div>
+      <label>รายได้ต่อเดือน (฿)</label>
+      <input type="number" id="setIncome" min="0" step="1" inputmode="numeric" onchange="updateIncome()">
+
+      <label style="margin-top:4px;">การเงิน (Financing) — เงินลงทุน ผ่อนรถ ฯลฯ</label>
+      <div id="financingList"></div>
+      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('financing')">+ เพิ่มรายการการเงิน</button>
+
+      <label style="margin-top:16px;">ค่าสมาชิก (Subscription) — รายการประจำอื่นๆ</label>
+      <div id="subscriptionList"></div>
+      <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('subscription')">+ เพิ่มรายการสมาชิก</button>
+
+      <label id="budgetSettings" style="margin-top:16px;">งบรายหมวด (ต่อเดือน)</label>
+      <div id="budgetSettingsList"></div>
+    </details>
+  </div>
+
+  <div class="card">
     <h2>สำรองข้อมูล</h2>
     <div class="row2">
       <button class="secondary" onclick="exportData()">ดาวน์โหลดข้อมูลสำรอง (.json)</button>
@@ -248,13 +297,35 @@
   <div class="footer-note">ข้อมูลของคุณถูกบันทึกไว้เป็นส่วนตัว เฉพาะคุณเท่านั้นที่เห็นข้อมูลนี้ แนะนำให้ดาวน์โหลดข้อมูลสำรองเป็นระยะ</div>
 </div>
 
-<div id="deleteModalOverlay" class="modal-overlay" style="display:none;" onclick="closeDeleteModal()">
+<!-- Edit entry -->
+<div id="editModalOverlay" class="modal-overlay" style="display:none;" onclick="closeEdit()">
   <div class="modal-card" onclick="event.stopPropagation()">
-    <div class="modal-title">ลบรายการนี้ใช่หรือไม่?</div>
-    <div class="modal-desc" id="modalItemName"></div>
+    <div class="modal-title">แก้ไขรายการ</div>
+    <label for="editDate" style="margin-top:10px;">วันที่</label>
+    <input type="date" id="editDate">
+    <label for="editAmount">จำนวนเงิน (฿)</label>
+    <input type="number" id="editAmount" min="0" step="0.01" inputmode="decimal" oninput="document.getElementById('editError').textContent=''">
+    <label for="editCategory">หมวดหมู่</label>
+    <select id="editCategory"></select>
+    <label for="editNote">โน้ต</label>
+    <input type="text" id="editNote">
+    <div class="field-error" id="editError"></div>
     <div class="modal-actions">
-      <button type="button" class="secondary" onclick="closeDeleteModal()">ยกเลิก</button>
-      <button type="button" class="danger" onclick="confirmDeleteFixedItem()">ลบรายการ</button>
+      <button type="button" class="secondary" onclick="closeEdit()">ยกเลิก</button>
+      <button type="button" onclick="saveEdit()">บันทึก</button>
+    </div>
+    <button type="button" class="link-danger" onclick="askDeleteEditing()">ลบรายการนี้</button>
+  </div>
+</div>
+
+<!-- Generic confirm -->
+<div id="confirmModalOverlay" class="modal-overlay" style="display:none;" onclick="closeConfirm()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-title" id="confirmTitle"></div>
+    <div class="modal-desc" id="confirmDesc"></div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeConfirm()">ยกเลิก</button>
+      <button type="button" class="danger" id="confirmOkBtn" onclick="runConfirm()">ลบรายการ</button>
     </div>
   </div>
 </div>
@@ -263,6 +334,7 @@
 
 <script>
 const STORAGE_KEY = 'spendTrackerState';
+const LAST_CAT_KEY = 'spendTrackerLastCategory';
 const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube Premium','Netflix','Spotify','Claude'];
 const CATEGORY_COLORS = {
   'อาหาร':'#E08A5C','การเดินทาง':'#7B9FE0','สาธารณูปโภค':'#5CBFBF','ช้อปปิ้ง':'#E0C04D',
@@ -275,6 +347,20 @@ const GROUP_LABELS = { financing: 'การเงิน (ลงทุน/ผ่
 const PALETTE = ['#E08A5C','#7B9FE0','#5CBFBF','#E0C04D','#5FB86B','#B08FE0','#E5726A','#A8A296','#C4BBA8','#E0A9CB','#8FD1E0','#D9A441'];
 
 function genId(){ return Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+
+// Local-time date helpers (Thailand is UTC+7; never go through UTC).
+function pad2(n){ return String(n).padStart(2,'0'); }
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+}
+function parseISODate(str){
+  const p = String(str).split('-');
+  return new Date(+p[0], (+p[1]||1) - 1, +p[2]||1);
+}
+function fmtThaiDate(str){
+  return parseISODate(str).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+}
 
 function freshFixedItems(){
   const items = [
@@ -296,6 +382,14 @@ function inferGroup(name){
 
 function freshState(){
   return { monthlySettings: {}, entries: [] };
+}
+
+function cleanBudgets(b){
+  const out = {};
+  if(b && typeof b === 'object' && !Array.isArray(b)){
+    Object.keys(b).forEach(k=>{ const v = parseFloat(b[k]); if(v > 0) out[k] = v; });
+  }
+  return out;
 }
 
 // Migrates older backups (single global settings object) into the new
@@ -326,6 +420,7 @@ function migrateState(parsed){
       if(!item.group) item.group = inferGroup(item.name);
     });
     if(typeof ms.income !== 'number') ms.income = parseFloat(ms.income) || 0;
+    ms.budgets = cleanBudgets(ms.budgets);
   });
   if(!Array.isArray(parsed.entries)) parsed.entries = [];
   return parsed;
@@ -343,7 +438,7 @@ async function loadData(){
   return freshState();
 }
 
-// Returns the effective {income, fixedItems} for a given "YYYY-MM" key:
+// Returns the effective {income, fixedItems, budgets} for a given "YYYY-MM" key:
 // the most recent explicit setting at or before that month (carried
 // forward). If nothing has ever been configured, offers the friendly
 // starter template. If earlier settings exist but none reach back this
@@ -357,12 +452,12 @@ function getEffectiveSettings(mKey){
   }
   if(chosen){
     const ms = state.monthlySettings[chosen];
-    return { income: ms.income || 0, fixedItems: (ms.fixedItems||[]).map(i=>({...i})) };
+    return { income: ms.income || 0, fixedItems: (ms.fixedItems||[]).map(i=>({...i})), budgets: {...(ms.budgets||{})} };
   }
   if(keys.length === 0){
-    return { income:0, fixedItems: freshFixedItems() };
+    return { income:0, fixedItems: freshFixedItems(), budgets:{} };
   }
-  return { income:0, fixedItems: [] };
+  return { income:0, fixedItems: [], budgets:{} };
 }
 
 // Forks an explicit, editable settings entry for this month if one
@@ -370,8 +465,9 @@ function getEffectiveSettings(mKey){
 function ensureMonthSettings(mKey){
   if(!state.monthlySettings[mKey]){
     const eff = getEffectiveSettings(mKey);
-    state.monthlySettings[mKey] = { income: eff.income, fixedItems: eff.fixedItems };
+    state.monthlySettings[mKey] = { income: eff.income, fixedItems: eff.fixedItems, budgets: eff.budgets };
   }
+  if(!state.monthlySettings[mKey].budgets) state.monthlySettings[mKey].budgets = {};
   return state.monthlySettings[mKey];
 }
 
@@ -398,6 +494,8 @@ async function saveData(){
 let state = freshState();
 let currentMonth = new Date();
 currentMonth.setDate(1);
+let selectedCategory = 'อาหาร';
+let editingId = null;
 
 let pieChart, trendChart;
 
@@ -423,10 +521,37 @@ function categoryColor(name){
 }
 
 function initForm(){
-  document.getElementById('entryDate').valueAsDate = new Date();
+  document.getElementById('entryDate').value = todayISO();
+  renderChips();
   renderSettingsForm();
 }
 
+/* ---------- Category chips ---------- */
+function loadLastCategory(){
+  try{
+    const c = localStorage.getItem(LAST_CAT_KEY);
+    if(c && CATEGORY_ORDER.includes(c)) selectedCategory = c;
+  }catch(e){}
+}
+function renderChips(){
+  const wrap = document.getElementById('categoryChips');
+  wrap.innerHTML = '';
+  CATEGORY_ORDER.forEach(cat=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (cat === selectedCategory ? ' active' : '');
+    b.innerHTML = `<span class="dot" style="background:${categoryColor(cat)}"></span>${escapeHtml(cat)}`;
+    b.addEventListener('click', ()=> selectCategory(cat));
+    wrap.appendChild(b);
+  });
+}
+function selectCategory(cat){
+  selectedCategory = cat;
+  try{ localStorage.setItem(LAST_CAT_KEY, cat); }catch(e){}
+  renderChips();
+}
+
+/* ---------- Settings form ---------- */
 function renderSettingsForm(){
   const mKey = monthKey(currentMonth);
   const eff = getEffectiveSettings(mKey);
@@ -438,6 +563,7 @@ function renderSettingsForm(){
 
   renderFixedGroupList('financingList', eff.fixedItems.filter(i => i.group === 'financing'), 'ยังไม่มีรายการการเงินสำหรับเดือนนี้');
   renderFixedGroupList('subscriptionList', eff.fixedItems.filter(i => i.group !== 'financing'), 'ยังไม่มีรายการสมาชิกสำหรับเดือนนี้');
+  renderBudgetSettings(eff.budgets);
 }
 
 function renderFixedGroupList(containerId, items, emptyText){
@@ -460,6 +586,34 @@ function renderFixedGroupList(containerId, items, emptyText){
   });
 }
 
+// Budget inputs are built once and only have their values refreshed afterwards,
+// so tapping from one budget field to the next never loses focus to a re-render.
+function renderBudgetSettings(budgets){
+  const list = document.getElementById('budgetSettingsList');
+  if(!list.children.length){
+    CATEGORY_ORDER.forEach(cat=>{
+      const row = document.createElement('div');
+      row.className = 'budget-set-row';
+      row.innerHTML = `<span>${escapeHtml(cat)}</span><input type="number" class="budget-input" data-cat="${escapeHtml(cat)}" min="0" step="1" inputmode="numeric" placeholder="ไม่ตั้งงบ" onchange="updateBudget('${cat}')">`;
+      list.appendChild(row);
+    });
+  }
+  list.querySelectorAll('.budget-input').forEach(inp=>{
+    if(document.activeElement === inp) return;
+    inp.value = budgets[inp.dataset.cat] || '';
+  });
+}
+
+async function updateBudget(cat){
+  const inp = document.querySelector('#budgetSettingsList .budget-input[data-cat="' + cat + '"]');
+  if(!inp) return;
+  const ms = ensureMonthSettings(monthKey(currentMonth));
+  const v = parseFloat(inp.value);
+  if(v > 0) ms.budgets[cat] = v; else delete ms.budgets[cat];
+  await saveData();
+  render();
+}
+
 async function addFixedItem(group){
   const ms = ensureMonthSettings(monthKey(currentMonth));
   ms.fixedItems.push({id: genId(), name:'', amount:0, group: group === 'financing' ? 'financing' : 'subscription'});
@@ -467,29 +621,39 @@ async function addFixedItem(group){
   render();
 }
 
-let pendingDeleteId = null;
+/* ---------- Generic confirm modal ---------- */
+let confirmHandler = null;
+function openConfirm({ title, desc, confirmLabel, onConfirm }){
+  confirmHandler = onConfirm || null;
+  document.getElementById('confirmTitle').textContent = title || '';
+  document.getElementById('confirmDesc').textContent = desc || '';
+  document.getElementById('confirmOkBtn').textContent = confirmLabel || 'ลบรายการ';
+  document.getElementById('confirmModalOverlay').style.display = 'flex';
+}
+function closeConfirm(){
+  confirmHandler = null;
+  document.getElementById('confirmModalOverlay').style.display = 'none';
+}
+async function runConfirm(){
+  const h = confirmHandler;
+  closeConfirm();
+  if(h) await h();
+}
 
 function removeFixedItem(id){
-  pendingDeleteId = id;
   const eff = getEffectiveSettings(monthKey(currentMonth));
   const item = eff.fixedItems.find(i => i.id === id);
-  document.getElementById('modalItemName').textContent = item && item.name ? `"${item.name}"` : 'รายการนี้';
-  document.getElementById('deleteModalOverlay').style.display = 'flex';
-}
-
-function closeDeleteModal(){
-  pendingDeleteId = null;
-  document.getElementById('deleteModalOverlay').style.display = 'none';
-}
-
-async function confirmDeleteFixedItem(){
-  if(pendingDeleteId){
-    const ms = ensureMonthSettings(monthKey(currentMonth));
-    ms.fixedItems = ms.fixedItems.filter(i => i.id !== pendingDeleteId);
-    await saveData();
-    render();
-  }
-  closeDeleteModal();
+  openConfirm({
+    title: 'ลบรายการนี้ใช่หรือไม่?',
+    desc: item && item.name ? `"${item.name}"` : 'รายการนี้',
+    confirmLabel: 'ลบรายการ',
+    onConfirm: async ()=>{
+      const ms = ensureMonthSettings(monthKey(currentMonth));
+      ms.fixedItems = ms.fixedItems.filter(i => i.id !== id);
+      await saveData();
+      render();
+    }
+  });
 }
 
 async function updateFixedItem(id){
@@ -511,34 +675,98 @@ async function updateIncome(){
   render();
 }
 
+/* ---------- Entries ---------- */
+function clearAmountError(){ document.getElementById('amountError').textContent = ''; }
+
 async function addEntry(){
   const dateVal = document.getElementById('entryDate').value;
   const amount = parseFloat(document.getElementById('entryAmount').value);
-  const category = document.getElementById('entryCategory').value;
   const note = document.getElementById('entryNote').value.trim();
-  if(!dateVal || !amount || amount <= 0){
-    alert('กรุณาระบุวันที่และจำนวนเงินให้ถูกต้อง');
+  const err = document.getElementById('amountError');
+  if(!amount || amount <= 0){
+    err.textContent = 'กรุณาใส่จำนวนเงิน';
+    return;
+  }
+  if(!dateVal){
+    err.textContent = 'กรุณาเลือกวันที่';
     return;
   }
   const btn = document.getElementById('addEntryBtn');
   btn.disabled = true;
   state.entries.push({
     id: genId(),
-    date: dateVal, amount, category, note
+    date: dateVal, amount, category: selectedCategory, note
   });
   await saveData();
   btn.disabled = false;
   document.getElementById('entryAmount').value = '';
   document.getElementById('entryNote').value = '';
-  const d = new Date(dateVal);
+  err.textContent = '';
+  const d = parseISODate(dateVal);
   currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
   render();
 }
 
-async function deleteEntry(id){
-  state.entries = state.entries.filter(e => e.id !== id);
+function describeEntry(e){
+  let s = `${e.category} · ${fmt(e.amount)} · ${fmtThaiDate(e.date)}`;
+  if(e.note) s += ` · ${e.note}`;
+  return s;
+}
+
+function askDeleteEntry(id, afterDelete){
+  const e = state.entries.find(x => x.id === id);
+  if(!e) return;
+  openConfirm({
+    title: 'ลบรายการนี้ใช่หรือไม่?',
+    desc: describeEntry(e),
+    confirmLabel: 'ลบรายการ',
+    onConfirm: async ()=>{
+      state.entries = state.entries.filter(x => x.id !== id);
+      await saveData();
+      if(afterDelete) afterDelete();
+      render();
+    }
+  });
+}
+
+function openEdit(id){
+  const e = state.entries.find(x => x.id === id);
+  if(!e) return;
+  editingId = id;
+  document.getElementById('editDate').value = e.date;
+  document.getElementById('editAmount').value = e.amount;
+  const sel = document.getElementById('editCategory');
+  const cats = CATEGORY_ORDER.includes(e.category) ? CATEGORY_ORDER : CATEGORY_ORDER.concat([e.category]);
+  sel.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  sel.value = e.category;
+  document.getElementById('editNote').value = e.note || '';
+  document.getElementById('editError').textContent = '';
+  document.getElementById('editModalOverlay').style.display = 'flex';
+}
+function closeEdit(){
+  editingId = null;
+  document.getElementById('editModalOverlay').style.display = 'none';
+}
+async function saveEdit(){
+  const e = state.entries.find(x => x.id === editingId);
+  if(!e){ closeEdit(); return; }
+  const dateVal = document.getElementById('editDate').value;
+  const amount = parseFloat(document.getElementById('editAmount').value);
+  const err = document.getElementById('editError');
+  if(!amount || amount <= 0){ err.textContent = 'กรุณาใส่จำนวนเงิน'; return; }
+  if(!dateVal){ err.textContent = 'กรุณาเลือกวันที่'; return; }
+  e.date = dateVal;
+  e.amount = amount;
+  e.category = document.getElementById('editCategory').value;
+  e.note = document.getElementById('editNote').value.trim();
   await saveData();
+  const d = parseISODate(dateVal);
+  currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+  closeEdit();
   render();
+}
+function askDeleteEditing(){
+  if(editingId) askDeleteEntry(editingId, closeEdit);
 }
 
 function shiftMonth(delta){
@@ -555,6 +783,7 @@ function fixedTotal(mKey){
   return getEffectiveSettings(mKey).fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
 }
 
+/* ---------- Render ---------- */
 function render(){
   document.getElementById('monthLabel').textContent = monthLabelStr(currentMonth);
 
@@ -567,27 +796,113 @@ function render(){
   const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
   const remaining = income - fixed - variable;
 
+  document.getElementById('statIncome').textContent = fmt(income);
   document.getElementById('statFixed').textContent = fmt(fixed);
   document.getElementById('statVariable').textContent = fmt(variable);
   const remEl = document.getElementById('statRemaining');
   remEl.textContent = fmt(remaining);
   remEl.className = 'value ' + (remaining < 0 ? 'neg' : 'pos');
 
+  renderHero(income, remaining, variable);
+
   const body = document.getElementById('entryBody');
   body.innerHTML = '';
   document.getElementById('emptyMsg').style.display = monthEntries.length ? 'none' : 'block';
   monthEntries.forEach(e=>{
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${e.date}</td><td><span class="tag">${escapeHtml(e.category)}</span></td><td>${escapeHtml(e.note||'')}</td><td class="amt">${fmt(e.amount)}</td><td><button class="del" onclick="deleteEntry('${e.id}')">✕</button></td>`;
+    tr.className = 'clickable';
+    tr.innerHTML = `<td>${escapeHtml(fmtThaiDate(e.date))}</td><td><span class="tag">${escapeHtml(e.category)}</span></td><td>${escapeHtml(e.note||'')}</td><td class="amt">${fmt(e.amount)}</td><td><button class="del" type="button">✕</button></td>`;
+    tr.addEventListener('click', ()=> openEdit(e.id));
+    tr.querySelector('.del').addEventListener('click', ev=>{ ev.stopPropagation(); askDeleteEntry(e.id); });
     body.appendChild(tr);
   });
 
+  renderBudgetCard(eff.budgets, monthEntries);
   renderPieChart(monthEntries, eff.fixedItems);
   renderTrendChart();
   renderSettingsForm();
 }
 
+function renderHero(income, remaining, variable){
+  const card = document.getElementById('heroCard');
+  if(!(income > 0)){ card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const label = document.getElementById('heroLabel');
+  const value = document.getElementById('heroValue');
+  const sub = document.getElementById('heroSub');
+  const dim = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate();
+  const now = new Date();
+  const viewKey = monthKey(currentMonth), todayKey = monthKey(now);
+
+  let cls = '', html = '';
+  if(viewKey === todayKey){
+    const day = now.getDate();
+    const avg = variable / day;
+    if(remaining >= 0){
+      const daysLeft = dim - day + 1;
+      const allowance = remaining / daysLeft;
+      const fast = avg > allowance;
+      label.textContent = 'ใช้ได้ต่อวัน';
+      value.textContent = fmt(allowance);
+      cls = fast ? 'warn' : 'pos';
+      html = `เหลือ ${daysLeft} วัน · ที่ผ่านมาใช้เฉลี่ย ${fmt(avg)}/วัน` + (fast ? ' · ใช้เร็วกว่างบ' : '');
+    }else{
+      label.textContent = 'เกินงบแล้ว';
+      value.textContent = fmt(Math.abs(remaining));
+      cls = 'neg';
+      html = `ที่ผ่านมาใช้เฉลี่ย ${fmt(avg)}/วัน`;
+    }
+  }else if(viewKey < todayKey){
+    label.textContent = 'ใช้เฉลี่ยต่อวัน (ทั้งเดือน)';
+    value.textContent = fmt(variable / dim);
+    html = remaining >= 0
+      ? `<span class="pos">เหลือเก็บ ${fmt(remaining)}</span>`
+      : `<span class="neg">เกินงบ ${fmt(Math.abs(remaining))}</span>`;
+  }else{
+    label.textContent = 'ใช้ได้ต่อวัน (ประมาณการ)';
+    value.textContent = fmt(Math.max(remaining, 0) / dim);
+    html = `ทั้งเดือน ${dim} วัน`;
+  }
+  value.className = 'hero-value ' + cls;
+  sub.innerHTML = html;
+}
+
+function renderBudgetCard(budgets, monthEntries){
+  const body = document.getElementById('budgetBody');
+  body.innerHTML = '';
+  const cats = CATEGORY_ORDER.filter(c => budgets[c] > 0);
+  if(!cats.length){
+    body.innerHTML = '<div class="empty" style="padding:4px 0 12px;">ยังไม่ได้ตั้งงบรายหมวด</div>';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'secondary';
+    btn.textContent = 'ตั้งงบ';
+    btn.addEventListener('click', ()=>{
+      document.getElementById('settingsDetails').open = true;
+      document.getElementById('budgetSettings').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    body.appendChild(btn);
+    return;
+  }
+  const spentBy = {};
+  monthEntries.forEach(e=>{ spentBy[e.category] = (spentBy[e.category]||0) + e.amount; });
+  cats.forEach(cat=>{
+    const budget = budgets[cat], spent = spentBy[cat] || 0, ratio = spent / budget;
+    const barCls = ratio > 1 ? 'neg' : (ratio >= 0.8 ? 'warn' : '');
+    const over = spent > budget;
+    const row = document.createElement('div');
+    row.className = 'budget-row';
+    row.innerHTML = `
+      <div class="budget-head"><span>${escapeHtml(cat)}</span><span class="nums">${fmt(spent)} / ${fmt(budget)}</span></div>
+      <div class="bar"><span class="${barCls}" style="width:${Math.min(ratio,1)*100}%"></span></div>
+      <div class="budget-foot${over ? ' neg' : ''}">${over ? 'เกิน ' + fmt(spent - budget) : 'เหลือ ' + fmt(budget - spent)}</div>`;
+    body.appendChild(row);
+  });
+}
+
 function renderPieChart(monthEntries, fixedItems){
+  if(typeof Chart === 'undefined') return;
   const labels = [];
   const data = [];
   const colors = [];
@@ -641,6 +956,7 @@ function renderPieChart(monthEntries, fixedItems){
 }
 
 function renderTrendChart(){
+  if(typeof Chart === 'undefined') return;
   const months = [];
   for(let i=5;i>=0;i--){
     months.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth()-i, 1));
@@ -676,9 +992,8 @@ function exportData(){
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const today = new Date().toISOString().slice(0,10);
   a.href = url;
-  a.download = `spend-tracker-backup-${today}.json`;
+  a.download = `spend-tracker-backup-${todayISO()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -728,12 +1043,17 @@ async function clearAllData(){
 
 async function init(){
   state = await loadData();
+  loadLastCategory();
   document.getElementById('loadingOverlay').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   initForm();
   render();
 }
 init();
+
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
 </script>
 </body>
 </html>
