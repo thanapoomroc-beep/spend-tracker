@@ -244,6 +244,11 @@
   .no-chart .chart-fallback{display:flex;}
   .no-chart canvas{display:none;}
   .pie-wrap{height:220px;}
+  /* Total sits in HTML over the ring: canvas text alignment is unreliable in iOS Safari. */
+  .pie-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; line-height:1.2;}
+  .pie-center .k{font-size:12px; color:var(--muted);}
+  .pie-center .v{font-size:22px; font-weight:700; color:var(--text);}
+  .pie-center:empty,.no-chart .pie-center{display:none;}
   .pie-legend{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:2px;}
   .pie-legend li{display:grid; grid-template-columns:10px minmax(0,1fr) auto 3.2em; align-items:center; gap:10px; min-height:32px; font-size:14px; border-bottom:1px solid var(--border);}
   .pie-legend li:last-child{border-bottom:none;}
@@ -574,7 +579,7 @@
 
     <div class="card">
       <h2>สัดส่วนรายจ่าย</h2>
-      <div class="chart-wrap pie-wrap"><canvas id="pieChart" role="img" aria-label="กราฟวงกลมสัดส่วนรายจ่าย"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
+      <div class="chart-wrap pie-wrap"><canvas id="pieChart" role="img" aria-label="กราฟวงกลมสัดส่วนรายจ่าย"></canvas><div class="pie-center" id="pieCenter" aria-hidden="true"><span class="k">รวม</span><span class="v" id="pieTotal"></span></div><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
           <ul class="pie-legend" id="pieLegend"></ul>
     </div>
 
@@ -2432,6 +2437,7 @@ function renderPieChart(monthEntries, fixedItems){
   if(pieChart){ pieChart.destroy(); pieChart = null; }
   if(labels.length === 0){
     ctx.clearRect(0,0,9999,9999);
+    document.getElementById('pieCenter').style.display = 'none';
     return;
   }
   const total = data.reduce((a,b)=> a + b, 0);
@@ -2441,36 +2447,11 @@ function renderPieChart(monthEntries, fixedItems){
     li.innerHTML = `<span class="dot" style="background:${colors[i]}" aria-hidden="true"></span><span class="nm">${escapeHtml(l)}</span><span class="amt">${fmt(data[i])}</span><span class="pct">${Math.round(data[i] / total * 100)}%</span>`;
     legend.appendChild(li);
   });
-  // Total in the hole of the ring.
-  const centerText = {
-    id:'centerText',
-    afterDraw(chart){
-      // Centre on the ring itself and lay the two lines out by their measured glyph boxes,
-      // so Thai font metrics can't push the block off-centre.
-      const arc = chart.getDatasetMeta(0).data[0];
-      if(!arc) return;
-      const c = chart.ctx, x = arc.x, y = arc.y;
-      const ff = getComputedStyle(document.body).fontFamily;
-      const top = 'รวม', main = fmt(total), gap = 6;
-      c.save(); c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-      c.font = `500 12px ${ff}`;
-      const m1 = c.measureText(top);
-      const h1 = m1.actualBoundingBoxAscent + m1.actualBoundingBoxDescent;
-      c.font = `700 22px ${ff}`;
-      const m2 = c.measureText(main);
-      const h2 = m2.actualBoundingBoxAscent + m2.actualBoundingBoxDescent;
-      const y0 = y - (h1 + gap + h2) / 2;
-      c.font = `500 12px ${ff}`; c.fillStyle = CHART_MUTED;
-      c.fillText(top, x, y0 + m1.actualBoundingBoxAscent);
-      c.font = `700 22px ${ff}`; c.fillStyle = CHART_TEXT;
-      c.fillText(main, x, y0 + h1 + gap + m2.actualBoundingBoxAscent);
-      c.restore();
-    }
-  };
+  document.getElementById('pieTotal').textContent = fmt(total);
+  document.getElementById('pieCenter').style.display = '';
   pieChart = new Chart(ctx, {
     type: 'doughnut',
     data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: CHART_PANEL, borderWidth: 3, borderRadius: 6, hoverOffset: 6 }] },
-    plugins: [centerText],
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '74%', layout:{ padding:8 },
       plugins: {
