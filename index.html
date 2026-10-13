@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
-<meta name="theme-color" content="#262624">
+<meta name="theme-color" content="#0E0F11">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,8 +15,10 @@
 <style>
   :root{
     color-scheme: dark;
-    --bg:#262624; --panel:#2D2C2A; --panel2:#34322F; --border:#46443F;
-    --text:#F5F4EE; --muted:#A8A296; --accent:#D97757; --accent-hover:#E08A5C;
+    --bg:#0E0F11; --panel:#18191C; --panel2:#222327; --border:#2E3035;
+    --text:#F2F2F4; --muted:#9A9CA3; --accent:#E8D3A8; --accent-hover:#F1E2C2;
+    /* brand: near-black canvas + sand accent; dark text on sand is 13:1 */
+    --on-accent:#0E0F11;
     --green:#5FB86B; --red:#E5726A; --amber:#D9A441;
     /* lighter red for small text: 4.9:1 on --panel2 (plain --red is only 4.2:1 there) */
     --red-text:#F2918A;
@@ -26,7 +28,7 @@
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%; text-size-adjust:100%; accent-color:var(--accent); scrollbar-color:var(--border) var(--bg);}
-  ::selection{background:rgba(217,119,87,.4); color:var(--text);}
+  ::selection{background:rgba(232,211,168,.4); color:var(--text);}
   input,select{caret-color:var(--accent);}
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Noto Sans Thai","Sarabun","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -59,6 +61,8 @@
   /* Header */
   .top{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;}
   h1{font-size:21px; font-weight:700; margin:0; line-height:1.3;}
+  .streak{font-size:13px; color:var(--muted); line-height:1.4; margin-top:1px;}
+  .streak:empty{display:none;}
   .sub{color:var(--muted); font-size:13px;}
   .icon-btn{width:44px; height:44px; min-height:44px; padding:0; display:grid; place-items:center; border-radius:12px; flex:0 0 44px;}
   .icon-btn svg,.chev{display:block;}
@@ -80,7 +84,7 @@
   input[type=number]{-moz-appearance:textfield;}
   input:focus,select:focus{outline:2px solid var(--accent); outline-offset:-1px;}
   button{
-    background:var(--accent); color:#1a1917; border:none; border-radius:10px;
+    background:var(--accent); color:var(--on-accent); border:none; border-radius:10px;
     padding:12px 16px; font-size:15px; font-weight:600; cursor:pointer; width:100%;
     font-family:inherit; min-height:44px; transition:background-color .15s, transform .15s var(--ease);
   }
@@ -106,26 +110,39 @@
   .pill:hover{background:var(--panel);}
 
   /* Hero */
-  .hero{text-align:center; padding:22px 20px 18px; transition:border-color .3s;}
+  .hero{text-align:center; padding:22px 20px 18px; transition:border-color .3s; position:relative;}
   .hero.pos{border-color:rgba(95,184,107,.4);}
   .hero.warn{border-color:rgba(217,164,65,.5);}
   .hero.neg{border-color:rgba(229,114,106,.5);}
   .hero-label{font-size:14px; font-weight:500; color:var(--text);}
-  .hero-valuewrap{position:relative; display:inline-block; margin:2px 0 6px;}
+  .hero.has-info .hero-label{padding:0 80px;}
+  .hero-info{position:absolute; top:0; right:4px; width:auto; min-height:44px; padding:0 10px; display:inline-flex; align-items:center; gap:5px; background:none; color:var(--muted); font-size:13px; font-weight:500; border-radius:22px;}
+  .hero-info:hover{background:var(--panel2); color:var(--text);}
+  .hero-valuewrap{position:relative; display:inline-block; margin:2px 0 6px; max-width:100%;}
   .hero-value{font-size:46px; font-weight:700; line-height:1.2; letter-spacing:-.01em; overflow-wrap:anywhere;}
   .hero-value.pos{color:var(--green);} .hero-value.warn{color:var(--amber);} .hero-value.neg{color:var(--red);}
   .hero-value.pulse{animation:pulse .5s var(--ease);}
   @keyframes pulse{0%{transform:scale(1.07);} 100%{transform:scale(1);}}
   .hero-delta{position:absolute; left:100%; top:6px; margin-left:8px; font-size:15px; font-weight:700; color:var(--muted); white-space:nowrap; opacity:0; pointer-events:none;}
+  .hero-delta.under{left:0; right:0; top:100%; margin:-4px auto 0; width:max-content; padding:1px 10px; border-radius:10px; background:var(--panel); z-index:1; text-align:center;}
   .hero-delta.show{animation:delta 1.4s var(--ease);}
   @keyframes delta{0%{opacity:0; transform:translateY(8px);} 15%{opacity:1; transform:translateY(0);} 75%{opacity:1;} 100%{opacity:0; transform:translateY(-6px);}}
   .hero-meter{height:6px; border-radius:6px; background:var(--panel2); overflow:hidden; max-width:240px; margin:0 auto 10px;}
   .hero-meter>span{display:block; height:100%; border-radius:6px; background:var(--green); transition:width .5s var(--ease);}
   .hero-meter>span.warn{background:var(--amber);}
   .hero-sub{font-size:14px; color:var(--text);}
-  .hero-sub2{font-size:13px; color:var(--muted); margin-top:2px; min-height:0;}
+  .hero-sub2,.hero-sub3{font-size:13px; color:var(--muted); margin-top:2px; min-height:0;}
+  .hero-sub2:empty,.hero-sub3:empty{display:none;}
   .hero-sub .pos{color:var(--green);} .hero-sub .neg{color:var(--red-text);} .hero-sub2 .warn{color:var(--amber);}
   .hero-cta{width:auto; margin:12px auto 0; padding:0 22px;}
+  /* budget alert: one compact line at the bottom of the hero */
+  .hero-alert{display:flex; align-items:center; justify-content:center; gap:6px; width:100%; min-height:44px; margin-top:8px; padding:0 6px; border-top:1px solid var(--border); border-radius:0 0 10px 10px; background:none; color:var(--text); font-size:14px; font-weight:500; text-align:left;}
+  .hero-alert:hover{background:var(--panel2);}
+  .hero-alert .ba-txt{min-width:0; overflow-wrap:anywhere; line-height:1.4;}
+  .hero-alert.warn .ba-txt b{color:var(--amber);} .hero-alert.neg .ba-txt b{color:var(--red-text);}
+  .hero-alert b{font-weight:600;}
+  .hero-alert .ba-more{color:var(--muted); font-size:13px; font-weight:400; white-space:nowrap;}
+  .hero-alert .chev{flex:0 0 auto; transform:none;}
 
   /* Summary strip */
   .strip{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:12px 6px;}
@@ -140,7 +157,9 @@
   .field-error{color:var(--red-text); font-size:13px; min-height:20px; margin-bottom:4px;}
   .chips{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-bottom:12px;}
   @media (min-width:560px){ .chips{grid-template-columns:repeat(7,minmax(0,1fr));} }
-  #editChips{grid-template-columns:repeat(3,minmax(0,1fr));}
+  /* edit sheet: full-width bottom sheet on mobile matches the main form (4 columns); the centred 360px dialog keeps 3 */
+  #editChips{grid-template-columns:repeat(4,minmax(0,1fr));}
+  @media (min-width:601px){ #editChips{grid-template-columns:repeat(3,minmax(0,1fr));} }
   .chip{
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
     padding:7px 2px; min-height:58px; font-size:12px; font-weight:500; line-height:1.25; text-align:center;
@@ -148,8 +167,8 @@
   }
   .chip:hover{background:var(--border);}
   .chip .dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
-  .chip.active,.chip.active:hover{background:var(--accent); color:#1a1917; border-color:var(--accent);}
-  .chip.active .dot{box-shadow:0 0 0 1.5px #1a1917;}
+  .chip.active,.chip.active:hover{background:var(--accent); color:var(--on-accent); border-color:var(--accent);}
+  .chip.active .dot{box-shadow:0 0 0 1.5px var(--on-accent);}
   .more{margin-bottom:12px;}
   .more summary{display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; cursor:pointer; color:var(--text); font-size:14px; list-style:none; border-radius:10px; padding:0 4px;}
   .more summary::-webkit-details-marker,.card-summary::-webkit-details-marker{display:none;}
@@ -214,7 +233,7 @@
   .add-fixed-btn{margin-top:4px;}
   .set-note{font-size:12.5px; color:var(--muted); margin-bottom:12px;}
   .danger-zone{margin-top:20px; padding-top:16px; border-top:1px solid var(--border);}
-  .set-banner{border-left:4px solid var(--accent);}
+  .set-banner{border-color:rgba(232,211,168,.45);}
   .set-banner-title{font-size:17px; font-weight:700; margin-bottom:4px; line-height:1.4;}
   .set-banner .set-note{margin-bottom:0;}
 
@@ -224,6 +243,14 @@
   .chart-fallback{display:none; position:absolute; inset:0; align-items:center; justify-content:center; color:var(--muted); font-size:13px; text-align:center;}
   .no-chart .chart-fallback{display:flex;}
   .no-chart canvas{display:none;}
+  .pie-wrap{height:220px;}
+  .pie-legend{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:2px;}
+  .pie-legend li{display:grid; grid-template-columns:10px minmax(0,1fr) auto 3.2em; align-items:center; gap:10px; min-height:32px; font-size:14px; border-bottom:1px solid var(--border);}
+  .pie-legend li:last-child{border-bottom:none;}
+  .pie-legend .dot{width:10px; height:10px; border-radius:50%;}
+  .pie-legend .nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pie-legend .amt{font-weight:600;}
+  .pie-legend .pct{color:var(--muted); font-size:13px; text-align:right;}
   .compare-note{font-size:14px; margin-bottom:10px; color:var(--muted);}
   .compare-note .more{color:var(--red-text);}
   .compare-note .less{color:var(--green);}
@@ -264,7 +291,7 @@
   .modal-actions{display:flex; gap:10px;}
   .modal-actions button{width:auto; flex:1;}
   /* Dark text on --red: 5.8:1 (white would be only 3.0:1) */
-  button.danger{background:var(--red); color:#1a1917;}
+  button.danger{background:var(--red); color:var(--on-accent);}
   button.danger:hover{background:#d2625a;}
   button.link-danger{background:none; color:var(--red-text); width:auto; padding:10px 14px; font-size:14px; font-weight:500; display:block; margin:6px auto 0;}
   button.link-danger:hover{background:none; text-decoration:underline;}
@@ -272,6 +299,7 @@
   .spinner{width:28px; height:28px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .8s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
   .save-indicator{
+    white-space:nowrap;
     position:fixed; left:50%; bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px); transform:translateX(-50%) translateY(8px);
     max-width:calc(100% - 32px); text-align:center; background:var(--panel2);
     border:1px solid var(--border); color:var(--text); font-size:14px;
@@ -281,7 +309,8 @@
   .save-indicator.show{opacity:1; transform:translateX(-50%);}
   body.kb-open .save-indicator{bottom:calc(16px + env(safe-area-inset-bottom));}
   .save-indicator.has-action{pointer-events:auto; display:flex; align-items:center; gap:12px; padding:6px 8px 6px 18px;}
-  .save-indicator .toast-action{width:auto; min-height:44px; padding:0 14px; background:none; color:var(--accent-hover); font-size:14px; font-weight:700; border-radius:20px;}
+  .save-indicator>span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .save-indicator .toast-action{white-space:nowrap; flex:0 0 auto; width:auto; min-height:44px; padding:0 14px; background:none; color:var(--accent-hover); font-size:14px; font-weight:700; border-radius:20px;}
   .save-indicator .toast-action:hover{background:var(--border);}
   .save-indicator.error{color:var(--red-text); border-color:var(--red);}
 
@@ -290,9 +319,9 @@
   .fchip{display:inline-flex; align-items:center; justify-content:center; gap:6px; width:auto; min-height:44px; padding:0 14px; font-size:13.5px; font-weight:500; background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:22px;}
   .fchip:hover{background:var(--border);}
   .fchip .dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
-  .fchip[aria-pressed="true"]{background:var(--accent); color:#1a1917; border-color:var(--accent);}
+  .fchip[aria-pressed="true"]{background:var(--accent); color:var(--on-accent); border-color:var(--accent);}
   .fchip[aria-pressed="true"]::before{content:"\2713"; font-weight:700;}
-  .fchip[aria-pressed="true"] .dot{box-shadow:0 0 0 1.5px #1a1917;}
+  .fchip[aria-pressed="true"] .dot{box-shadow:0 0 0 1.5px var(--on-accent);}
   .fchips{display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 6px;}
   .result-line{font-size:13px; color:var(--muted); margin:0 0 8px;}
   .result-line:empty{display:none;}
@@ -343,11 +372,10 @@
 
   .trend-head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
   .trend-head h2{margin:0;}
-  .seg{display:inline-flex; border:1px solid var(--border); border-radius:12px; overflow:hidden;}
-  .seg button{width:auto; min-height:44px; padding:0 16px; border-radius:0; font-size:14px; background:var(--panel2); color:var(--text);}
-  .seg button+button{border-left:1px solid var(--border);}
-  .seg button:hover{background:var(--border);}
-  .seg button[aria-pressed="true"]{background:var(--accent); color:#1a1917;}
+  .seg{display:inline-flex; gap:3px; padding:3px; background:var(--panel2); border:1px solid var(--border); border-radius:13px;}
+  .seg button{width:auto; min-height:44px; padding:0 16px; border-radius:10px; font-size:14px; background:transparent; color:var(--text);}
+    .seg button:hover{background:var(--border);}
+  .seg button[aria-pressed="true"]{background:var(--accent); color:var(--on-accent);}
   .chart-wrap.tall{height:340px;}
   .chart-wrap.tall canvas{max-height:none;}
   .table-scroll{overflow-x:auto; border:1px solid var(--border); border-radius:10px;}
@@ -378,23 +406,45 @@
   .tabbar svg{display:block; flex:0 0 auto;}
   body.kb-open .tabbar{display:none;}
 
-  /* Budget alert (วันนี้) */
-  .budget-alert{
-    display:flex; align-items:center; gap:10px; text-align:left; width:100%;
-    background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:var(--radius);
-    padding:12px 14px; margin-bottom:14px; font-size:14px; font-weight:500; min-height:52px;
-    box-shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px -8px rgba(0,0,0,.35);
+  /* Quick repeat (วันนี้) */
+  .rrow{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 10px;}
+  .rrow[hidden]{display:none;}
+  .rrow .rlabel{font-size:12.5px; color:var(--muted); margin-right:2px;}
+  .rchip{display:inline-flex; align-items:center; gap:6px; width:auto; min-height:44px; max-width:100%; padding:0 12px; font-size:13.5px; font-weight:500; background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:22px;}
+  .rchip:hover{background:var(--border);}
+  .rchip .dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
+  .rchip .rt{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  /* Due card: lighter than the hero */
+  #dueCard{padding:12px 14px; box-shadow:none; background:transparent;}
+  #dueCard h2{font-size:14px; font-weight:600; margin:0; display:block;}
+  #dueCard .due-note{font-size:12.5px; color:var(--muted); margin:0 0 6px;}
+  #dueList li{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:6px 0; font-size:14px;}
+  #dueList .due-name{min-width:0; overflow-wrap:anywhere;}
+  #dueList .due-when{color:var(--muted); font-size:12.5px; margin-left:6px; white-space:nowrap;}
+  #dueList .due-amt{flex:0 0 auto; text-align:right; font-variant-numeric:tabular-nums;}
+
+  /* Keyboard save bar (pinned to the visual viewport by JS) */
+  .kb-bar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:900; background:var(--panel); border-top:1px solid var(--border); padding:8px max(14px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
+  .kb-bar.vv{padding-bottom:8px;}
+  body.kb-save .kb-bar{display:block;}
+  .kb-bar button{display:block; max-width:720px; margin:0 auto; min-height:52px; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  body.kb-save .wrap{padding-bottom:96px;}
+  body.kb-save .save-indicator{bottom:calc(var(--kb-off,0px) + 52px + 28px);}
+  #entryAmount,#entryNote,#entryDate{scroll-margin-bottom:96px;}
+
+  /* Phone: tighter vertical rhythm so the save button stays above the tab bar (placed last so it wins over the base rules) */
+  @media (max-width:600px){
+    .hero{padding:12px 16px 4px;}
+    .hero-value{font-size:44px; line-height:1.1;}
+    .hero-alert{margin-top:6px;}
+    .amount-input{min-height:52px; padding-top:8px; padding-bottom:8px; font-size:28px;}
+    .field-error{min-height:16px; line-height:16px; margin-bottom:2px;}
+    .chip{min-height:48px;}
+    #entryCard{padding:12px 16px;}
+    #entryCard>h2{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; margin:0;}   /* the fields explain themselves; saves a row above the fold */
+    #entryCard .more{margin-bottom:6px;}
   }
-  .budget-alert:hover{background:var(--panel2);}
-  .budget-alert.warn{border-color:rgba(217,164,65,.55);}
-  .budget-alert.neg{border-color:rgba(229,114,106,.6);}
-  .budget-alert .ba-lines{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; line-height:1.4;}
-  .budget-alert .ba-line{overflow-wrap:anywhere;}
-  .budget-alert .ba-line.warn{color:var(--amber);}
-  .budget-alert .ba-line.neg{color:var(--red-text);}
-  .budget-alert .ba-more{font-size:13px; color:var(--muted); font-weight:400;}
-  .budget-alert .chev{flex:0 0 auto;}
-  @media (max-width:600px){ .budget-alert{margin-bottom:12px;} }
 
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}
@@ -414,21 +464,26 @@
   <section class="tab-panel" id="panel-today" data-tab="today" aria-labelledby="h-today">
     <header class="top">
       <div>
-        <h1 id="h-today">ตัวติดตามค่าใช้จ่าย</h1>
+        <h1 id="h-today"></h1>
+        <div class="streak" id="streakLine"></div>
       </div>
     </header>
 
     <div class="card hero" id="heroCard">
+      <button type="button" class="hero-info" id="heroInfo" onclick="openInfo()" aria-haspopup="dialog" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>คิดยังไง</button>
       <div class="hero-label" id="heroLabel"></div>
-      <div class="hero-valuewrap"><div class="hero-value" id="heroValue"></div><span class="hero-delta" id="heroDelta" aria-hidden="true"></span></div>
-      <div class="hero-meter" id="heroMeter" role="progressbar" aria-label="ใช้ไปแล้วเท่าไหร่จากที่ใช้ได้วันนี้" aria-valuemin="0" style="display:none;"><span id="heroMeterFill"></span></div>
+      <div class="hero-valuewrap" id="heroValueWrap"><div class="hero-value" id="heroValue"></div><span class="hero-delta" id="heroDelta" aria-hidden="true"></span></div>
+      <div class="hero-meter" id="heroMeter" role="progressbar" aria-label="เหลือใช้วันนี้" aria-valuemin="0" style="display:none;"><span id="heroMeterFill"></span></div>
       <div class="hero-sub" id="heroSub"></div>
       <div class="hero-sub2" id="heroSub2"></div>
+      <div class="hero-sub3" id="heroSub3"></div>
       <button type="button" class="hero-cta" id="heroCta" onclick="openSettings(true)" style="display:none;">ตั้งรายได้</button>
+      <button type="button" class="hero-alert" id="budgetAlert" style="display:none;" onclick="openBudgetOverview()"></button>
     </div>
 
-    <div class="card">
+    <div class="card" id="entryCard">
       <h2>จดรายจ่าย</h2>
+      <div class="rrow" id="repeatRow" role="group" aria-label="จดซ้ำ" hidden></div>
       <label for="entryAmount">จำนวนเงิน</label>
       <input type="number" id="entryAmount" class="amount-input" min="0" step="0.01" placeholder="0" inputmode="decimal" aria-describedby="amountError" oninput="clearAmountError()">
       <div class="field-error" id="amountError"></div>
@@ -452,10 +507,9 @@
 
     <div class="card" id="dueCard" style="display:none;">
       <h2>ใกล้ถึงวันตัดเงิน</h2>
+      <div class="due-note">หักไว้แล้ว ไม่ลดยอดวันนี้</div>
       <ul class="plain-list" id="dueList"></ul>
     </div>
-
-    <button type="button" class="budget-alert" id="budgetAlert" style="display:none;" onclick="openBudgetOverview()"></button>
 
     <div class="card" id="recentCard">
       <h2><span>รายการล่าสุด</span> <span class="h2-note" id="recentCount"></span></h2>
@@ -515,12 +569,13 @@
     <div class="card">
       <h2>ปฏิทินรายจ่าย</h2>
       <div class="heat-grid" id="heatmap" role="group" aria-label="ปฏิทินรายจ่าย"></div>
-      <div class="heat-legend"><span>น้อย</span><i style="background:rgba(217,119,87,.2)"></i><i style="background:rgba(217,119,87,.5)"></i><i style="background:rgba(217,119,87,.8)"></i><i style="background:rgba(217,119,87,1)"></i><span>มาก</span></div>
+      <div class="heat-legend"><span>น้อย</span><i style="background:rgb(74,70,65)"></i><i style="background:rgb(133,123,104)"></i><i style="background:rgb(192,176,142)"></i><i style="background:rgb(232,211,168)"></i><span>มาก</span></div>
     </div>
 
     <div class="card">
       <h2>สัดส่วนรายจ่าย</h2>
-      <div class="chart-wrap"><canvas id="pieChart" role="img" aria-label="กราฟวงกลมสัดส่วนรายจ่าย"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
+      <div class="chart-wrap pie-wrap"><canvas id="pieChart" role="img" aria-label="กราฟวงกลมสัดส่วนรายจ่าย"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
+          <ul class="pie-legend" id="pieLegend"></ul>
     </div>
 
     <div class="card">
@@ -644,6 +699,19 @@
   </div>
 </div>
 
+<!-- How the daily number works -->
+<div id="infoModalOverlay" class="modal-overlay" style="display:none;" onclick="closeInfo()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="infoTitle" onclick="event.stopPropagation()">
+    <div class="modal-title" id="infoTitle">ตัวเลขนี้คิดยังไง</div>
+    <div class="modal-desc">ยอดต่อวันคือ (รายได้ − รายการประจำ − ที่ใช้ไปเดือนนี้) ÷ วันที่เหลือรวมวันนี้</div>
+    <div class="modal-desc">ยอดนี้เท่าเดิมทั้งวัน มีแค่ที่ใช้วันนี้เท่านั้นที่ลดตัวเลข "ใช้ได้อีก"</div>
+    <div class="modal-desc">ค่าผ่อนและค่าสมาชิกถูกหักไว้ให้แล้ว</div>
+    <div class="modal-actions"><button type="button" id="infoOkBtn" onclick="closeInfo()">เข้าใจแล้ว</button></div>
+  </div>
+</div>
+
+<div id="kbBar" class="kb-bar"><button type="button" id="kbSaveBtn" aria-live="polite">จด</button></div>
+
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
 <script>
@@ -653,8 +721,8 @@ const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube P
 // 6 validated hue slots in fixed order (never cycled, never by rank). Status colours stay reserved for status.
 const SLOT_COLORS = ['#d95926','#3987e5','#199e70','#c98500','#d55181','#9085e9'];
 const SLOT_NAMES = ['ส้ม','น้ำเงิน','เขียว','เหลือง','ชมพู','ม่วง'];
-const NEUTRAL_COLOR = '#C4BBA8';   // อื่นๆ / categories without a colour slot
-const FIXED_COLOR = '#807B71';
+const NEUTRAL_COLOR = '#C3C6CC';   // อื่นๆ / categories without a colour slot
+const FIXED_COLOR = '#80838A';
 const DEFAULT_CATEGORIES = ['อาหาร','การเดินทาง','สาธารณูปโภค','ช้อปปิ้ง','สุขภาพ','บันเทิง','อื่นๆ'];
 const EPOCH = '1970-01-01T00:00:00Z';
 const TREND_KEY = 'spendTrackerTrendRange';
@@ -924,6 +992,7 @@ currentMonth.setDate(1);
 let selectedCategory = 'อาหาร';
 let editCategory = 'อาหาร';
 let editingId = null;
+let heroShown = { label:'', num:null };   // what the hero last displayed (for the count-up after saving)
 
 let pieChart, trendChart, compareChart;
 const ICON_X = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
@@ -1108,9 +1177,11 @@ function buildChips(container, selected, onSelect, extra){
 }
 function renderChips(){
   buildChips(document.getElementById('categoryChips'), selectedCategory, selectCategory);
+  updateKbBarLabel();
 }
 function selectCategory(cat){
   selectedCategory = cat;
+  clearAmountError();
   try{ localStorage.setItem(LAST_CAT_KEY, cat); }catch(e){}
   renderChips();
 }
@@ -1522,7 +1593,13 @@ function clearAmountError(){
   document.getElementById('entryAmount').removeAttribute('aria-invalid');
 }
 
+// Amount as typed (up to 2 decimals) for toasts and the keyboard bar.
+function fmtExact(n){
+  return '฿' + Number(n).toLocaleString('en-US', { maximumFractionDigits:2 });
+}
+let saving = false;
 async function addEntry(){
+  if(saving) return;
   const dateVal = document.getElementById('entryDate').value;
   const amountEl = document.getElementById('entryAmount');
   const amount = parseFloat(amountEl.value);
@@ -1539,26 +1616,62 @@ async function addEntry(){
     document.getElementById('moreDetails').open = true;
     return;
   }
+  ensureSelectedCategory();
+  await saveNewEntry({ date: dateVal, amount, category: selectedCategory, note }, true);
+}
+
+// Did this entry push its category past 80% / 100% of that month's budget?
+function budgetCrossing(entry){
+  const mk = entry.date.slice(0,7);
+  const budget = getEffectiveBudgets(mk)[entry.category];
+  if(!(budget > 0)) return null;
+  const before = state.entries.filter(e => e.date.slice(0,7) === mk && e.category === entry.category).reduce((s,e)=> s + e.amount, 0);
+  const after = before + entry.amount;
+  if(before <= budget && after > budget) return { type:'over', over: after - budget };
+  if(before / budget < 0.8 && after / budget >= 0.8 && after <= budget) return { type:'near' };
+  return null;
+}
+
+// Shared save path for the form and the quick-repeat chips.
+async function saveNewEntry(f, fromForm){
+  if(saving) return null;
+  saving = true;
   const btn = document.getElementById('addEntryBtn');
   btn.disabled = true;
-  ensureSelectedCategory();
-  const entry = { id: genId(), date: dateVal, amount, category: selectedCategory, note, updatedAt: nowISO() };
+  const amountEl = document.getElementById('entryAmount');
+  const entry = { id: genId(), date: f.date, amount: f.amount, category: f.category, note: f.note, updatedAt: nowISO() };
+  const before = { label: heroShown.label, num: heroShown.num };
+  const cross = budgetCrossing(entry);
   state.entries.push(entry);
   await saveData();
   btn.disabled = false;
-  amountEl.value = '';
-  document.getElementById('entryNote').value = '';
-  err.textContent = '';
-  const d = parseISODate(dateVal);
+  saving = false;
+  if(fromForm){
+    amountEl.value = '';
+    document.getElementById('entryNote').value = '';
+    document.getElementById('amountError').textContent = '';
+    amountEl.removeAttribute('aria-invalid');
+  }
+  const d = parseISODate(f.date);
   currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);   // รายการ shows the month the entry went to
-  amountEl.blur();
+  const ae = document.activeElement;
+  if(ae && ae.blur && ae.closest && ae.closest('#panel-today .card')) ae.blur();
+  document.getElementById('moreDetails').open = false;
   updateDateSummary();
   render();
-  if(dateVal.slice(0,7) === monthKey(new Date())) heroFeedback(amount, entry);
-  else flashToast(`บันทึกแล้ว วันที่ ${fmtToastDate(dateVal)}`, true, { label:'เลิกทำ', onClick: ()=> undoEntry(entry) });
+  updateKbBarLabel();
+  const undo = { label:'เลิกทำ', onClick: ()=> undoEntry(entry) };
+  if(f.date.slice(0,7) === monthKey(new Date())){
+    let msg = `จดแล้ว ${fmtExact(f.amount)}`;
+    if(cross && cross.type === 'over') msg += ` ${f.category}เกินงบ ${fmt(cross.over)}`;
+    else if(cross && cross.type === 'near') msg += ` ${f.category}ใกล้ครบงบ`;
+    heroFeedback(f.amount, msg, undo, before);
+  }else{
+    flashToast(`จดแล้ว วันที่ ${fmtToastDate(f.date)}`, true, undo);
+  }
+  return entry;
 }
 
-// After logging: show what changed in the hero (delta, pulse, readable toast) and bring it into view.
 async function undoEntry(entry){
   state.entries = state.entries.filter(x => x.id !== entry.id);
   await saveData();
@@ -1566,22 +1679,40 @@ async function undoEntry(entry){
   flashToast('เลิกทำแล้ว', true);
 }
 
-function heroFeedback(amount, entry){
+// After logging: hero number counts to its new value, the delta shows, a one-line toast confirms.
+function heroFeedback(amount, msg, undo, before){
   const hero = document.getElementById('heroCard');
   const value = document.getElementById('heroValue');
-  const undo = { label:'เลิกทำ', onClick: ()=> undoEntry(entry) };
-  if(value.style.display === 'none'){
-    flashToast(`บันทึกแล้ว ${fmt(amount)}`, true, undo);
-    return;
-  }
+  flashToast(msg, true, undo);
+  if(value.style.display === 'none') return;
   const delta = document.getElementById('heroDelta');
   delta.textContent = '−' + fmt(amount);
-  delta.classList.remove('show'); value.classList.remove('pulse');
+  delta.classList.remove('show', 'under'); value.classList.remove('pulse');
+  // Put the delta under the number when it would not fit beside it inside the card.
+  const wr = document.getElementById('heroValueWrap').getBoundingClientRect();
+  const hr = hero.getBoundingClientRect();
+  if(wr.right + 8 + delta.offsetWidth > hr.right - 12) delta.classList.add('under');
   void value.offsetWidth;
   delta.classList.add('show'); value.classList.add('pulse');
-  flashToast(`บันทึกแล้ว ${document.getElementById('heroLabel').textContent} ${value.textContent}`, true, undo);
+  if(before && before.label === heroShown.label && typeof before.num === 'number') animateHeroNumber(value, before.num, heroShown.num);
   goTab('today', { keepScroll:true });
-  hero.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block:'nearest' });
+  const r = hero.getBoundingClientRect();
+  const bottomLimit = window.innerHeight - 56;   // tab bar
+  if(r.top < 0 || r.bottom > bottomLimit) hero.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block:'start' });
+}
+
+let heroAnimRaf = 0;
+function animateHeroNumber(el, from, to){
+  cancelAnimationFrame(heroAnimRaf);
+  if(reducedMotion() || from === to) return;
+  const t0 = performance.now();
+  el.textContent = fmt(from);
+  const step = t=>{
+    const p = Math.min((t - t0) / 400, 1);
+    el.textContent = fmt(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+    if(p < 1) heroAnimRaf = requestAnimationFrame(step); else el.textContent = fmt(to);
+  };
+  heroAnimRaf = requestAnimationFrame(step);
 }
 
 function describeEntry(e){
@@ -1649,15 +1780,21 @@ async function saveEdit(){
   currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
   closeEdit();
   render();
-  if(dateVal.slice(0,7) !== monthKey(new Date())) flashToast(`บันทึกแล้ว วันที่ ${fmtToastDate(dateVal)}`, true);
+  if(dateVal.slice(0,7) !== monthKey(new Date())) flashToast(`จดแล้ว วันที่ ${fmtToastDate(dateVal)}`, true);
 }
 function askDeleteEditing(){
   if(editingId) askDeleteEntry(editingId, closeEdit);
 }
 
 document.addEventListener('keydown', ev=>{
+  if(ev.key === 'Tab' && document.getElementById('infoModalOverlay').style.display !== 'none'){
+    ev.preventDefault();
+    document.getElementById('infoOkBtn').focus();   // the only control in the dialog
+    return;
+  }
   if(ev.key !== 'Escape') return;
-  if(document.getElementById('confirmModalOverlay').style.display !== 'none') closeConfirm();
+  if(document.getElementById('infoModalOverlay').style.display !== 'none') closeInfo();
+  else if(document.getElementById('confirmModalOverlay').style.display !== 'none') closeConfirm();
   else if(document.getElementById('editModalOverlay').style.display !== 'none') closeEdit();
 });
 
@@ -1692,15 +1829,125 @@ function renderToday(){
   const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
   const remaining = income - fixed - variable;
 
+  renderHeader(now);
+  renderRepeat();
   renderHero(income, remaining, variable, monthEntries);
   renderDueCard();
   renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries);
+  // Until income is set the hero CTA is the only primary button.
+  const secondary = !(income > 0);
+  document.getElementById('addEntryBtn').classList.toggle('secondary', secondary);
+  document.getElementById('kbSaveBtn').classList.toggle('secondary', secondary);
 
   const RECENT = 5;
-  renderEntryList(document.getElementById('recentList'), monthEntries, RECENT, false);
+  renderEntryList(document.getElementById('recentList'), monthEntries, RECENT, false, true);
   document.getElementById('recentEmpty').style.display = monthEntries.length === 0 ? 'block' : 'none';
   document.getElementById('recentAllBtn').style.display = monthEntries.length ? '' : 'none';
-  document.getElementById('recentCount').textContent = monthEntries.length ? `${monthEntries.length} รายการ` : '';
+  document.getElementById('recentCount').textContent = monthEntries.length ? `เดือนนี้ ${monthEntries.length} รายการ` : '';
+}
+
+/* ---------- Header: date + streak ---------- */
+function renderHeader(now){
+  const wd = now.toLocaleDateString('th-TH', { weekday:'long' }).replace(/^วัน/, '');
+  const rest = now.toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+  document.getElementById('h-today').textContent = `${wd} ${rest}`;
+  const days = new Set(state.entries.map(e => e.date));
+  const run = (from)=>{
+    let n = 0;
+    const d = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+    while(days.has(isoOf(d))){ n++; d.setDate(d.getDate() - 1); }
+    return n;
+  };
+  const el = document.getElementById('streakLine');
+  if(days.has(todayISO())){
+    el.textContent = `จดติดกัน ${run(now)} วัน`;
+  }else{
+    const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const n = run(y);
+    el.textContent = n >= 1 ? `จดติดกัน ${n} วัน จดวันนี้ต่อเลย` : '';
+  }
+}
+
+/* ---------- Quick repeat (จดซ้ำ) ---------- */
+// Same category, amount and note at least twice in the last 60 days; most often first, then most recent.
+function repeatGroups(){
+  const now = new Date();
+  const cutoff = isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60));
+  const today = todayISO();
+  const map = new Map();
+  state.entries.forEach(e=>{
+    if(e.date < cutoff || e.date > today) return;
+    const c = findCat(e.category);
+    if(!c || c.archived) return;
+    const note = String(e.note || '').trim();
+    const k = JSON.stringify([e.category, e.amount, note]);
+    let g = map.get(k);
+    if(!g){ g = { category:e.category, amount:e.amount, note, count:0, last:'' }; map.set(k, g); }
+    g.count++;
+    if(e.date > g.last) g.last = e.date;
+  });
+  return [...map.values()].filter(g => g.count >= 2)
+    .sort((a,b)=> b.count - a.count || (a.last < b.last ? 1 : a.last > b.last ? -1 : 0)).slice(0, 4);
+}
+function renderRepeat(){
+  const row = document.getElementById('repeatRow');
+  const groups = repeatGroups();
+  row.innerHTML = '';
+  row.hidden = !groups.length;
+  if(!groups.length) return;
+  const lab = document.createElement('span');
+  lab.className = 'rlabel';
+  lab.setAttribute('aria-hidden', 'true');
+  lab.textContent = 'จดซ้ำ';
+  row.appendChild(lab);
+  groups.forEach(g=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'rchip';
+    b.setAttribute('aria-label', `จดซ้ำ ${g.category} ${fmtExact(g.amount)}${g.note ? ' ' + g.note : ''}`);
+    b.innerHTML = `<span class="dot" style="background:${categoryColor(g.category)}" aria-hidden="true"></span><span class="rt">${escapeHtml(g.note || g.category)} ${fmtExact(g.amount)}</span>`;
+    b.addEventListener('click', ()=> saveNewEntry({ date: todayISO(), amount: g.amount, category: g.category, note: g.note }, false));
+    row.appendChild(b);
+  });
+}
+
+/* ---------- Info dialog ---------- */
+let infoOpener = null;
+function openInfo(){
+  infoOpener = document.activeElement;
+  document.getElementById('infoModalOverlay').style.display = 'flex';
+  document.getElementById('infoOkBtn').focus();
+}
+function closeInfo(){
+  document.getElementById('infoModalOverlay').style.display = 'none';
+  if(infoOpener && infoOpener.focus) infoOpener.focus();
+  infoOpener = null;
+}
+
+/* ---------- Keyboard save bar ---------- */
+function kbBarLabelText(){
+  const a = parseFloat(document.getElementById('entryAmount').value);
+  ensureSelectedCategory();
+  return a > 0 ? `จด ${fmtExact(a)} ${selectedCategory}` : `จด ${selectedCategory}`;
+}
+function updateKbBarLabel(){
+  const b = document.getElementById('kbSaveBtn');
+  if(b) b.textContent = kbBarLabelText();
+}
+// Pin the bar to the bottom of the visual viewport (the part of the page above the iOS keyboard).
+function positionKbBar(){
+  const bar = document.getElementById('kbBar');
+  const vv = window.visualViewport;
+  const off = vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+  bar.style.bottom = off + 'px';
+  bar.classList.toggle('vv', off > 0);
+  document.documentElement.style.setProperty('--kb-off', off + 'px');
+}
+const KB_BAR_FIELDS = ['entryAmount', 'entryNote', 'entryDate'];
+function syncKbBar(){
+  const on = KB_BAR_FIELDS.includes((document.activeElement || {}).id);
+  document.body.classList.toggle('kb-save', on);
+  if(on){ updateKbBarLabel(); positionKbBar(); }
 }
 
 // Month-scoped tabs (รายการ, ภาพรวม, ตั้งค่า) all follow currentMonth.
@@ -1812,7 +2059,7 @@ function renderEntriesTab(monthEntries){
 }
 
 // Day-grouped rows into `list`. `limit`: max rows (null = all). `useFilters`: apply search/filter (F5).
-function renderEntryList(list, monthEntries, limit, useFilters){
+function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
   list.innerHTML = '';
   const active = !!useFilters && filterActive();
   let source = monthEntries;
@@ -1841,38 +2088,47 @@ function renderEntryList(list, monthEntries, limit, useFilters){
     const row = document.createElement('div');
     row.className = 'entry-row';
     row.dataset.id = e.id;
-    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${e.note ? `<span class="entry-note">${escapeHtml(e.note)}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button><button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`;
+    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${e.note ? `<span class="entry-note">${escapeHtml(e.note)}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
     row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, list.id));
-    row.querySelector('.del').addEventListener('click', ()=> askDeleteEntry(e.id));
+    const delBtn = row.querySelector('.del');
+    if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
     list.appendChild(row);
   });
   return { active, source, shown };
 }
 
 function renderHero(income, remaining, variable, monthEntries){
+  cancelAnimationFrame(heroAnimRaf);
   const card = document.getElementById('heroCard');
   const label = document.getElementById('heroLabel');
   const value = document.getElementById('heroValue');
+  const wrap = document.getElementById('heroValueWrap');
   const sub = document.getElementById('heroSub');
   const sub2 = document.getElementById('heroSub2');
+  const sub3 = document.getElementById('heroSub3');
   const meter = document.getElementById('heroMeter');
   const cta = document.getElementById('heroCta');
-  meter.style.display = 'none'; cta.style.display = 'none'; sub2.innerHTML = ''; sub.innerHTML = '';
-  value.style.display = '';
+  const info = document.getElementById('heroInfo');
+  meter.style.display = 'none'; cta.style.display = 'none'; info.style.display = 'none';
+  sub2.innerHTML = ''; sub.innerHTML = ''; sub3.innerHTML = '';
+  value.style.display = ''; wrap.style.display = '';
   card.className = 'card hero';
+  heroShown = { label:'', num:null };
 
   // No income yet: a prompt instead of a hidden card, so first-run isn't a wall of ฿0.
   if(!(income > 0)){
     label.textContent = 'ตั้งรายได้ก่อน จะได้รู้ว่าวันนี้ใช้ได้เท่าไหร่';
-    value.style.display = 'none';
+    value.style.display = 'none'; wrap.style.display = 'none';
     cta.style.display = '';
     return;
   }
+  info.style.display = '';
+  card.classList.add('has-info');
 
   const now = new Date();
   const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
 
-  let cls = '', html = '', html2 = '';
+  let cls = '', html = '', html2 = '', html3 = '', num = 0;
   {
     const d = now.getDate();
     const today = todayISO();
@@ -1881,7 +2137,7 @@ function renderHero(income, remaining, variable, monthEntries){
     const avg = variable / d;
     if(remaining < 0){
       label.textContent = 'ใช้เกินรายได้แล้ว';
-      value.textContent = fmt(Math.abs(remaining));
+      num = Math.abs(remaining);
       cls = 'neg';
       html = `เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)}`;
     }else{
@@ -1890,34 +2146,35 @@ function renderHero(income, remaining, variable, monthEntries){
       const todayLeft = dailyAllowance - todaySpent;
       if(todayLeft >= 0){
         label.textContent = 'วันนี้ใช้ได้อีก';
-        value.textContent = fmt(todayLeft);
+        num = todayLeft;
         cls = 'pos';
       }else{
         label.textContent = 'วันนี้ใช้เกินแล้ว';
-        value.textContent = fmt(Math.abs(todayLeft));
+        num = Math.abs(todayLeft);
         cls = 'warn';
       }
-      html = `ใช้ได้วันละ ${fmt(dailyAllowance)} อีก ${daysLeft} วันจะสิ้นเดือน`;
-      if(d >= 3){
-        html2 = avg > dailyAllowance
-          ? `<span class="warn">เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)} เร็วกว่าที่ควร</span>`
-          : `เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)}`;
-      }
-      // Meter: how much of today's allowance is already used.
+      html = `ใช้ได้วันละ ${fmt(dailyAllowance)} อีก ${daysLeft} วัน`;
+      if(d >= 3 && avg > dailyAllowance) html2 = `<span class="warn">เดือนนี้ใช้ไปเฉลี่ยวันละ ${fmt(avg)} เร็วกว่าที่ควร</span>`;
+      if(now.getHours() >= 21 && todayLeft >= 0) html3 = `ถ้าไม่ใช้เพิ่ม วันนี้เก็บได้ ${fmt(todayLeft)}`;
+      // Meter: what is left of today's allowance (drains as you spend); full amber once over.
       if(dailyAllowance > 0){
         meter.style.display = '';
+        const left = Math.max(todayLeft, 0);
         meter.setAttribute('aria-valuemax', String(Math.round(dailyAllowance)));
-        meter.setAttribute('aria-valuenow', String(Math.min(Math.round(todaySpent), Math.round(dailyAllowance))));
+        meter.setAttribute('aria-valuenow', String(Math.min(Math.round(left), Math.round(dailyAllowance))));
         const fill = document.getElementById('heroMeterFill');
-        fill.style.width = Math.min(todaySpent / dailyAllowance, 1) * 100 + '%';
+        fill.style.width = (todayLeft < 0 ? 100 : Math.min(left / dailyAllowance, 1) * 100) + '%';
         fill.className = todayLeft >= 0 ? '' : 'warn';
       }
     }
   }
+  value.textContent = fmt(num);
+  heroShown = { label: label.textContent, num };
   value.className = 'hero-value ' + cls;
-  card.className = 'card hero ' + cls;
+  card.className = 'card hero has-info ' + cls;
   sub.innerHTML = html;
   sub2.innerHTML = html2;
+  sub3.innerHTML = html3;
 }
 
 function renderBudgetCard(budgets, monthEntries){
@@ -1951,8 +2208,8 @@ function renderBudgetCard(budgets, monthEntries){
   });
 }
 
-/* ---------- Budget alert (วันนี้) ---------- */
-// Categories at 80% or more of their budget this calendar month. Colour plus the words เหลือ / เกิน.
+/* ---------- Budget alert (inside the hero) ---------- */
+// Categories at 80% or more of their budget this calendar month. Colour plus the words used / over.
 function renderBudgetAlert(budgets, monthEntries){
   const btn = document.getElementById('budgetAlert');
   const spentBy = {};
@@ -1962,15 +2219,13 @@ function renderBudgetAlert(budgets, monthEntries){
     .sort((a,b)=> b.ratio - a.ratio);
   btn.style.display = hits.length ? '' : 'none';
   if(!hits.length){ btn.innerHTML = ''; return; }
-  const anyOver = hits.some(h => h.spent > h.budget);
-  btn.className = 'budget-alert ' + (anyOver ? 'neg' : 'warn');
-  const lines = hits.slice(0, 2).map(h=>{
-    const over = h.spent > h.budget;
-    const tail = over ? `เกิน ${fmt(h.spent - h.budget)}` : `เหลือ ${fmt(h.budget - h.spent)}`;
-    return `<span class="ba-line ${over ? 'neg' : 'warn'}">${escapeHtml(h.name)} ใช้ไป ${Math.round(h.ratio * 100)}% ${tail}</span>`;
-  });
-  if(hits.length > 2) lines.push(`<span class="ba-more">อีก ${hits.length - 2} หมวด</span>`);
-  btn.innerHTML = `<span class="ba-lines"><span class="sr-only">ดูภาพรวมงบ </span>${lines.join('')}</span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
+  const top = hits[0];
+  const over = top.spent > top.budget;
+  btn.className = 'hero-alert ' + (over ? 'neg' : 'warn');
+  const txt = over ? `${top.name}เกินงบ ${fmt(top.spent - top.budget)}`
+    : top.spent === top.budget ? `${top.name}ใช้ครบงบแล้ว`
+    : `${top.name}ใช้ไป ${Math.round(top.ratio * 100)}%`;
+  btn.innerHTML = `<span class="sr-only">ดูภาพรวมงบ </span><span class="ba-txt"><b>${escapeHtml(txt)}</b></span>${hits.length > 1 ? `<span class="ba-more">อีก ${hits.length - 1} หมวด</span>` : ''}<svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
 }
 
 /* ---------- Upcoming payments (F3) ---------- */
@@ -1999,7 +2254,8 @@ function renderDueCard(){
   items.forEach(p=>{
     const li = document.createElement('li');
     if(p.off === 0) li.className = 'today';
-    li.textContent = `${p.name} ${fmt(p.amount)} ${p.off === 0 ? 'ตัดวันนี้' : 'ตัดอีก ' + p.off + ' วัน'}`;
+    const when = p.off === 0 ? 'วันนี้' : p.off === 1 ? 'พรุ่งนี้' : `อีก ${p.off} วัน`;
+    li.innerHTML = `<span class="due-name">${escapeHtml(p.name)}<span class="due-when">${when}</span></span><span class="due-amt">${fmt(p.amount)}</span>`;
     list.appendChild(li);
   });
 }
@@ -2082,19 +2338,19 @@ function renderCompareChart(){
   compareChart = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets: [
-      { label: d2label(currentMonth), data: curCum, borderColor:'#D97757', backgroundColor:'rgba(217,119,87,.15)', fill:true, pointRadius:0, borderWidth:2.5, tension:.15 },
-      { label: d2label(prevDate), data: prevCum, borderColor:'#A8A296', borderDash:[5,4], pointRadius:0, borderWidth:2, tension:.15 }
+      { label: d2label(currentMonth), data: curCum, borderColor:'#E8D3A8', backgroundColor:'rgba(232,211,168,.15)', fill:true, pointRadius:0, borderWidth:2.5, tension:.15 },
+      { label: d2label(prevDate), data: prevCum, borderColor:'#9A9CA3', borderDash:[5,4], pointRadius:0, borderWidth:2, tension:.15 }
     ]},
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode:'index', intersect:false },
       plugins: {
-        legend: { labels: { color:'#F5F4EE', font:{size:11} } },
+        legend: { labels: { color:'#F2F2F4', font:{size:11} } },
         tooltip: { callbacks: { title: it => 'วันที่ ' + it[0].label, label: it => ` ${it.dataset.label}: ${fmt(it.parsed.y)}` } }
       },
       scales: {
-        x: { ticks:{color:'#A8A296', maxTicksLimit:8}, grid:{color:'#46443F'} },
-        y: { beginAtZero:true, ticks:{color:'#A8A296'}, grid:{color:'#46443F'} }
+        x: { ticks:{color:'#9A9CA3', maxTicksLimit:8}, grid:{color:'#2E3035'} },
+        y: { beginAtZero:true, ticks:{color:'#9A9CA3'}, grid:{color:'#2E3035'} }
       }
     }
   });
@@ -2119,7 +2375,12 @@ function renderHeatmap(){
     let style = '', amt = '', aria = '';
     if(v > 0){
       const a = 0.2 + 0.8 * (v / max);
-      style = `background:rgba(217,119,87,${a.toFixed(2)});` + (a > 0.6 ? 'color:#1a1917;' : '');
+      // Opaque mix of --panel2 and the sand accent, so text colour can be picked by real contrast.
+      const mix = [34,35,39].map((c,k)=> Math.round(c + ([232,211,168][k] - c) * a));
+      const lin = mix.map(v=>{ v/=255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); });
+      const lum = .2126*lin[0] + .7152*lin[1] + .0722*lin[2];
+      const darkText = (lum + .05) / (0.0049 + .05) > (0.886 + .05) / (lum + .05);
+      style = `background:rgb(${mix.join(',')});` + (darkText ? 'color:var(--on-accent);' : 'color:var(--text);');
       amt = `<span class="a">${compactMoney(v)}</span>`;
       aria = ` role="img" aria-label="วันที่ ${day} ใช้ ${fmt(v)}"`;
     }
@@ -2166,26 +2427,64 @@ function renderPieChart(monthEntries, fixedItems){
   }
 
   const ctx = document.getElementById('pieChart').getContext('2d');
+  const legend = document.getElementById('pieLegend');
+  legend.innerHTML = '';
   if(pieChart){ pieChart.destroy(); pieChart = null; }
   if(labels.length === 0){
     ctx.clearRect(0,0,9999,9999);
     return;
   }
+  const total = data.reduce((a,b)=> a + b, 0);
+  // Direct labels: the legend list carries name, amount and share, so identity is never colour-alone.
+  labels.forEach((l,i)=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="dot" style="background:${colors[i]}" aria-hidden="true"></span><span class="nm">${escapeHtml(l)}</span><span class="amt">${fmt(data[i])}</span><span class="pct">${Math.round(data[i] / total * 100)}%</span>`;
+    legend.appendChild(li);
+  });
+  // Total in the hole of the ring.
+  const centerText = {
+    id:'centerText',
+    afterDraw(chart){
+      const { ctx:c, chartArea:{ left, right, top, bottom } } = chart;
+      const x = (left + right) / 2, y = (top + bottom) / 2;
+      const ff = getComputedStyle(document.body).fontFamily;
+      c.save(); c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillStyle = CHART_MUTED; c.font = `500 12px ${ff}`; c.fillText('รวม', x, y - 16);
+      c.fillStyle = CHART_TEXT; c.font = `700 22px ${ff}`; c.fillText(fmt(total), x, y + 8);
+      c.restore();
+    }
+  };
   pieChart = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#2D2C2A', borderWidth: 2 }] },
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: CHART_PANEL, borderWidth: 3, borderRadius: 6, hoverOffset: 6 }] },
+    plugins: [centerText],
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false, cutout: '74%', layout:{ padding:8 },
       plugins: {
-        legend: { position: 'right', labels: { color: '#F5F4EE', boxWidth: 12, font:{size:11} } },
-        tooltip: { callbacks: {
-          label: it => ` ${it.label}: ${fmt(it.parsed)}`,
+        legend: { display:false },
+        tooltip: Object.assign(chartTooltip(), { callbacks: {
+          label: it => ` ${it.label}: ${fmt(it.parsed)} (${Math.round(it.parsed / total * 100)}%)`,
           afterLabel: it => it.label === 'รายการประจำ' ? [`ผ่อน/ลงทุน ${fmt(financingTotal)}, ค่าสมาชิก ${fmt(subscriptionTotal)}`]
             : (it.label === 'อื่นๆ' && Object.keys(otherParts).some(n => n !== 'อื่นๆ')) ? Object.keys(otherParts).map(n => `${n} ${fmt(otherParts[n])}`) : []
-        } }
+        } })
       }
     }
   });
+}
+
+// Shared chart look: recessive grid, muted ticks, tooltip on the elevated surface.
+const CHART_TEXT = '#F2F2F4', CHART_MUTED = '#9A9CA3', CHART_GRID = '#222327', CHART_PANEL = '#18191C';
+function chartTooltip(){
+  return {
+    backgroundColor:'#222327', borderColor:'#2E3035', borderWidth:1, padding:10, cornerRadius:10,
+    titleColor:CHART_TEXT, bodyColor:CHART_TEXT, footerColor:CHART_TEXT, footerFont:{ weight:'bold' },
+    boxPadding:4, usePointStyle:true
+  };
+}
+function setChartFont(){
+  if(typeof Chart === 'undefined') return;
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  Chart.defaults.color = CHART_MUTED;
 }
 
 /* ---------- Trend (F4): stacked bars + income line ---------- */
@@ -2237,19 +2536,23 @@ function renderTrendChart(){
   renderTrendTable(t);
   if(!chartAvailable('trendChart')) return;
 
-  const TEXT = '#F5F4EE', MUTED = '#A8A296';
+  const TEXT = CHART_TEXT, MUTED = CHART_MUTED;
+  const last = t.months.length - 1;
+  // The selected month (always the last bar) stays full strength; earlier months recede.
+  const dim = (hex, i) => i === last ? hex : hex + '73';
   // top-most non-zero bar segment of each month gets the rounded corners
   const topIdx = t.keys.map((_,mi)=>{ let top = -1; t.bars.forEach((b,di)=>{ if(b.data[mi] > 0) top = di; }); return top; });
   const datasets = t.bars.map(b => ({
-    type:'bar', label:b.label, data:b.data, stack:'spend', order:1,
-    backgroundColor:b.color, borderColor:'#2D2C2A', borderWidth:2, borderSkipped:false,
+    type:'bar', label:b.label, data:b.data, stack:'spend', order:1, solidColor:b.color,
+    backgroundColor: c => dim(b.color, c.dataIndex), borderColor:CHART_PANEL, borderWidth:2, borderSkipped:false,
+    maxBarThickness:28, categoryPercentage:.62, barPercentage:1,
     borderRadius: c => topIdx[c.dataIndex] === c.datasetIndex ? { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } : 0
   }));
   // Income is baht too: same y-axis as the bars (never a second axis).
   datasets.push({
     type:'line', label:'รายได้', data:t.income.map(v => v > 0 ? v : null), order:0,
-    borderColor:TEXT, backgroundColor:TEXT, borderWidth:2, borderDash:[6,4], tension:0, fill:false, spanGaps:false,
-    pointRadius:5, pointHoverRadius:6, pointStyle:'circle'
+    borderColor:TEXT, backgroundColor:CHART_PANEL, borderWidth:2, borderDash:[5,4], tension:0, fill:false, spanGaps:false,
+    pointRadius:4, pointHoverRadius:6, pointBorderWidth:2, pointStyle:'circle'
   });
 
   const ctx = document.getElementById('trendChart').getContext('2d');
@@ -2269,10 +2572,14 @@ function renderTrendChart(){
         setTimeout(()=>{ currentMonth = new Date(d.getFullYear(), d.getMonth(), 1); render(); }, 0);
       },
       plugins:{
-        legend:{ position:'bottom', labels:{ color:TEXT, boxWidth:12, font:{size:11}, padding:12 } },
-        tooltip:{
-          backgroundColor:'#34322F', borderColor:'#46443F', borderWidth:1,
-          titleColor:TEXT, bodyColor:TEXT, footerColor:TEXT, footerFont:{ weight:'bold' },
+        legend:{ position:'bottom', labels:{ color:TEXT, usePointStyle:true, pointStyle:'circle', boxWidth:8, boxHeight:8, font:{size:12}, padding:14,
+          // legend swatches use the full-strength colour, not the dimmed past-month fill
+          generateLabels: chart => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l => {
+            const ds = chart.data.datasets[l.datasetIndex];
+            if(ds.solidColor){ l.fillStyle = ds.solidColor; l.strokeStyle = ds.solidColor; }
+            return l;
+          }) } },
+        tooltip:Object.assign(chartTooltip(), {
           itemSort:(a,b)=>{
             const la = a.dataset.type === 'line', lb = b.dataset.type === 'line';
             return la !== lb ? (la ? 1 : -1) : b.datasetIndex - a.datasetIndex;
@@ -2283,11 +2590,13 @@ function renderTrendChart(){
             label: it => ` ${it.dataset.label}: ${fmt(it.parsed.y)}`,
             footer: items => items.length ? `รวม ${fmt(t.totals[items[0].dataIndex])}` : ''
           }
-        }
+        })
       },
       scales:{
-        x:{ stacked:true, ticks:{ color:MUTED, maxRotation:0, autoSkip:false, font:{ size: t.months.length > 6 ? 10 : 12 } }, grid:{ color:'#46443F' } },
-        y:{ stacked:true, beginAtZero:true, ticks:{ color:MUTED, callback:v => compactMoney(v) }, grid:{ color:'#46443F' } }
+        x:{ stacked:true, border:{ display:false }, grid:{ display:false },
+            ticks:{ color: c => c.index === last ? TEXT : MUTED, maxRotation:0, autoSkip:false, font: c => ({ size: t.months.length > 6 ? 11 : 12, weight: c.index === last ? '700' : '400' }) } },
+        y:{ stacked:true, beginAtZero:true, border:{ display:false }, grid:{ color:CHART_GRID, drawTicks:false },
+            ticks:{ color:MUTED, padding:8, maxTicksLimit:5, callback:v => compactMoney(v) } }
       }
     }
   });
@@ -2375,11 +2684,21 @@ function setupUi(){
   document.addEventListener('focusin', ev=>{
     clearTimeout(kbTimer);
     document.body.classList.toggle('kb-open', isField(ev.target));
+    syncKbBar();
   });
   document.addEventListener('focusout', ()=>{
     clearTimeout(kbTimer);
-    kbTimer = setTimeout(()=>{ if(!isField(document.activeElement)) document.body.classList.remove('kb-open'); }, 150);
+    kbTimer = setTimeout(()=>{ if(!isField(document.activeElement)) document.body.classList.remove('kb-open'); syncKbBar(); }, 150);
   });
+  document.getElementById('entryAmount').addEventListener('input', updateKbBarLabel);
+  const kbBtn = document.getElementById('kbSaveBtn');
+  // Keep the input focused (and the keyboard up) until the click lands.
+  ['pointerdown','mousedown'].forEach(t => kbBtn.addEventListener(t, ev => ev.preventDefault()));
+  kbBtn.addEventListener('click', addEntry);
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize', positionKbBar);
+    visualViewport.addEventListener('scroll', positionKbBar);
+  }
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) renderToday(); });
   try{ if(localStorage.getItem(TREND_KEY) === '12') trendRange = 12; }catch(e){}
   document.getElementById('trend6').setAttribute('aria-pressed', trendRange === 6 ? 'true' : 'false');
@@ -2403,6 +2722,7 @@ async function init(){
   document.getElementById('loadingOverlay').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   setupUi();
+  setChartFont();
   initForm();
   render();
   // Always open on วันนี้ unless the URL carries a valid tab hash.
