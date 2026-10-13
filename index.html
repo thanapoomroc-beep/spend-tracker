@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ค่าใช้จ่าย">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
   :root{
@@ -2445,12 +2445,25 @@ function renderPieChart(monthEntries, fixedItems){
   const centerText = {
     id:'centerText',
     afterDraw(chart){
-      const { ctx:c, chartArea:{ left, right, top, bottom } } = chart;
-      const x = (left + right) / 2, y = (top + bottom) / 2;
+      // Centre on the ring itself and lay the two lines out by their measured glyph boxes,
+      // so Thai font metrics can't push the block off-centre.
+      const arc = chart.getDatasetMeta(0).data[0];
+      if(!arc) return;
+      const c = chart.ctx, x = arc.x, y = arc.y;
       const ff = getComputedStyle(document.body).fontFamily;
-      c.save(); c.textAlign = 'center'; c.textBaseline = 'middle';
-      c.fillStyle = CHART_MUTED; c.font = `500 12px ${ff}`; c.fillText('รวม', x, y - 16);
-      c.fillStyle = CHART_TEXT; c.font = `700 22px ${ff}`; c.fillText(fmt(total), x, y + 8);
+      const top = 'รวม', main = fmt(total), gap = 6;
+      c.save(); c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+      c.font = `500 12px ${ff}`;
+      const m1 = c.measureText(top);
+      const h1 = m1.actualBoundingBoxAscent + m1.actualBoundingBoxDescent;
+      c.font = `700 22px ${ff}`;
+      const m2 = c.measureText(main);
+      const h2 = m2.actualBoundingBoxAscent + m2.actualBoundingBoxDescent;
+      const y0 = y - (h1 + gap + h2) / 2;
+      c.font = `500 12px ${ff}`; c.fillStyle = CHART_MUTED;
+      c.fillText(top, x, y0 + m1.actualBoundingBoxAscent);
+      c.font = `700 22px ${ff}`; c.fillStyle = CHART_TEXT;
+      c.fillText(main, x, y0 + h1 + gap + m2.actualBoundingBoxAscent);
       c.restore();
     }
   };
