@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta name="app-version" content="2.2.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -11,7 +12,8 @@
 <meta name="apple-mobile-web-app-title" content="ค่าใช้จ่าย">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
+<script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
 <style>
   :root{
     color-scheme: dark;
@@ -245,7 +247,7 @@
   .no-chart canvas{display:none;}
   .pie-wrap{height:220px;}
   /* Total sits in HTML over the ring: canvas text alignment is unreliable in iOS Safari. */
-  .pie-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; line-height:1.2;}
+  .pie-center{position:absolute; top:0; right:0; bottom:0; left:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; line-height:1.2;}
   .pie-center .k{font-size:12px; color:var(--muted);}
   .pie-center .v{font-size:22px; font-weight:700; color:var(--text);}
   .pie-center:empty,.no-chart .pie-center{display:none;}
@@ -656,7 +658,7 @@
       <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)" aria-label="เลือกไฟล์สำรองข้อมูล">
     </div>
 
-    <div class="footer-note">ข้อมูลเก็บในเครื่องนี้เท่านั้น อย่าลืมสำรองไว้เป็นระยะ</div>
+    <div class="footer-note">ข้อมูลเก็บในเครื่องนี้เท่านั้น อย่าลืมสำรองไว้เป็นระยะ<br>เวอร์ชัน <span id="appVersion"></span></div>
 
     <div class="danger-zone">
       <button class="ghost-danger" onclick="clearAllData()">ล้างข้อมูลทั้งหมด</button>
@@ -2724,8 +2726,19 @@ async function init(){
 }
 init();
 
+const APP_VERSION = (document.querySelector('meta[name="app-version"]') || {}).content || '';
+document.getElementById('appVersion').textContent = APP_VERSION;
+if('serviceWorker' in navigator){
+  // The service worker answers from cache first; when its background check finds a newer
+  // index.html it tells us, and a reload picks up the already-cached new version.
+  navigator.serviceWorker.addEventListener('message', ev=>{
+    if(ev.data && ev.data.type === 'update-available'){
+      flashToast('มีเวอร์ชันใหม่แล้ว', true, { label:'อัปเดต', onClick: ()=> location.reload() });
+    }
+  });
+}
 if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
-  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(()=>{}); });
 }
 </script>
 </body>
