@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.2.0">
+<meta name="app-version" content="2.3.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -27,6 +27,7 @@
     --radius:16px;
     --ease:cubic-bezier(.22,1,.36,1);
     --tabbar-h:56px;
+    --bar-neutral:var(--muted);   /* single neutral bar colour for non-categorical breakdowns */
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%; text-size-adjust:100%; accent-color:var(--accent); scrollbar-color:var(--border) var(--bg);}
@@ -392,6 +393,34 @@
   .table-scroll th{color:var(--muted); font-weight:500;}
   .table-scroll tr:last-child td{border-bottom:none;}
 
+  /* Payment method: segmented control (iOS style), chip grid when more than 4 */
+  .pay-seg{display:grid; grid-template-columns:repeat(var(--n,3),minmax(0,1fr)); gap:3px; padding:3px; margin-bottom:12px; background:var(--panel2); border:1px solid var(--border); border-radius:13px;}
+  .pay-seg[hidden]{display:none;}
+  .pay-opt{width:auto; min-width:0; min-height:44px; padding:4px 3px; border-radius:10px; font-size:12.5px; font-weight:500; line-height:1.25; text-align:center; background:transparent; color:var(--text); overflow-wrap:anywhere;}
+  .pay-opt:hover{background:var(--border);}
+  .pay-opt[aria-checked="true"],.pay-opt[aria-checked="true"]:hover{background:var(--accent); color:var(--on-accent); font-weight:600;}
+  /* 5+ methods: one row that scrolls sideways, so the form never grows taller than one row */
+  .pay-seg.wrap{display:flex; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; gap:6px; padding:0 0 2px; background:none; border:none; border-radius:0;}
+  .pay-seg.wrap::-webkit-scrollbar{display:none;}
+  .pay-seg.wrap .pay-opt{flex:0 0 auto; white-space:nowrap; overflow-wrap:normal; padding:0 14px; font-size:13.5px; background:var(--panel2); border:1px solid var(--border); border-radius:22px;}
+  .pay-seg.wrap .pay-opt:hover{background:var(--border);}
+  .pay-seg.wrap .pay-opt[aria-checked="true"],.pay-seg.wrap .pay-opt[aria-checked="true"]:hover{background:var(--accent); border-color:var(--accent);}
+  .pay-row{display:grid; grid-template-columns:minmax(0,1fr) 44px; gap:4px; align-items:center; margin-bottom:8px;}
+  .pay-row input{margin-bottom:0; padding:10px 8px;}
+  .pay-row button{width:44px; height:44px; padding:0; font-size:13px; display:grid; place-items:center;}
+  .pay-row .hide{font-size:12.5px; font-weight:600;}
+  .pay-row .del-fixed{background:var(--panel2); color:var(--red-text); border:1px solid var(--border); border-radius:10px;}
+  .pay-row .del-fixed:hover{background:var(--border);}
+  .pay-break{list-style:none; margin:0; padding:0;}
+  .pay-break li{margin-bottom:14px;}
+  .pay-break li:last-child{margin-bottom:0;}
+  .pb-head{display:grid; grid-template-columns:minmax(0,1fr) auto 3.2em; align-items:baseline; gap:10px; font-size:14px; margin-bottom:6px;}
+  .pb-head .nm{overflow-wrap:anywhere;}
+  .pb-head .amt{font-weight:600; font-variant-numeric:tabular-nums; text-align:right;}
+  .pb-head .pct{color:var(--muted); font-size:13px; text-align:right; font-variant-numeric:tabular-nums;}
+  .pb-bar{height:6px; border-radius:6px; background:var(--panel2); overflow:hidden;}
+  .pb-bar>span{display:block; height:100%; border-radius:6px; background:var(--bar-neutral);}
+
   /* ---------- Tabs ---------- */
   .tab-panel[hidden]{display:none;}
   .tabbar{
@@ -451,6 +480,9 @@
     #entryCard{padding:12px 16px;}
     #entryCard>h2{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; margin:0;}   /* the fields explain themselves; saves a row above the fold */
     #entryCard .more{margin-bottom:6px;}
+    #entryCard .pay-seg{margin-bottom:8px;}
+    /* amount and category explain themselves (placeholder, chips); still announced by screen readers */
+    #entryCard>label{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; margin:0;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -496,6 +528,7 @@
       <div class="field-error" id="amountError"></div>
       <label id="chipsLabel">หมวด</label>
       <div class="chips" id="categoryChips" role="radiogroup" aria-labelledby="chipsLabel"></div>
+      <div class="pay-seg" id="payControl" role="radiogroup" aria-label="จ่ายด้วย" hidden></div>
       <details class="more" id="moreDetails">
         <summary><span><span id="dateSummary">วันนี้</span> <span class="muted" id="dateHint">เพิ่มโน้ต/เปลี่ยนวัน</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="row2">
@@ -533,8 +566,8 @@
 
     <div class="card">
       <h2><span id="entriesTitle">รายการเดือนนี้</span> <span class="h2-note" id="entryCount"></span></h2>
-      <label for="entrySearch" class="sr-only">ค้นหาโน้ตหรือหมวด</label>
-      <input type="search" id="entrySearch" placeholder="ค้นหาโน้ตหรือหมวด" autocomplete="off" enterkeyhint="search" maxlength="60">
+      <label for="entrySearch" class="sr-only">ค้นหาโน้ต หมวด หรือช่องทางจ่าย</label>
+      <input type="search" id="entrySearch" placeholder="ค้นหาโน้ต หมวด หรือช่องทางจ่าย" autocomplete="off" enterkeyhint="search" maxlength="60">
       <details class="more filters" id="filterDetails">
         <summary><span>ตัวกรอง <span class="muted" id="filterSummary"></span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="fchips" style="margin-top:6px;"><button type="button" class="fchip" id="searchAllBtn" aria-pressed="false">ค้นหาทุกเดือน</button></div>
@@ -560,6 +593,11 @@
     <div class="card" id="budgetCard">
       <h2>งบแต่ละหมวด</h2>
       <div id="budgetBody"></div>
+    </div>
+
+    <div class="card" id="payCard" style="display:none;">
+      <h2><span>แยกตามช่องทางจ่าย</span> <span class="h2-note" id="payTotal"></span></h2>
+      <ul class="pay-break" id="payBody"></ul>
     </div>
 
     <div class="card" id="installCard" style="display:none;">
@@ -645,6 +683,20 @@
     </div>
 
     <div class="card">
+      <h2 id="paymentSettings">ช่องทางจ่าย</h2>
+      <div id="payList"></div>
+      <div id="payArchWrap" style="display:none;"><div class="cat-sub">ช่องทางที่ซ่อนไว้ (ยังเห็นในรายการเก่า)</div><div id="payArchList"></div></div>
+      <div class="cat-add">
+        <div>
+          <label for="newPayName" class="sr-only">ชื่อช่องทางใหม่</label>
+          <input type="text" id="newPayName" placeholder="ชื่อช่องทางใหม่" maxlength="24" aria-describedby="payMsg" autocomplete="off">
+        </div>
+        <button type="button" class="secondary" id="addPayBtn">+ เพิ่มช่องทาง</button>
+      </div>
+      <div class="cat-msg" id="payMsg" role="alert"></div>
+    </div>
+
+    <div class="card">
       <h2 id="budgetSettings">งบแต่ละหมวด (ต่อเดือน)</h2>
       <div id="budgetSettingsList"></div>
     </div>
@@ -681,6 +733,8 @@
     <input type="number" id="editAmount" min="0" step="0.01" inputmode="decimal" aria-describedby="editError" oninput="document.getElementById('editError').textContent=''">
     <label id="editChipsLabel">หมวด</label>
     <div class="chips" id="editChips" role="radiogroup" aria-labelledby="editChipsLabel"></div>
+    <label id="editPayLabel">จ่ายด้วย</label>
+    <div class="pay-seg" id="editPay" role="radiogroup" aria-labelledby="editPayLabel" hidden></div>
     <label for="editDate">วันที่</label>
     <input type="date" id="editDate">
     <label for="editNote">โน้ต</label>
@@ -724,6 +778,10 @@
 <script>
 const STORAGE_KEY = 'spendTrackerState';
 const LAST_CAT_KEY = 'spendTrackerLastCategory';
+const LAST_PAY_KEY = 'spendTrackerLastPayment';
+const LAST_PAY_TRIP_KEY = 'spendTrackerLastPaymentTrip';   // reserved for a later travel mode
+function lastPaymentKey(mode){ return mode === 'trip' ? LAST_PAY_TRIP_KEY : LAST_PAY_KEY; }
+const PAYMENT_SEEDS = [{ id:'cash', name:'เงินสด' }, { id:'ttb', name:'บัตรเครดิต TTB' }, { id:'kbank', name:'บัตรเครดิต KBANK' }];
 const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube Premium','Netflix','Spotify','Claude'];
 // 6 validated hue slots in fixed order (never cycled, never by rank). Status colours stay reserved for status.
 const SLOT_COLORS = ['#d95926','#3987e5','#199e70','#c98500','#d55181','#9085e9'];
@@ -786,9 +844,13 @@ function seedCategories(stamp){
 //   monthlySettings[m]: { income, fixedItems:[{id,name,amount,group, dueDay?, startMonth?, totalTerms?}], updatedAt }
 //   budgetSettings[m]:  { [category]: number }  - a plain map, so it must hold budgets only.
 //   budgetUpdatedAt[m]: ISO string              - the updatedAt of budgetSettings[m] lives here for that reason.
-//   entries: [{ id, date, amount, category, note, updatedAt }]  (category is stored by name)
+//   paymentMethods: [{ id, name, archived, updatedAt }]          (array order = display order; ids are stable)
+//   entries: [{ id, date, amount, category, note, paymentMethod?, updatedAt }]  (category by name, paymentMethod by id)
+function seedPayments(stamp){
+  return PAYMENT_SEEDS.map(p => ({ id:p.id, name:p.name, archived:false, updatedAt: stamp }));
+}
 function freshState(){
-  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), entries: [] };
+  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), entries: [] };
 }
 
 function cleanBudgets(b){
@@ -863,6 +925,22 @@ function migrateState(parsed){
   parsed.entries.forEach(e => addUnknown(e.category));
   Object.keys(parsed.budgetSettings).forEach(k => Object.keys(parsed.budgetSettings[k]).forEach(addUnknown));
   parsed.categories = cats;
+
+  // Payment methods: seed when absent; otherwise validate. Entries keep their paymentMethod id as is.
+  if(!Array.isArray(parsed.paymentMethods)){
+    parsed.paymentMethods = seedPayments(EPOCH);
+  }else{
+    const ids = new Set(), pms = [];
+    parsed.paymentMethods.forEach(m=>{
+      if(!m || typeof m.id !== 'string' || !m.id || typeof m.name !== 'string' || ids.has(m.id)) return;
+      const name = m.name.trim();
+      if(!name) return;
+      ids.add(m.id);
+      pms.push({ id:m.id, name, archived: !!m.archived, updatedAt: m.updatedAt || EPOCH });
+    });
+    parsed.paymentMethods = pms;
+  }
+  parsed.entries.forEach(e=>{ if(e.paymentMethod !== undefined && (typeof e.paymentMethod !== 'string' || !e.paymentMethod)) delete e.paymentMethod; });
   parsed.schemaVersion = SCHEMA_VERSION;
   return parsed;
 }
@@ -998,6 +1076,8 @@ let currentMonth = new Date();
 currentMonth.setDate(1);
 let selectedCategory = 'อาหาร';
 let editCategory = 'อาหาร';
+let selectedPayment = '';   // method id, '' = none
+let editPayment = '';
 let editingId = null;
 let heroShown = { label:'', num:null };   // what the hero last displayed (for the count-up after saving)
 
@@ -1054,6 +1134,8 @@ function initForm(){
   document.getElementById('entryDate').value = todayISO();
   updateDateSummary();
   renderChips();
+  ensureSelectedPayment();
+  renderPayControl();
   renderSettingsForm();
 }
 
@@ -1197,6 +1279,81 @@ function renderEditChips(){
   buildChips(document.getElementById('editChips'), editCategory, c=>{ editCategory = c; renderEditChips(); }, orig && orig.category);
 }
 
+/* ---------- Payment methods (ช่องทางจ่าย) ---------- */
+function findPay(id){ return id ? state.paymentMethods.find(m => m.id === id) : undefined; }
+function activePays(){ return state.paymentMethods.filter(m => !m.archived); }
+function payName(id){ const m = findPay(id); return m ? m.name : ''; }
+function payUsed(id){ return state.entries.some(e => e.paymentMethod === id); }
+// Short form for tight spots: the last word when the name has a space, else the name; capped with an ellipsis.
+function shortPayName(id){
+  const n = payName(id).trim();
+  if(!n) return '';
+  const w = n.includes(' ') ? n.split(/\s+/).pop() : n;
+  return w.length > 12 ? w.slice(0, 11) + '…' : w;
+}
+function loadLastPayment(mode){
+  selectedPayment = '';
+  try{
+    const id = localStorage.getItem(lastPaymentKey(mode));
+    if(id && activePays().some(m => m.id === id)) selectedPayment = id;
+  }catch(e){}
+}
+function ensureSelectedPayment(){
+  if(selectedPayment && !activePays().some(m => m.id === selectedPayment)) selectedPayment = '';
+}
+// Segmented control; tapping the selected option clears it. More than 4 options become a wrapping chip grid.
+// `extra`: an id to include even if archived (so editing an old entry never drops its method).
+function buildPay(container, selected, onSelect, extra){
+  const focusId = container.contains(document.activeElement) ? document.activeElement.dataset.id : null;
+  container.innerHTML = '';
+  const list = activePays();
+  if(extra && !list.some(m => m.id === extra) && findPay(extra)) list.push(findPay(extra));
+  container.hidden = !list.length;
+  if(!list.length) return;
+  container.className = 'pay-seg' + (list.length > 4 ? ' wrap' : '');
+  container.style.setProperty('--n', list.length);
+  const n = list.length;
+  const hasSel = list.some(m => m.id === selected);
+  list.forEach((m,i)=>{
+    const on = m.id === selected;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pay-opt';
+    b.dataset.id = m.id;
+    b.setAttribute('role','radio');
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+    b.tabIndex = (on || (!hasSel && i === 0)) ? 0 : -1;
+    b.textContent = m.name;
+    b.addEventListener('click', ()=> onSelect(on ? '' : m.id));
+    b.addEventListener('keydown', ev=>{
+      const step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1 : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
+      if(step){ ev.preventDefault(); onSelect(list[(i + step + n) % n].id); }
+    });
+    container.appendChild(b);
+  });
+  if(focusId){
+    const opts = [...container.querySelectorAll('.pay-opt')];
+    const f = container.querySelector('[aria-checked="true"]') || opts.find(x => x.dataset.id === focusId) || container.querySelector('[tabindex="0"]');
+    if(f) f.focus();
+  }
+}
+function renderPayControl(){
+  ensureSelectedPayment();
+  buildPay(document.getElementById('payControl'), selectedPayment, selectPayment);
+  updateKbBarLabel();
+}
+function selectPayment(id){
+  selectedPayment = id;
+  try{ localStorage.setItem(lastPaymentKey('normal'), id); }catch(e){}
+  renderPayControl();
+}
+function renderEditPay(){
+  const orig = state.entries.find(x => x.id === editingId);
+  const box = document.getElementById('editPay');
+  buildPay(box, editPayment, id=>{ editPayment = id; renderEditPay(); }, orig && orig.paymentMethod);
+  document.getElementById('editPayLabel').style.display = box.hidden ? 'none' : '';
+}
+
 /* ---------- Settings form ---------- */
 const instOpen = new Set();   // item ids whose installment fields are shown before both values exist
 let openPickerFor = null;     // category name whose colour picker is open
@@ -1217,6 +1374,7 @@ function renderSettingsForm(){
   const subSum = getEffectiveSettings(mKey).fixedItems.filter(i => i.group !== 'financing').reduce((s,i)=> s + (i.amount||0), 0);
   document.getElementById('subYearly').textContent = subSum > 0 ? `ค่าสมาชิกรวมปีละ ${fmt(subSum * 12)}` : '';
   renderCategorySettings();
+  renderPaySettings();
   renderBudgetSettings(getEffectiveBudgets(mKey));
 }
 
@@ -1486,6 +1644,106 @@ function askDeleteCategory(name){
   });
 }
 
+/* ---------- Payment method management ---------- */
+function setPayMsg(t){ document.getElementById('payMsg').textContent = t || ''; }
+function payNameError(name, selfId){
+  if(!name) return 'ใส่ชื่อช่องทางก่อน';
+  if(state.paymentMethods.some(m => m.id !== selfId && m.name.toLowerCase() === name.toLowerCase())) return 'มีช่องทางชื่อนี้แล้ว';
+  return '';
+}
+function renderPaySettings(){
+  const list = document.getElementById('payList');
+  list.innerHTML = '';
+  activePays().forEach(m=>{
+    const used = payUsed(m.id);
+    const nm = escapeHtml(m.name);
+    const row = document.createElement('div');
+    row.className = 'pay-row';
+    row.dataset.id = m.id;
+    row.setAttribute('role','group');
+    row.setAttribute('aria-label','ช่องทาง ' + m.name);
+    row.innerHTML = `<input type="text" class="pay-name" value="${nm}" maxlength="24" aria-label="ชื่อช่องทาง" autocomplete="off">` +
+      (used ? `<button type="button" class="secondary pay-act hide" aria-label="ซ่อนช่องทาง ${nm}" title="ซ่อนช่องทางนี้">ซ่อน</button>`
+            : `<button type="button" class="del-fixed pay-act" aria-label="ลบช่องทาง ${nm}" title="ลบช่องทาง">${ICON_X}</button>`);
+    const inp = row.querySelector('.pay-name');
+    inp.addEventListener('change', ()=> renamePay(m.id, inp));
+    row.querySelector('.pay-act').addEventListener('click', ()=> used ? askArchivePay(m.id) : askDeletePay(m.id));
+    list.appendChild(row);
+  });
+  const arch = state.paymentMethods.filter(m => m.archived);
+  document.getElementById('payArchWrap').style.display = arch.length ? '' : 'none';
+  const al = document.getElementById('payArchList');
+  al.innerHTML = '';
+  arch.forEach(m=>{
+    const nm = escapeHtml(m.name);
+    const row = document.createElement('div');
+    row.className = 'arch-row';
+    row.innerHTML = `<span class="nm">${nm}</span><button type="button" class="secondary" aria-label="แสดงช่องทาง ${nm} อีกครั้ง">แสดงอีกครั้ง</button>${payUsed(m.id) ? '' : `<button type="button" class="del-fixed" aria-label="ลบช่องทาง ${nm}">${ICON_X}</button>`}`;
+    row.querySelector('.secondary').addEventListener('click', ()=> unarchivePay(m.id));
+    const d = row.querySelector('.del-fixed'); if(d) d.addEventListener('click', ()=> askDeletePay(m.id));
+    al.appendChild(row);
+  });
+}
+async function afterPayChange(){
+  ensureSelectedPayment();
+  renderPayControl();
+  await saveData();
+  render();
+}
+async function addPay(){
+  const inp = document.getElementById('newPayName');
+  const name = inp.value.trim();
+  const err = payNameError(name, null);
+  if(err){ setPayMsg(err); inp.setAttribute('aria-invalid','true'); inp.focus(); return; }
+  setPayMsg(''); inp.removeAttribute('aria-invalid');
+  state.paymentMethods.push({ id: 'pm-' + genId(), name, archived:false, updatedAt: nowISO() });
+  inp.value = '';
+  await afterPayChange();
+}
+async function renamePay(id, inp){
+  const m = findPay(id); if(!m) return;
+  const name = inp.value.trim();
+  if(name === m.name){ setPayMsg(''); inp.removeAttribute('aria-invalid'); return; }
+  const err = payNameError(name, id);
+  if(err){ setPayMsg(err); inp.setAttribute('aria-invalid','true'); inp.value = m.name; inp.focus(); return; }
+  setPayMsg(''); inp.removeAttribute('aria-invalid');
+  m.name = name; m.updatedAt = nowISO();
+  await afterPayChange();
+}
+function askArchivePay(id){
+  const m = findPay(id); if(!m) return;
+  setPayMsg('');
+  openConfirm({
+    title: `ซ่อนช่องทาง "${m.name}" ไหม?`,
+    desc: 'จะไม่โชว์ตอนจดรายการ แต่ยังเห็นในรายการเก่า',
+    confirmLabel: 'ซ่อน',
+    onConfirm: async ()=>{
+      m.archived = true; m.updatedAt = nowISO();
+      await afterPayChange();
+    }
+  });
+}
+async function unarchivePay(id){
+  const m = findPay(id); if(!m) return;
+  m.archived = false; m.updatedAt = nowISO();
+  await afterPayChange();
+}
+function askDeletePay(id){
+  const m = findPay(id); if(!m) return;
+  if(payUsed(id)){ askArchivePay(id); return; }
+  setPayMsg('');
+  openConfirm({
+    title: `ลบช่องทาง "${m.name}" ไหม?`,
+    desc: 'ช่องทางนี้ยังไม่มีรายการ',
+    confirmLabel: 'ลบ',
+    onConfirm: async ()=>{
+      state.paymentMethods = state.paymentMethods.filter(x => x.id !== id);
+      if(selectedPayment === id) selectedPayment = '';
+      await afterPayChange();
+    }
+  });
+}
+
 // Budget inputs are rebuilt only when the list of active categories changes, and otherwise only
 // have their values refreshed, so tapping from one budget field to the next never loses focus.
 function renderBudgetSettings(budgets){
@@ -1624,7 +1882,8 @@ async function addEntry(){
     return;
   }
   ensureSelectedCategory();
-  await saveNewEntry({ date: dateVal, amount, category: selectedCategory, note }, true);
+  ensureSelectedPayment();
+  await saveNewEntry({ date: dateVal, amount, category: selectedCategory, note, paymentMethod: selectedPayment }, true);
 }
 
 // Did this entry push its category past 80% / 100% of that month's budget?
@@ -1647,6 +1906,7 @@ async function saveNewEntry(f, fromForm){
   btn.disabled = true;
   const amountEl = document.getElementById('entryAmount');
   const entry = { id: genId(), date: f.date, amount: f.amount, category: f.category, note: f.note, updatedAt: nowISO() };
+  if(f.paymentMethod) entry.paymentMethod = f.paymentMethod;
   const before = { label: heroShown.label, num: heroShown.num };
   const cross = budgetCrossing(entry);
   state.entries.push(entry);
@@ -1725,6 +1985,8 @@ function animateHeroNumber(el, from, to){
 function describeEntry(e){
   let s = `${e.category} ${fmt(e.amount)} วันที่ ${fmtThaiDate(e.date)}`;
   if(e.note) s += ` ${e.note}`;
+  const pm = payName(e.paymentMethod);
+  if(pm) s += ` จ่ายด้วย ${pm}`;
   return s;
 }
 
@@ -1751,11 +2013,13 @@ function openEdit(id, listId){
   editingId = id;
   editOpenerList = listId || 'entryList';
   editCategory = e.category;
+  editPayment = e.paymentMethod && findPay(e.paymentMethod) ? e.paymentMethod : '';
   document.getElementById('editDate').value = e.date;
   document.getElementById('editAmount').value = e.amount;
   document.getElementById('editNote').value = e.note || '';
   document.getElementById('editError').textContent = '';
   renderEditChips();
+  renderEditPay();
   document.getElementById('editModalOverlay').style.display = 'flex';
   document.getElementById('editAmount').focus();
 }
@@ -1781,6 +2045,7 @@ async function saveEdit(){
   e.amount = amount;
   e.category = editCategory;
   e.note = document.getElementById('editNote').value.trim();
+  if(editPayment && findPay(editPayment)) e.paymentMethod = editPayment; else delete e.paymentMethod;
   e.updatedAt = nowISO();
   await saveData();
   const d = parseISODate(dateVal);
@@ -1889,9 +2154,10 @@ function repeatGroups(){
     const note = String(e.note || '').trim();
     const k = JSON.stringify([e.category, e.amount, note]);
     let g = map.get(k);
-    if(!g){ g = { category:e.category, amount:e.amount, note, count:0, last:'' }; map.set(k, g); }
+    if(!g){ g = { category:e.category, amount:e.amount, note, count:0, last:'', pay:'' }; map.set(k, g); }
     g.count++;
-    if(e.date > g.last) g.last = e.date;
+    // most recent entry of the group decides the method (later in the list wins a same-day tie)
+    if(e.date >= g.last){ g.last = e.date; g.pay = findPay(e.paymentMethod) ? e.paymentMethod : ''; }
   });
   return [...map.values()].filter(g => g.count >= 2)
     .sort((a,b)=> b.count - a.count || (a.last < b.last ? 1 : a.last > b.last ? -1 : 0)).slice(0, 4);
@@ -1911,9 +2177,9 @@ function renderRepeat(){
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'rchip';
-    b.setAttribute('aria-label', `จดซ้ำ ${g.category} ${fmtExact(g.amount)}${g.note ? ' ' + g.note : ''}`);
+    b.setAttribute('aria-label', `จดซ้ำ ${g.category} ${fmtExact(g.amount)}${g.note ? ' ' + g.note : ''}${g.pay ? ' จ่ายด้วย ' + payName(g.pay) : ''}`);
     b.innerHTML = `<span class="dot" style="background:${categoryColor(g.category)}" aria-hidden="true"></span><span class="rt">${escapeHtml(g.note || g.category)} ${fmtExact(g.amount)}</span>`;
-    b.addEventListener('click', ()=> saveNewEntry({ date: todayISO(), amount: g.amount, category: g.category, note: g.note }, false));
+    b.addEventListener('click', ()=> saveNewEntry({ date: todayISO(), amount: g.amount, category: g.category, note: g.note, paymentMethod: g.pay }, false));
     row.appendChild(b);
   });
 }
@@ -1935,7 +2201,9 @@ function closeInfo(){
 function kbBarLabelText(){
   const a = parseFloat(document.getElementById('entryAmount').value);
   ensureSelectedCategory();
-  return a > 0 ? `จด ${fmtExact(a)} ${selectedCategory}` : `จด ${selectedCategory}`;
+  ensureSelectedPayment();
+  const pm = shortPayName(selectedPayment);
+  return (a > 0 ? `จด ${fmtExact(a)} ${selectedCategory}` : `จด ${selectedCategory}`) + (pm ? ' ' + pm : '');
 }
 function updateKbBarLabel(){
   const b = document.getElementById('kbSaveBtn');
@@ -1984,6 +2252,7 @@ function renderMonthViews(){
   renderEntriesTab(monthEntries);
 
   renderBudgetCard(getEffectiveBudgets(mKeyStr), monthEntries);
+  renderPayBreakdown(paymentStatsEntries(monthEntries));
   renderInstallCard(eff.fixedItems);
   renderCompareChart();
   renderHeatmap();
@@ -2066,6 +2335,10 @@ function renderEntriesTab(monthEntries){
 }
 
 // Day-grouped rows into `list`. `limit`: max rows (null = all). `useFilters`: apply search/filter (F5).
+// Muted second line of a row: note and short method name; nothing when neither exists.
+function entrySub(e){
+  return [e.note, shortPayName(e.paymentMethod)].filter(Boolean).join(' · ');
+}
 function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
   list.innerHTML = '';
   const active = !!useFilters && filterActive();
@@ -2075,7 +2348,7 @@ function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
     const q = filterText.trim().toLowerCase();
     source = source.filter(e =>
       (!filterCats.size || filterCats.has(e.category)) &&
-      (!q || String(e.note || '').toLowerCase().includes(q) || String(e.category).toLowerCase().includes(q)));
+      (!q || String(e.note || '').toLowerCase().includes(q) || String(e.category).toLowerCase().includes(q) || payName(e.paymentMethod).toLowerCase().includes(q)));
   }
   const shown = limit ? source.slice(0, limit) : source;
   const today = todayISO();
@@ -2095,7 +2368,7 @@ function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
     const row = document.createElement('div');
     row.className = 'entry-row';
     row.dataset.id = e.id;
-    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${e.note ? `<span class="entry-note">${escapeHtml(e.note)}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
+    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
     row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, list.id));
     const delBtn = row.querySelector('.del');
     if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
@@ -2212,6 +2485,28 @@ function renderBudgetCard(budgets, monthEntries){
       <div class="bar" role="progressbar" aria-label="งบ ${escapeHtml(cat)}" aria-valuemin="0" aria-valuemax="${budget}" aria-valuenow="${Math.min(Math.round(spent), budget)}"><span class="${barCls}" style="width:${Math.min(ratio,1)*100}%"></span></div>
       <div class="budget-foot${over ? ' neg' : ''}">${over ? 'เกิน ' + fmt(spent - budget) : 'เหลือ ' + fmt(budget - spent)}</div>`;
     body.appendChild(row);
+  });
+}
+
+/* ---------- Breakdown by payment method (ภาพรวม) ---------- */
+// The one place that decides which entries feed the method breakdown (a later phase can exclude trip entries here).
+function paymentStatsEntries(monthEntries){ return monthEntries; }
+function renderPayBreakdown(entries){
+  const card = document.getElementById('payCard');
+  const body = document.getElementById('payBody');
+  body.innerHTML = '';
+  card.style.display = entries.length ? '' : 'none';
+  if(!entries.length){ document.getElementById('payTotal').textContent = ''; return; }
+  const by = new Map();
+  entries.forEach(e=>{ const k = findPay(e.paymentMethod) ? e.paymentMethod : ''; by.set(k, (by.get(k) || 0) + e.amount); });
+  const rows = [...by.entries()].map(([id, sum]) => ({ id, sum, name: id ? payName(id) : 'ไม่ระบุ' })).sort((a,b)=> b.sum - a.sum);
+  const total = rows.reduce((s,r)=> s + r.sum, 0);
+  const max = rows[0].sum;
+  document.getElementById('payTotal').textContent = 'รวม ' + fmt(total);
+  rows.forEach(r=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="pb-head"><span class="nm">${escapeHtml(r.name)}</span><span class="amt">${fmt(r.sum)}</span><span class="pct">${Math.round(r.sum / total * 100)}%</span></div><div class="pb-bar" aria-hidden="true"><span style="width:${max > 0 ? r.sum / max * 100 : 0}%"></span></div>`;
+    body.appendChild(li);
   });
 }
 
@@ -2707,6 +3002,9 @@ function setupUi(){
     filterTimer = setTimeout(()=>{ filterText = v; updateFilterSummary(); refreshEntryList(); }, 150);
   });
   document.getElementById('searchAllBtn').addEventListener('click', ()=>{ searchAll = !searchAll; updateFilterSummary(); refreshEntryList(); });
+  document.getElementById('addPayBtn').addEventListener('click', addPay);
+  document.getElementById('newPayName').addEventListener('keydown', ev=>{ if(ev.key === 'Enter'){ ev.preventDefault(); addPay(); } });
+  document.getElementById('newPayName').addEventListener('input', ()=>{ setPayMsg(''); document.getElementById('newPayName').removeAttribute('aria-invalid'); });
   document.getElementById('addCatBtn').addEventListener('click', addCategory);
   document.getElementById('newCatName').addEventListener('keydown', ev=>{ if(ev.key === 'Enter'){ ev.preventDefault(); addCategory(); } });
   document.getElementById('newCatName').addEventListener('input', ()=>{ setCatMsg(''); document.getElementById('newCatName').removeAttribute('aria-invalid'); });
@@ -2715,6 +3013,7 @@ function setupUi(){
 async function init(){
   state = await loadData();
   loadLastCategory();
+  loadLastPayment('normal');
   document.getElementById('loadingOverlay').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   setupUi();
