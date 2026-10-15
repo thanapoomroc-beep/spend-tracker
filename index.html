@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.3.0">
+<meta name="app-version" content="2.4.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -28,6 +28,8 @@
     --ease:cubic-bezier(.22,1,.36,1);
     --tabbar-h:56px;
     --bar-neutral:var(--muted);   /* single neutral bar colour for non-categorical breakdowns */
+    /* travel mode signature: ice cyan, used only for the travel banner, trip toggle, trip hero border, trip badge and the trend trip segment */
+    --trip:#5CE1E6; --trip-bg:rgba(92,225,230,.12); --trip-line:rgba(92,225,230,.5); --on-trip:#0E0F11;
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%; text-size-adjust:100%; accent-color:var(--accent); scrollbar-color:var(--border) var(--bg);}
@@ -290,8 +292,8 @@
   @keyframes pop{from{opacity:0; transform:translateY(10px) scale(.98);} to{opacity:1; transform:none;}}
   @media (max-width:600px){
     /* edit dialog becomes a bottom sheet: reachable with a thumb */
-    #editModalOverlay{align-items:flex-end; padding:0;}
-    #editModalOverlay .modal-card{max-width:none; border-radius:20px 20px 0 0; border-bottom:none; padding:20px 16px calc(16px + env(safe-area-inset-bottom)); animation:sheet .28s var(--ease);}
+    #editModalOverlay,#tripSheetOverlay,#tripModalOverlay{align-items:flex-end; padding:0;}
+    #editModalOverlay .modal-card,#tripSheetOverlay .modal-card,#tripModalOverlay .modal-card{max-width:none; border-radius:20px 20px 0 0; border-bottom:none; padding:20px 16px calc(16px + env(safe-area-inset-bottom)); animation:sheet .28s var(--ease);}
   }
   @keyframes sheet{from{transform:translateY(40px); opacity:0;} to{transform:none; opacity:1;}}
   .modal-title{font-size:17px; font-weight:700; margin-bottom:6px;}
@@ -485,6 +487,101 @@
     #entryCard>label{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; margin:0;}
   }
 
+  /* ---------- Trips & travel mode (v2.4) ---------- */
+  body.travel .top{display:none;}
+  .trip-banner{display:flex; align-items:center; gap:8px; min-height:48px; margin-bottom:10px; padding:2px 4px 2px 12px; background:var(--trip-bg); border:1px solid var(--trip-line); border-radius:14px;}
+  .trip-banner[hidden]{display:none;}
+  .trip-banner .tb-main{flex:1; min-width:0; width:auto; display:flex; align-items:center; justify-content:flex-start; gap:8px; padding:0; background:none; color:var(--trip); font-size:15px; font-weight:600; text-align:left; border-radius:10px;}
+  .trip-banner .tb-main:hover{background:none;}
+  .trip-banner .tb-name{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .trip-banner .tb-day{flex:0 0 auto; white-space:nowrap; color:var(--text); font-size:14px; font-weight:500;}
+  .trip-banner .tb-btn{width:auto; flex:0 0 auto; min-height:44px; padding:0 14px; background:none; color:var(--text); border:1px solid var(--trip-line); border-radius:10px; font-size:14px; font-weight:600;}
+  .trip-banner .tb-btn:hover{background:var(--trip-bg);}
+  .trip-banner.suggest{flex-wrap:wrap; padding:8px 8px 8px 12px; gap:2px 8px;}
+  .trip-banner.suggest .tb-txt{flex:1 1 100%; font-size:14px; color:var(--text); line-height:1.4;}
+  .trip-banner.suggest .tb-acts{display:flex; gap:8px; margin-left:auto;}
+  .trip-banner.suggest .tb-acts button.tb-yes{width:auto; min-height:44px; padding:0 18px; font-size:14px;}
+  .hero.trip-hero{border-color:var(--trip-line);}
+  .hero.trip-hero .hero-label{padding:0;}
+  .trip-badge{display:inline-block; font-size:11px; font-weight:600; line-height:1.4; padding:0 6px; margin-left:6px; border:1px solid var(--trip-line); border-radius:8px; color:var(--trip); vertical-align:1px; white-space:nowrap;}
+  .tiny-tag{display:block; font-size:11px; font-weight:400; color:var(--muted); line-height:1.3; text-align:right;}
+  .entry-amt{text-align:right;}
+  .kind-seg{display:grid; grid-template-columns:1fr 1fr; gap:3px; padding:3px; margin-bottom:8px; background:var(--panel2); border:1px solid var(--border); border-radius:13px;}
+  .kind-seg[hidden]{display:none;}
+  .kind-seg button{min-height:44px; padding:0 8px; border-radius:10px; font-size:14px; font-weight:600; background:transparent; color:var(--text);}
+  .kind-seg button:hover{background:var(--border);}
+  .kind-seg button[aria-checked="true"],.kind-seg button[aria-checked="true"]:hover{background:var(--accent); color:var(--on-accent);}
+  .kind-seg button[data-kind="trip"][aria-checked="true"],.kind-seg button[data-kind="trip"][aria-checked="true"]:hover{background:var(--trip); color:var(--on-trip);}
+  .amt-row{display:flex; align-items:flex-start; gap:8px;}
+  .amt-row .amount-input{flex:1 1 auto; width:auto;}
+  .cur-seg{display:grid; grid-template-columns:repeat(2,44px); gap:3px; padding:3px; flex:0 0 auto; background:var(--panel2); border:1px solid var(--border); border-radius:13px;}
+  .cur-seg[hidden]{display:none;}
+  .cur-seg button{width:44px; min-height:44px; height:44px; padding:0; border-radius:10px; font-size:17px; font-weight:700; background:transparent; color:var(--text);}
+  .cur-seg button:hover{background:var(--border);}
+  .cur-seg button[aria-checked="true"],.cur-seg button[aria-checked="true"]:hover{background:var(--accent); color:var(--on-accent);}
+  .conv-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .conv-row[hidden]{display:none;}
+  .conv-line{flex:1; min-width:0; font-size:13.5px; color:var(--text); line-height:1.35; overflow-wrap:anywhere;}
+  .stepper{display:flex; align-items:center; gap:2px; flex:0 0 auto;}
+  .stepper .st-lab{font-size:13px; color:var(--muted); margin-right:4px;}
+  .stepper button{width:44px; min-height:44px; height:44px; padding:0; font-size:20px; font-weight:600; border-radius:10px; display:grid; place-items:center;}
+  .stepper input{width:44px; min-width:0; height:44px; min-height:44px; margin:0; padding:0; text-align:center; font-size:16px; font-weight:700;}
+  .rate-row{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:8px; align-items:center; margin-bottom:8px;}
+  .rate-row input{margin:0;}
+  .rate-row .rl{font-size:14px; white-space:nowrap;}
+  .opt-seg{display:grid; grid-template-columns:1fr 1fr; gap:3px; padding:3px; margin-bottom:6px; background:var(--panel2); border:1px solid var(--border); border-radius:13px;}
+  .opt-seg button{min-height:44px; padding:0 8px; border-radius:10px; font-size:14px; font-weight:600; background:transparent; color:var(--text);}
+  .opt-seg button:hover{background:var(--border);}
+  .opt-seg button[aria-checked="true"],.opt-seg button[aria-checked="true"]:hover{background:var(--accent); color:var(--on-accent);}
+  .field-hint{font-size:12.5px; color:var(--muted); margin:0 0 12px;}
+  .trip-list{list-style:none; margin:0 0 10px; padding:0;}
+  .trip-list li{display:flex; align-items:center; gap:4px; border-bottom:1px solid var(--border);}
+  .trip-list .tl-main{flex:1; min-width:0; width:auto; display:flex; flex-direction:column; align-items:flex-start; gap:0; padding:8px 8px; min-height:56px; background:none; color:var(--text); text-align:left; font-size:15px; font-weight:600; border-radius:10px;}
+  .trip-list .tl-main:hover{background:var(--panel2);}
+  .trip-list .tl-name{max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .trip-list .tl-dates{font-size:12.5px; font-weight:400; color:var(--muted);}
+  .trip-list .tl-edit{width:44px; flex:0 0 44px; padding:0; display:grid; place-items:center; background:none; color:var(--muted); border-radius:10px;}
+  .trip-list .tl-edit:hover{background:var(--panel2); color:var(--text);}
+  .trip-note{font-size:13px; color:var(--muted); margin:10px 0 0; text-align:center;}
+  .trip-note:empty{display:none;}
+  .strip.has-trip{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .strip .sub-k{display:block; font-size:11px; color:var(--muted); line-height:1.3; margin-top:1px;}
+  .strip>div[hidden]{display:none;}
+  #tripModalOverlay .modal-card,#tripSheetOverlay .modal-card{overscroll-behavior:contain;}
+  .strip-btn{display:block; width:100%; min-height:44px; padding:0; background:none; color:var(--text); border-radius:10px; font-weight:inherit; font-size:inherit;}
+  .strip-btn:hover{background:var(--panel2);}
+  .linkbtn{width:auto; min-height:44px; padding:0 8px; background:none; color:var(--accent-hover); font-size:13px; font-weight:600; text-decoration:underline; border-radius:10px; display:inline-block;}
+  .linkbtn:hover{background:var(--panel2);}
+  .trip-list .tl-go{width:auto; flex:0 0 auto; min-height:44px; padding:0 14px; font-size:13.5px;}
+  .tp-top{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;}
+  .tp-top button{width:auto; padding:0 16px; font-size:14px;}
+  #tpTitle{margin:0; font-size:21px; overflow-wrap:anywhere;}
+  .tp-dates{font-size:13.5px; color:var(--muted); margin:2px 0 12px;}
+  .tp-group{display:flex; justify-content:space-between; gap:8px; margin:14px 0 2px; padding-top:10px; border-top:1px solid var(--border); font-size:13.5px; font-weight:600;}
+  .tp-group:first-child{margin-top:0; border-top:none; padding-top:0;}
+  .tp-list-note{font-size:12.5px; color:var(--muted); margin:2px 0 0;}
+  #tripPage .pb-bar>span.cat{background:var(--muted);}
+  #tripPage .pb-head .nm{display:flex; align-items:center; gap:8px;}
+  #tripPage .pb-head .dot{width:10px; height:10px; border-radius:50%; flex:0 0 10px;}
+  #tripPage .pb-head .nm .t{min-width:0; overflow-wrap:anywhere;}
+  #tripPage>button.secondary{margin-bottom:6px;}
+  @media (max-width:600px){
+    #tripModalOverlay .row2{grid-template-columns:1fr 1fr;}
+    .strip.has-trip{padding:10px 2px;}
+    .strip.has-trip>div{padding:0 3px;}
+    .strip.has-trip .k{font-size:11.5px;}
+    .hero.trip-hero{padding:8px 16px 6px; margin-bottom:10px;}
+    .hero.trip-hero .hero-value{font-size:38px; line-height:1.1;}
+    .hero.trip-hero .hero-valuewrap{margin:0 0 2px;}
+    .hero.trip-hero .hero-sub2{margin-top:0;}
+    body.travel #entryCard{padding:10px 16px;}
+    body.travel .kind-seg{margin-bottom:6px;}
+    body.travel .chips{margin-bottom:8px;}
+    body.travel .chip{min-height:44px; padding:4px 2px; gap:3px;}
+    body.travel .conv-row{margin-bottom:4px;}
+    body.travel .trip-banner{margin-bottom:8px;}
+  }
+
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}
   }
@@ -506,7 +603,16 @@
         <h1 id="h-today"></h1>
         <div class="streak" id="streakLine"></div>
       </div>
+      <button type="button" class="secondary icon-btn" id="tripSwitchBtn" aria-label="โหมดท่องเที่ยว" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></button>
     </header>
+    <div class="trip-banner" id="tripBanner" hidden>
+      <button type="button" class="tb-main" id="tripBannerMain"><span class="tb-name" id="tbName"></span><span class="tb-day" id="tbDay"></span></button>
+      <button type="button" class="tb-btn" id="tripOffBtn">ปิดโหมด</button>
+    </div>
+    <div class="trip-banner suggest" id="tripSuggest" role="group" aria-label="แนะนำโหมดท่องเที่ยว" hidden>
+      <div class="tb-txt" id="tripSuggestTxt"></div>
+      <div class="tb-acts"><button type="button" class="secondary tb-btn" id="tripSuggestNo">ไม่ใช่ตอนนี้</button><button type="button" class="tb-yes" id="tripSuggestYes">เปิด</button></div>
+    </div>
 
     <div class="card hero" id="heroCard">
       <button type="button" class="hero-info" id="heroInfo" onclick="openInfo()" aria-haspopup="dialog" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>คิดยังไง</button>
@@ -523,9 +629,25 @@
     <div class="card" id="entryCard">
       <h2>จดรายจ่าย</h2>
       <div class="rrow" id="repeatRow" role="group" aria-label="จดซ้ำ" hidden></div>
+      <div class="kind-seg" id="kindSeg" role="radiogroup" aria-label="ประเภทรายการ" hidden>
+        <button type="button" role="radio" data-kind="trip" aria-checked="true">&#x2708;&#xFE0E; ทริป</button>
+        <button type="button" role="radio" data-kind="normal" aria-checked="false" tabindex="-1">ปกติ</button>
+      </div>
       <label for="entryAmount">จำนวนเงิน</label>
-      <input type="number" id="entryAmount" class="amount-input" min="0" step="0.01" placeholder="0" inputmode="decimal" aria-describedby="amountError" oninput="clearAmountError()">
+      <div class="amt-row">
+        <input type="number" id="entryAmount" class="amount-input" min="0" step="0.01" placeholder="0" inputmode="decimal" aria-describedby="amountError" oninput="clearAmountError()">
+        <div class="cur-seg" id="curSeg" role="radiogroup" aria-label="สกุลเงิน" hidden></div>
+      </div>
       <div class="field-error" id="amountError"></div>
+      <div class="conv-row" id="convRow" hidden>
+        <div class="conv-line" id="convLine" aria-live="polite"></div>
+        <div class="stepper" role="group" aria-label="หารกี่คน">
+          <span class="st-lab" id="splitLab">หาร</span>
+          <button type="button" class="secondary" id="splitMinus" aria-label="หารน้อยลง">&minus;</button>
+          <input type="number" id="splitN" min="1" max="50" step="1" value="1" inputmode="numeric" aria-labelledby="splitLab">
+          <button type="button" class="secondary" id="splitPlus" aria-label="หารมากขึ้น">+</button>
+        </div>
+      </div>
       <label id="chipsLabel">หมวด</label>
       <div class="chips" id="categoryChips" role="radiogroup" aria-labelledby="chipsLabel"></div>
       <div class="pay-seg" id="payControl" role="radiogroup" aria-label="จ่ายด้วย" hidden></div>
@@ -541,6 +663,10 @@
             <input type="text" id="entryNote" placeholder="เช่น ข้าวเที่ยง">
           </div>
         </div>
+        <div id="linkWrap" hidden>
+          <label for="entryLink">ผูกกับทริป</label>
+          <select id="entryLink"></select>
+        </div>
       </details>
       <button id="addEntryBtn" onclick="addEntry()">บันทึก</button>
     </div>
@@ -552,9 +678,9 @@
     </div>
 
     <div class="card" id="recentCard">
-      <h2><span>รายการล่าสุด</span> <span class="h2-note" id="recentCount"></span></h2>
+      <h2><span id="recentTitle">รายการล่าสุด</span> <span class="h2-note" id="recentCount"></span></h2>
       <div id="recentList"></div>
-      <div class="empty" id="recentEmpty" style="display:none;">ยังไม่มีรายการเดือนนี้<button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
+      <div class="empty" id="recentEmpty" style="display:none;"><span id="recentEmptyTxt">ยังไม่มีรายการเดือนนี้</span><button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
       <button type="button" class="secondary" id="recentAllBtn" style="display:none;" onclick="showAllEntriesTab()">ดูทั้งหมด</button>
     </div>
   </section>
@@ -576,6 +702,7 @@
       <div class="result-line" id="resultLine" role="status" aria-live="polite"></div>
       <div id="entryList"></div>
       <div class="empty" id="emptyMsg" style="display:none;"><span id="emptyMsgTxt">ยังไม่มีรายการเดือนนี้</span><button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
+      <div class="trip-note" id="tripNote"></div>
     </div>
   </section>
 
@@ -588,6 +715,7 @@
       <div><span class="k">รายการประจำ</span><span class="v" id="statFixed">฿0</span></div>
       <div><span class="k">ใช้จ่ายรายวัน</span><span class="v" id="statVariable">฿0</span></div>
       <div><span class="k">คงเหลือ</span><span class="v" id="statRemaining">฿0</span></div>
+      <div id="stripTripCell" hidden><button type="button" class="strip-btn" id="stripTripBtn"><span class="k">ทริป</span><span class="v" id="statTrip">฿0</span><span class="sub-k" id="statTripSub"></span><span class="sr-only">ดูหน้าทริป</span></button></div>
     </div>
 
     <div class="card" id="budgetCard">
@@ -701,6 +829,12 @@
       <div id="budgetSettingsList"></div>
     </div>
 
+    <div class="card" id="tripsCard">
+      <h2 id="tripsSettings">ทริปทั้งหมด</h2>
+      <div id="tripsSettingsList"></div>
+      <button type="button" class="secondary add-fixed-btn" id="tripsNewBtn">+ สร้างทริปใหม่</button>
+    </div>
+
     <div class="card">
       <h2>สำรองข้อมูล</h2>
       <div class="row2">
@@ -717,6 +851,35 @@
     </div>
   </section>
 
+  <!-- Trip summary page: replaces the current tab's content, tab bar stays -->
+  <section class="tab-panel" id="tripPage" aria-labelledby="tpTitle" hidden>
+    <div class="tp-top">
+      <button type="button" class="secondary" id="tpBack" aria-label="กลับ">&lsaquo; กลับ</button>
+      <button type="button" class="secondary" id="tpEdit">แก้ไขทริป</button>
+    </div>
+    <h1 id="tpTitle"></h1>
+    <div class="tp-dates" id="tpDates"></div>
+    <div class="card hero trip-hero" id="tpHero" hidden>
+      <div class="hero-label" id="tpHeroLabel"></div>
+      <div class="hero-valuewrap"><div class="hero-value" id="tpHeroValue"></div></div>
+      <div class="hero-sub" id="tpHeroSub"></div>
+    </div>
+    <div class="card strip" role="group" aria-label="สรุปทริป" id="tpStats"></div>
+    <div class="card" id="tpBudgetCard" hidden>
+      <h2><span>งบทริป</span> <span class="h2-note" id="tpBudgetNums"></span></h2>
+      <div class="bar" id="tpBudgetBar" role="progressbar" aria-label="ใช้ไปของงบทริป" aria-valuemin="0" aria-valuemax="100"><span id="tpBudgetFill"></span></div>
+      <div class="budget-foot" id="tpBudgetFoot"></div>
+    </div>
+    <div class="card" id="tpCatCard"><h2>แยกตามหมวด</h2><ul class="pay-break" id="tpCatBody"></ul></div>
+    <div class="card" id="tpPayCard"><h2><span>แยกตามช่องทางจ่าย</span> <span class="h2-note" id="tpPayTotal"></span></h2><ul class="pay-break" id="tpPayBody"></ul></div>
+    <div class="card">
+      <h2><span>รายการในทริป</span> <span class="h2-note" id="tpCount"></span></h2>
+      <div id="tripPageList"></div>
+      <div class="empty" id="tpEmpty" style="display:none;">ยังไม่มีรายการในทริปนี้</div>
+    </div>
+    <button type="button" class="secondary" id="tpCsv">ส่งออกทริปนี้ (.csv)</button>
+  </section>
+
   <nav class="tabbar" id="tabBar" aria-label="เมนูหลัก">
     <button type="button" data-tab="today" id="tabbtn-today" aria-label="วันนี้" aria-current="page"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1.6" fill="currentColor"/></svg><span>วันนี้</span></button>
     <button type="button" data-tab="entries" id="tabbtn-entries" aria-label="รายการ"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>รายการ</span></button>
@@ -729,8 +892,21 @@
 <div id="editModalOverlay" class="modal-overlay" style="display:none;" onclick="closeEdit()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle" onclick="event.stopPropagation()">
     <div class="modal-title" id="editTitle">แก้ไขรายการ</div>
-    <label for="editAmount" style="margin-top:10px;">จำนวนเงิน</label>
-    <input type="number" id="editAmount" min="0" step="0.01" inputmode="decimal" aria-describedby="editError" oninput="document.getElementById('editError').textContent=''">
+    <div id="editTripFields" hidden>
+      <label for="editOrig" id="editOrigLab" style="margin-top:10px;">ยอดเต็มบิล</label>
+      <div class="conv-row" style="align-items:flex-start;">
+        <input type="number" id="editOrig" min="0" step="0.01" inputmode="decimal" style="margin-bottom:0;" aria-describedby="editError">
+        <div class="stepper" role="group" aria-label="หารกี่คน">
+          <span class="st-lab" id="editSplitLab">หาร</span>
+          <button type="button" class="secondary" id="editSplitMinus" aria-label="หารน้อยลง">&minus;</button>
+          <input type="number" id="editSplitN" min="1" max="50" step="1" value="1" inputmode="numeric" aria-labelledby="editSplitLab">
+          <button type="button" class="secondary" id="editSplitPlus" aria-label="หารมากขึ้น">+</button>
+        </div>
+      </div>
+    </div>
+    <label for="editAmount" id="editAmountLab" style="margin-top:10px;">จำนวนเงิน</label>
+    <input type="number" id="editAmount" min="0" step="0.01" inputmode="decimal" aria-describedby="editError editOverTag" oninput="onEditAmountInput()">
+    <div class="field-hint" id="editOverTag" hidden style="margin-top:-8px;">แก้ยอดบาทเอง</div>
     <label id="editChipsLabel">หมวด</label>
     <div class="chips" id="editChips" role="radiogroup" aria-labelledby="editChipsLabel"></div>
     <label id="editPayLabel">จ่ายด้วย</label>
@@ -739,6 +915,10 @@
     <input type="date" id="editDate">
     <label for="editNote">โน้ต</label>
     <input type="text" id="editNote">
+    <div id="editLinkWrap" hidden>
+      <label for="editLink">ผูกกับทริป</label>
+      <select id="editLink"></select>
+    </div>
     <div class="field-error" id="editError"></div>
     <div class="modal-actions">
       <button type="button" class="secondary" onclick="closeEdit()">ยกเลิก</button>
@@ -757,6 +937,54 @@
       <button type="button" class="secondary" onclick="closeConfirm()">ยกเลิก</button>
       <button type="button" class="danger" id="confirmOkBtn" onclick="runConfirm()">ตกลง</button>
     </div>
+  </div>
+</div>
+
+<!-- Trip picker (travel mode switch) -->
+<div id="tripSheetOverlay" class="modal-overlay" style="display:none;" onclick="closeTripSheet()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="tripSheetTitle" onclick="event.stopPropagation()">
+    <div class="modal-title" id="tripSheetTitle">โหมดท่องเที่ยว</div>
+    <div class="modal-desc" id="tripSheetDesc">เลือกทริปที่จะจด</div>
+    <ul class="trip-list" id="tripList"></ul>
+    <button type="button" class="secondary" id="tripNewBtn">+ สร้างทริปใหม่</button>
+    <button type="button" class="link-danger" style="color:var(--muted);" onclick="closeTripSheet()">ปิด</button>
+  </div>
+</div>
+
+<!-- Create / edit trip -->
+<div id="tripModalOverlay" class="modal-overlay" style="display:none;" onclick="closeTripModal()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle" onclick="event.stopPropagation()">
+    <div class="modal-title" id="tripModalTitle">สร้างทริป</div>
+    <label for="tripName" style="margin-top:10px;">ชื่อทริป</label>
+    <input type="text" id="tripName" maxlength="40" autocomplete="off" placeholder="เช่น เที่ยวคุนหมิง" aria-describedby="tripNameErr">
+    <div class="field-error" id="tripNameErr" style="margin-top:-8px;"></div>
+    <label for="tripCur">สกุลเงิน</label>
+    <select id="tripCur" aria-describedby="tripCurHint"></select>
+    <div class="field-hint" id="tripCurHint" hidden style="margin-top:-8px;">เปลี่ยนสกุลเงินไม่ได้ เพราะทริปนี้มีรายการแล้ว</div>
+    <div class="row2">
+      <div><label for="tripStart">วันเริ่ม</label><input type="date" id="tripStart"></div>
+      <div><label for="tripEnd">วันกลับ</label><input type="date" id="tripEnd" aria-describedby="tripDateErr"></div>
+    </div>
+    <div class="field-error" id="tripDateErr" style="margin-top:-8px;"></div>
+    <label id="tripRateLab">เรตแลกเงิน</label>
+    <div role="group" aria-labelledby="tripRateLab">
+      <div class="rate-row"><label for="tripRateA" class="rl" id="tripRateALab" style="margin:0;">1 CNY =</label><input type="number" id="tripRateA" min="0" step="any" inputmode="decimal" aria-describedby="tripRateErr"><span class="rl">บาท</span></div>
+      <div class="rate-row"><label for="tripRateB" class="rl" style="margin:0;">1 บาท =</label><input type="number" id="tripRateB" min="0" step="any" inputmode="decimal" aria-describedby="tripRateErr"><span class="rl" id="tripRateBUnit">CNY</span></div>
+    </div>
+    <div class="field-error" id="tripRateErr" style="margin-top:-4px;"></div>
+    <label for="tripBudget">งบทริป (บาท)</label>
+    <input type="number" id="tripBudget" min="0" step="1" inputmode="numeric" placeholder="ไม่ใส่ก็ได้">
+    <label id="tripFundLab">ใช้เงินจาก</label>
+    <div class="opt-seg" id="tripFund" role="radiogroup" aria-labelledby="tripFundLab">
+      <button type="button" role="radio" data-fund="savings" aria-checked="true">เงินเก็บ</button>
+      <button type="button" role="radio" data-fund="income" aria-checked="false" tabindex="-1">รายได้เดือนนี้</button>
+    </div>
+    <div class="field-hint" id="tripFundHint">เงินเก็บ ไม่หักจากคงเหลือของเดือน</div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeTripModal()">ยกเลิก</button>
+      <button type="button" id="tripSaveBtn">บันทึก</button>
+    </div>
+    <button type="button" class="link-danger" id="tripDeleteBtn" style="display:none;">ลบทริปนี้</button>
   </div>
 </div>
 
@@ -779,7 +1007,9 @@
 const STORAGE_KEY = 'spendTrackerState';
 const LAST_CAT_KEY = 'spendTrackerLastCategory';
 const LAST_PAY_KEY = 'spendTrackerLastPayment';
-const LAST_PAY_TRIP_KEY = 'spendTrackerLastPaymentTrip';   // reserved for a later travel mode
+const LAST_PAY_TRIP_KEY = 'spendTrackerLastPaymentTrip';
+const LAST_CAT_TRIP_KEY = 'spendTrackerLastCategoryTrip';
+const TRIP_SUGGEST_KEY = 'spendTrackerTripSuggestDismissed';   // today's ISO date when the suggestion was dismissed
 function lastPaymentKey(mode){ return mode === 'trip' ? LAST_PAY_TRIP_KEY : LAST_PAY_KEY; }
 const PAYMENT_SEEDS = [{ id:'cash', name:'เงินสด' }, { id:'ttb', name:'บัตรเครดิต TTB' }, { id:'kbank', name:'บัตรเครดิต KBANK' }];
 const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube Premium','Netflix','Spotify','Claude'];
@@ -790,6 +1020,16 @@ const NEUTRAL_COLOR = '#C3C6CC';   // อื่นๆ / categories without a col
 const FIXED_COLOR = '#80838A';
 const DEFAULT_CATEGORIES = ['อาหาร','การเดินทาง','สาธารณูปโภค','ช้อปปิ้ง','สุขภาพ','บันเทิง','อื่นๆ'];
 const EPOCH = '1970-01-01T00:00:00Z';
+// Trips (v2.4). Trip categories are a fixed list, separate from the editable normal categories.
+const TRIP_CATS = ['ตั๋วเครื่องบิน','ที่พัก','เดินทาง','อาหาร','ช้อปปิ้ง','ตั๋ว/กิจกรรม','อื่นๆ'];
+const TRIP_COLOR = '#5CE1E6';
+const CURRENCIES = [
+  { code:'CNY', sym:'元', name:'หยวน' }, { code:'VND', sym:'₫', name:'ด่ง' }, { code:'JPY', sym:'¥', name:'เยน' },
+  { code:'KRW', sym:'₩', name:'วอน' }, { code:'USD', sym:'$', name:'ดอลลาร์สหรัฐ' }, { code:'EUR', sym:'€', name:'ยูโร' },
+  { code:'SGD', sym:'$', name:'ดอลลาร์สิงคโปร์' }, { code:'HKD', sym:'$', name:'ดอลลาร์ฮ่องกง' }, { code:'TWD', sym:'$', name:'ดอลลาร์ไต้หวัน' },
+  { code:'THB', sym:'฿', name:'บาท' }
+];
+const ZERO_DECIMAL = ['VND','JPY','KRW'];
 const TREND_KEY = 'spendTrackerTrendRange';
 const SCHEMA_VERSION = 3;
 
@@ -849,8 +1089,10 @@ function seedCategories(stamp){
 function seedPayments(stamp){
   return PAYMENT_SEEDS.map(p => ({ id:p.id, name:p.name, archived:false, updatedAt: stamp }));
 }
+//   trips: [{ id, name, currency, thbPerUnit, startDate, endDate, budget, funding:'savings'|'income', createdAt, updatedAt }]   activeTripId: id|null
+//   trip entries add: tripId, currency, originalAmount, splitCount, rate, amountOverridden.  entry.amount is ALWAYS the owner's share in baht.
 function freshState(){
-  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), entries: [] };
+  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), entries: [], trips: [], activeTripId: null };
 }
 
 function cleanBudgets(b){
@@ -904,6 +1146,38 @@ function migrateState(parsed){
   if(!Array.isArray(parsed.entries)) parsed.entries = [];
   parsed.entries.forEach(e=>{ if(!e.updatedAt) e.updatedAt = EPOCH; });
 
+  // Trips: validate, then make sure every trip entry points at a real trip and carries sane conversion fields.
+  const isDay = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const tripIds = new Set(), trips = [];
+  (Array.isArray(parsed.trips) ? parsed.trips : []).forEach(t=>{
+    if(!t || typeof t.id !== 'string' || !t.id || tripIds.has(t.id) || typeof t.name !== 'string' || !t.name.trim() || !isDay(t.startDate)) return;
+    const cur = (typeof t.currency === 'string' && /^[A-Z]{3}$/.test(t.currency)) ? t.currency : 'CNY';
+    let rate = parseFloat(t.thbPerUnit); if(!(rate > 0)) rate = 1;
+    if(cur === 'THB') rate = 1;
+    const end = isDay(t.endDate) && t.endDate >= t.startDate ? t.endDate : t.startDate;
+    tripIds.add(t.id);
+    trips.push({ id:t.id, name:t.name.trim(), currency:cur, thbPerUnit:rate, startDate:t.startDate, endDate:end,
+      budget: parseFloat(t.budget) > 0 ? parseFloat(t.budget) : 0, funding: t.funding === 'income' ? 'income' : 'savings',
+      createdAt: t.createdAt || EPOCH, updatedAt: t.updatedAt || EPOCH });
+  });
+  parsed.trips = trips;
+  parsed.activeTripId = (typeof parsed.activeTripId === 'string' && tripIds.has(parsed.activeTripId)) ? parsed.activeTripId : null;
+  parsed.entries.forEach(e=>{
+    const t = e.tripId ? trips.find(x => x.id === e.tripId) : null;
+    if(!t){
+      ['tripId','currency','originalAmount','splitCount','rate','amountOverridden'].forEach(k => delete e[k]);   // orphan or normal entry
+      return;
+    }
+    if(typeof e.currency !== 'string' || !e.currency) e.currency = t.currency;
+    let r = parseFloat(e.rate); if(!(r > 0)) r = e.currency === 'THB' ? 1 : t.thbPerUnit;
+    e.rate = e.currency === 'THB' ? 1 : r;
+    let o = parseFloat(e.originalAmount); if(!(o > 0)) o = e.amount;
+    e.originalAmount = o;
+    const sc = parseInt(e.splitCount, 10); e.splitCount = sc >= 1 ? sc : 1;
+    e.amountOverridden = !!e.amountOverridden;
+    if(!TRIP_CATS.includes(e.category)) e.category = 'อื่นๆ';
+  });
+
   // Categories: seed from the v2 list when absent, then validate and add any unknown names.
   if(!Array.isArray(parsed.categories)) parsed.categories = seedCategories(EPOCH);
   const seen = new Set(), usedSlots = new Set(), cats = [];
@@ -922,7 +1196,7 @@ function migrateState(parsed){
     seen.add(name);
     cats.push({ name, slot:null, archived:false, updatedAt: EPOCH });
   };
-  parsed.entries.forEach(e => addUnknown(e.category));
+  parsed.entries.forEach(e => { if(!e.tripId) addUnknown(e.category); });
   Object.keys(parsed.budgetSettings).forEach(k => Object.keys(parsed.budgetSettings[k]).forEach(addUnknown));
   parsed.categories = cats;
 
@@ -1079,7 +1353,15 @@ let editCategory = 'อาหาร';
 let selectedPayment = '';   // method id, '' = none
 let editPayment = '';
 let editingId = null;
-let heroShown = { label:'', num:null };   // what the hero last displayed (for the count-up after saving)
+let heroShown = { label:'', num:null, dir:'down' };   // what the hero last displayed (for the count-up after saving)
+// Entry form state for trips
+let selectedTripCategory = 'อาหาร';
+let entryKind = 'trip';        // travel mode only: 'trip' | 'normal'
+let entryLink = '';            // normal mode only: trip id to link a pre-trip booking to
+let entryBaht = false;         // amount typed in baht instead of the trip currency
+let entrySplit = 1;
+let formSig = null;            // which form (trip id + kind) the controls were last built for
+let suggestDismissedToday = false;
 
 let pieChart, trendChart, compareChart;
 const ICON_X = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
@@ -1087,6 +1369,19 @@ const ICON_X = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stro
 function fmt(n){
   return '฿' + Math.round(n).toLocaleString('en-US');
 }
+function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
+// Foreign amounts: narrow symbol, no trailing zeros (¥300 for JPY, 12.5元 for CNY, which takes a 元 suffix).
+const curFmtCache = {};
+function fmtCur(n, cur){
+  if(!cur || cur === 'THB') return fmtExact(n);
+  if(cur === 'CNY') return Number(n).toLocaleString('en-US', { maximumFractionDigits:2 }) + '元';
+  try{
+    const f = curFmtCache[cur] || (curFmtCache[cur] = new Intl.NumberFormat('th-TH', { style:'currency', currency:cur, currencyDisplay:'narrowSymbol', minimumFractionDigits:0, maximumFractionDigits: ZERO_DECIMAL.includes(cur) ? 0 : 2 }));
+    return f.format(n);
+  }catch(e){ return cur + ' ' + n; }
+}
+function curInfo(code){ return CURRENCIES.find(c => c.code === code) || { code, sym:code, name:code }; }
+function roundSig(x, n){ return x > 0 && isFinite(x) ? Number(x.toPrecision(n)) : 0; }
 function monthKey(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
@@ -1119,7 +1414,21 @@ function categoryColor(name){
 // Charts group every category without a colour slot under `อื่นๆ`.
 function chartGroup(name){ return catSlot(name) === null || catSlot(name) === undefined ? 'อื่นๆ' : name; }
 function colouredCatsBySlot(){ return state.categories.filter(c => c.slot !== null).sort((a,b)=> a.slot - b.slot); }
-function categoryUsed(name){ return state.entries.some(e => e.category === name); }
+// Trip categories share names with normal ones (อาหาร, ช้อปปิ้ง, อื่นๆ), so every normal-category check ignores trip entries.
+function categoryUsed(name){ return state.entries.some(e => !e.tripId && e.category === name); }
+
+/* ---------- Trips: lookups ---------- */
+function findTrip(id){ return id ? state.trips.find(t => t.id === id) : undefined; }
+function activeTrip(){ return findTrip(state.activeTripId) || null; }
+function tripCatColor(name){ const i = TRIP_CATS.indexOf(name); return i >= 0 && i < SLOT_COLORS.length ? SLOT_COLORS[i] : NEUTRAL_COLOR; }
+function entryColor(e){ return e.tripId ? tripCatColor(e.category) : categoryColor(e.category); }
+function dayNum(iso){ const p = String(iso).split('-'); return Math.round(Date.UTC(+p[0], (+p[1]||1) - 1, +p[2]||1) / 86400000); }
+function tripEntriesOf(id){ return state.entries.filter(e => e.tripId === id); }
+function tripFundingOf(e){ const t = findTrip(e.tripId); return t ? t.funding : 'savings'; }
+// Trips still worth linking a booking to (not yet over).
+function linkableTrips(){ const today = todayISO(); return state.trips.filter(t => t.endDate >= today); }
+function tripDates(t){ return `${fmtThaiDate(t.startDate)} ถึง ${fmtThaiDate(t.endDate)}`; }
+function sortedTrips(){ return state.trips.slice().sort((a,b)=> a.startDate < b.startDate ? 1 : a.startDate > b.startDate ? -1 : 0); }
 function firstFreeSlot(){
   const used = new Set(state.categories.map(c => c.slot));
   for(let i = 0; i < SLOT_COLORS.length; i++) if(!used.has(i)) return i;
@@ -1132,10 +1441,8 @@ function ensureSelectedCategory(){
 
 function initForm(){
   document.getElementById('entryDate').value = todayISO();
-  updateDateSummary();
-  renderChips();
-  ensureSelectedPayment();
-  renderPayControl();
+  formSig = null; entryKind = 'trip'; entryLink = '';
+  renderForm();      // chips, payment, trip toggle and the rest of the entry form
   renderSettingsForm();
 }
 
@@ -1145,6 +1452,7 @@ function updateDateSummary(){
   const note = document.getElementById('entryNote').value.trim();
   let t = (!d || d === todayISO()) ? 'วันนี้' : fmtThaiDate(d);
   if(note) t += ' (มีโน้ต)';
+  if(!activeTrip() && entryLink && findTrip(entryLink)) t += ' (ผูกทริป)';
   document.getElementById('dateSummary').textContent = t;
   document.getElementById('dateHint').textContent = note ? '' : 'เพิ่มโน้ต/เปลี่ยนวัน';
 }
@@ -1170,6 +1478,7 @@ function focusAmount(){
 }
 // The "ดูทั้งหมด" button on วันนี้ and the budget alert both look at the current calendar month.
 function showAllEntriesTab(){
+  if(activeTrip()){ openTripPage(activeTrip().id, document.getElementById('recentAllBtn')); return; }
   currentMonth = new Date(); currentMonth.setDate(1);
   render();
   goTab('entries');
@@ -1222,6 +1531,14 @@ function resizeCharts(){
 }
 function goTab(name, opts){
   if(!TABS.includes(name)) name = 'today';
+  if(tripPageId){
+    // leaving the trip page through the tab bar (or any jump): show the chosen tab, drop the #trip hash
+    closeTripPage({ restore:false });
+    try{ history.replaceState(null, '', '#' + name); }catch(e){}
+    if(name === activeTab){ window.scrollTo(0, 0); return; }
+    applyTab(name, opts);
+    return;
+  }
   if(name === activeTab){
     if(!(opts && opts.keepScroll)) window.scrollTo({ top:0, behavior: reducedMotion() ? 'auto' : 'smooth' });
     return;
@@ -1235,15 +1552,18 @@ function loadLastCategory(){
   try{
     const c = localStorage.getItem(LAST_CAT_KEY);
     if(c && activeCats().some(x => x.name === c)) selectedCategory = c;
+    const t = localStorage.getItem(LAST_CAT_TRIP_KEY);
+    if(t && TRIP_CATS.includes(t)) selectedTripCategory = t;
   }catch(e){}
   ensureSelectedCategory();
 }
 // `extra`: a name to include even if archived (so editing an old entry keeps its category visible).
-function buildChips(container, selected, onSelect, extra){
+// `trip`: build the fixed trip category list instead of the editable one.
+function buildChips(container, selected, onSelect, extra, trip){
   const hadFocus = container.contains(document.activeElement);
   container.innerHTML = '';
-  const names = activeCats().map(c => c.name);
-  if(extra && !names.includes(extra) && findCat(extra)) names.push(extra);
+  const names = trip ? TRIP_CATS.slice() : activeCats().map(c => c.name);
+  if(!trip && extra && !names.includes(extra) && findCat(extra)) names.push(extra);
   const n = names.length;
   const hasActive = names.includes(selected);
   names.forEach((cat,i)=>{
@@ -1254,7 +1574,7 @@ function buildChips(container, selected, onSelect, extra){
     b.setAttribute('aria-checked', on ? 'true' : 'false');
     b.tabIndex = (on || (!hasActive && i === 0)) ? 0 : -1;
     b.className = 'chip' + (on ? ' active' : '');
-    b.innerHTML = `<span class="dot" style="background:${categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}`;
+    b.innerHTML = `<span class="dot" style="background:${trip ? tripCatColor(cat) : categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}`;
     b.addEventListener('click', ()=> onSelect(cat));
     b.addEventListener('keydown', ev=>{
       const step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1 : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
@@ -1265,18 +1585,24 @@ function buildChips(container, selected, onSelect, extra){
   if(hadFocus){ const a = container.querySelector('.chip.active'); if(a) a.focus(); }
 }
 function renderChips(){
-  buildChips(document.getElementById('categoryChips'), selectedCategory, selectCategory);
+  const trip = formMode() === 'trip';
+  buildChips(document.getElementById('categoryChips'), trip ? selectedTripCategory : selectedCategory, selectCategory, null, trip);
   updateKbBarLabel();
 }
 function selectCategory(cat){
-  selectedCategory = cat;
   clearAmountError();
-  try{ localStorage.setItem(LAST_CAT_KEY, cat); }catch(e){}
+  if(formMode() === 'trip'){
+    selectedTripCategory = cat;
+    try{ localStorage.setItem(LAST_CAT_TRIP_KEY, cat); }catch(e){}
+  }else{
+    selectedCategory = cat;
+    try{ localStorage.setItem(LAST_CAT_KEY, cat); }catch(e){}
+  }
   renderChips();
 }
 function renderEditChips(){
   const orig = state.entries.find(x => x.id === editingId);
-  buildChips(document.getElementById('editChips'), editCategory, c=>{ editCategory = c; renderEditChips(); }, orig && orig.category);
+  buildChips(document.getElementById('editChips'), editCategory, c=>{ editCategory = c; renderEditChips(); }, !editTripId && orig && !orig.tripId ? orig.category : null, !!editTripId);
 }
 
 /* ---------- Payment methods (ช่องทางจ่าย) ---------- */
@@ -1344,7 +1670,7 @@ function renderPayControl(){
 }
 function selectPayment(id){
   selectedPayment = id;
-  try{ localStorage.setItem(lastPaymentKey('normal'), id); }catch(e){}
+  try{ localStorage.setItem(lastPaymentKey(formMode()), id); }catch(e){}
   renderPayControl();
 }
 function renderEditPay(){
@@ -1588,7 +1914,7 @@ function renameCategory(oldName, inp){
       const c = findCat(oldName);
       if(!c) return;
       c.name = newName; c.updatedAt = stamp;
-      state.entries.forEach(e=>{ if(e.category === oldName){ e.category = newName; e.updatedAt = stamp; } });
+      state.entries.forEach(e=>{ if(!e.tripId && e.category === oldName){ e.category = newName; e.updatedAt = stamp; } });
       Object.keys(state.budgetSettings).forEach(m=>{
         const b = state.budgetSettings[m];
         if(Object.prototype.hasOwnProperty.call(b, oldName)){ b[newName] = b[oldName]; delete b[oldName]; state.budgetUpdatedAt[m] = stamp; }
@@ -1794,14 +2120,14 @@ function openConfirm({ title, desc, confirmLabel, onConfirm }){
   document.getElementById('confirmTitle').textContent = title || '';
   document.getElementById('confirmDesc').textContent = desc || '';
   document.getElementById('confirmOkBtn').textContent = confirmLabel || 'ตกลง';
-  document.getElementById('editModalOverlay').style.visibility = 'hidden';
+  ['editModalOverlay','tripModalOverlay','tripSheetOverlay'].forEach(id => { document.getElementById(id).style.visibility = 'hidden'; });
   document.getElementById('confirmModalOverlay').style.display = 'flex';
   document.querySelector('#confirmModalOverlay .secondary').focus();
 }
 function closeConfirm(){
   confirmHandler = null;
   document.getElementById('confirmModalOverlay').style.display = 'none';
-  document.getElementById('editModalOverlay').style.visibility = '';
+  ['editModalOverlay','tripModalOverlay','tripSheetOverlay'].forEach(id => { document.getElementById(id).style.visibility = ''; });
 }
 async function runConfirm(){
   const h = confirmHandler;
@@ -1862,6 +2188,111 @@ function clearAmountError(){
 function fmtExact(n){
   return '฿' + Number(n).toLocaleString('en-US', { maximumFractionDigits:2 });
 }
+
+/* ---------- Entry form: trip or normal ---------- */
+// '' = the normal form. In travel mode the ทริป/ปกติ toggle decides; otherwise a pre-trip booking can be linked from the details row.
+function formTripId(){
+  const t = activeTrip();
+  if(t) return entryKind === 'trip' ? t.id : '';
+  return entryLink && findTrip(entryLink) ? entryLink : '';
+}
+function formMode(){ return formTripId() ? 'trip' : 'normal'; }
+function formTrip(){ return findTrip(formTripId()) || null; }
+function formCategory(){ return formMode() === 'trip' ? selectedTripCategory : selectedCategory; }
+function formCurrency(){ const t = formTrip(); return !t ? 'THB' : (entryBaht ? 'THB' : t.currency); }
+function formRate(){ const t = formTrip(); return !t || formCurrency() === 'THB' ? 1 : t.thbPerUnit; }
+// total = the whole bill in baht, share = the owner's part (what is stored as entry.amount)
+function formAmounts(){
+  const orig = parseFloat(document.getElementById('entryAmount').value) || 0;
+  const rate = formRate();
+  return { orig, total: round2(orig * rate), share: round2(orig * rate / entrySplit) };
+}
+
+function renderForm(){
+  const t = activeTrip();
+  if(entryLink && !findTrip(entryLink)) entryLink = '';
+  const tid = formTripId();
+  const sig = (t ? t.id : '-') + '|' + (t ? entryKind : '-') + '|' + (t ? '' : entryLink);
+  if(sig !== formSig){
+    formSig = sig;
+    entryBaht = !t && !!tid;       // a linked pre-trip booking starts in baht; travel mode starts in the trip currency
+    entrySplit = 1;
+    loadLastPayment(tid ? 'trip' : 'normal');
+  }
+  // ทริป / ปกติ
+  const kind = document.getElementById('kindSeg');
+  kind.hidden = !t;
+  kind.querySelectorAll('button').forEach(b=>{
+    const on = b.dataset.kind === entryKind;
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+    b.tabIndex = on ? 0 : -1;
+  });
+  // 元 | ฿ (the trip currency symbol, then baht)
+  const seg = document.getElementById('curSeg');
+  const trip = formTrip();
+  const showCur = !!trip && trip.currency !== 'THB';
+  seg.hidden = !showCur;
+  seg.innerHTML = '';
+  if(showCur){
+    const opts = [{ code:trip.currency, label:curInfo(trip.currency).sym }, { code:'THB', label:'฿' }];
+    if(!t) opts.reverse();
+    opts.forEach(o=>{
+      const on = (o.code === 'THB') === entryBaht;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'secondary';
+      b.setAttribute('role','radio'); b.setAttribute('aria-checked', on ? 'true' : 'false');
+      b.setAttribute('aria-label', o.code === 'THB' ? 'บาท' : o.code + ' ' + curInfo(o.code).name);
+      b.tabIndex = on ? 0 : -1;
+      b.textContent = o.label;
+      b.addEventListener('click', ()=> setEntryBaht(o.code === 'THB'));
+      b.addEventListener('keydown', ev=>{ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(ev.key)){ ev.preventDefault(); setEntryBaht(!entryBaht, true); } });
+      seg.appendChild(b);
+    });
+  }
+  document.getElementById('convRow').hidden = !tid;
+  document.getElementById('splitN').value = entrySplit;
+  document.getElementById('entryNote').placeholder = tid ? 'เช่น ข้าวเย็นที่ซานลี่ถุน' : 'เช่น ข้าวเที่ยง';
+  updateConv();
+  // ผูกกับทริป: normal mode only, while some trip is still ahead or running
+  const sel = document.getElementById('entryLink');
+  const list = linkableTrips();
+  if(entryLink && !list.some(x => x.id === entryLink)){ const cur = findTrip(entryLink); if(cur) list.push(cur); }
+  document.getElementById('linkWrap').hidden = !!t || !list.length;
+  sel.innerHTML = '<option value="">ไม่ผูก</option>' + list.map(x => `<option value="${escapeHtml(x.id)}">${escapeHtml(x.name)}</option>`).join('');
+  sel.value = entryLink;
+  renderChips();
+  ensureSelectedPayment();
+  renderPayControl();
+  updateDateSummary();
+}
+function setEntryBaht(v, focus){
+  entryBaht = !!v;
+  renderForm();
+  if(focus){ const on = document.querySelector('#curSeg [aria-checked="true"]'); if(on) on.focus(); }
+}
+function setKind(k, focus){
+  entryKind = k === 'normal' ? 'normal' : 'trip';
+  renderForm();
+  if(focus){ const on = document.querySelector('#kindSeg [aria-checked="true"]'); if(on) on.focus(); }
+}
+function setSplit(n){
+  n = parseInt(n, 10);
+  entrySplit = n >= 1 ? Math.min(n, 50) : 1;
+  document.getElementById('splitN').value = entrySplit;
+  updateConv();
+  updateKbBarLabel();
+}
+function updateConv(){
+  const line = document.getElementById('convLine');
+  if(!formTripId()){ line.textContent = ''; return; }
+  const { total, share } = formAmounts();
+  const baht = formCurrency() === 'THB';
+  const mark = baht ? '' : '≈ ';
+  // two unbreakable chunks, so a narrow screen wraps between them and never inside a phrase
+  if(entrySplit > 1) line.innerHTML = `<span style="white-space:nowrap">ทั้งบิล ${mark}${fmt(total)}</span> <span style="white-space:nowrap">ส่วนของคุณ ${mark}${fmt(share)}</span>`;
+  else line.textContent = baht ? '' : `≈ ${fmt(share)}`;
+}
+
 let saving = false;
 async function addEntry(){
   if(saving) return;
@@ -1881,24 +2312,38 @@ async function addEntry(){
     document.getElementById('moreDetails').open = true;
     return;
   }
-  ensureSelectedCategory();
   ensureSelectedPayment();
+  const tid = formTripId();
+  if(tid){
+    const { share } = formAmounts();
+    if(!(share > 0)){
+      err.textContent = 'จำนวนเงินน้อยเกินไป';
+      amountEl.setAttribute('aria-invalid','true');
+      amountEl.focus();
+      return;
+    }
+    await saveNewEntry({ date: dateVal, amount: share, category: selectedTripCategory, note, paymentMethod: selectedPayment,
+      trip: { tripId: tid, currency: formCurrency(), originalAmount: amount, splitCount: entrySplit, rate: formRate() } }, true);
+    return;
+  }
+  ensureSelectedCategory();
   await saveNewEntry({ date: dateVal, amount, category: selectedCategory, note, paymentMethod: selectedPayment }, true);
 }
 
-// Did this entry push its category past 80% / 100% of that month's budget?
+// Did this entry push its category past 80% / 100% of that month's budget? (Trip entries never count against budgets.)
 function budgetCrossing(entry){
+  if(entry.tripId) return null;
   const mk = entry.date.slice(0,7);
   const budget = getEffectiveBudgets(mk)[entry.category];
   if(!(budget > 0)) return null;
-  const before = state.entries.filter(e => e.date.slice(0,7) === mk && e.category === entry.category).reduce((s,e)=> s + e.amount, 0);
+  const before = state.entries.filter(e => !e.tripId && e.date.slice(0,7) === mk && e.category === entry.category).reduce((s,e)=> s + e.amount, 0);
   const after = before + entry.amount;
   if(before <= budget && after > budget) return { type:'over', over: after - budget };
   if(before / budget < 0.8 && after / budget >= 0.8 && after <= budget) return { type:'near' };
   return null;
 }
 
-// Shared save path for the form and the quick-repeat chips.
+// Shared save path for the form and the quick-repeat chips. `f.trip` (optional) holds the trip fields.
 async function saveNewEntry(f, fromForm){
   if(saving) return null;
   saving = true;
@@ -1907,6 +2352,7 @@ async function saveNewEntry(f, fromForm){
   const amountEl = document.getElementById('entryAmount');
   const entry = { id: genId(), date: f.date, amount: f.amount, category: f.category, note: f.note, updatedAt: nowISO() };
   if(f.paymentMethod) entry.paymentMethod = f.paymentMethod;
+  if(f.trip) Object.assign(entry, f.trip, { amountOverridden:false });
   const before = { label: heroShown.label, num: heroShown.num };
   const cross = budgetCrossing(entry);
   state.entries.push(entry);
@@ -1918,21 +2364,30 @@ async function saveNewEntry(f, fromForm){
     document.getElementById('entryNote').value = '';
     document.getElementById('amountError').textContent = '';
     amountEl.removeAttribute('aria-invalid');
+    // After every save the toggle goes back to ทริป, and a booking link or split never carries over.
+    entryKind = 'trip'; entryLink = ''; entrySplit = 1;
   }
   const d = parseISODate(f.date);
   currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);   // รายการ shows the month the entry went to
   const ae = document.activeElement;
   if(ae && ae.blur && ae.closest && ae.closest('#panel-today .card')) ae.blur();
   document.getElementById('moreDetails').open = false;
-  updateDateSummary();
+  if(fromForm) renderForm(); else updateDateSummary();
   render();
   updateKbBarLabel();
   const undo = { label:'เลิกทำ', onClick: ()=> undoEntry(entry) };
-  if(f.date.slice(0,7) === monthKey(new Date())){
+  const at = activeTrip();
+  if(entry.tripId){
+    let msg = `จดแล้ว ${fmtCur(entry.originalAmount, entry.currency)}`;
+    if(entry.currency !== 'THB' || entry.splitCount > 1) msg += ` ≈ ${fmt(entry.amount)}`;
+    if(at && at.id === entry.tripId) heroFeedback(entry.amount, msg, undo, before);
+    else flashToast(msg, true, undo);
+  }else if(f.date.slice(0,7) === monthKey(new Date())){
     let msg = `จดแล้ว ${fmtExact(f.amount)}`;
     if(cross && cross.type === 'over') msg += ` ${f.category}เกินงบ ${fmt(cross.over)}`;
     else if(cross && cross.type === 'near') msg += ` ${f.category}ใกล้ครบงบ`;
-    heroFeedback(f.amount, msg, undo, before);
+    if(at) flashToast(msg, true, undo);   // the trip hero does not move for a normal entry
+    else heroFeedback(f.amount, msg, undo, before);
   }else{
     flashToast(`จดแล้ว วันที่ ${fmtToastDate(f.date)}`, true, undo);
   }
@@ -1953,7 +2408,7 @@ function heroFeedback(amount, msg, undo, before){
   flashToast(msg, true, undo);
   if(value.style.display === 'none') return;
   const delta = document.getElementById('heroDelta');
-  delta.textContent = '−' + fmt(amount);
+  delta.textContent = (heroShown.dir === 'up' ? '+' : '−') + fmt(amount);
   delta.classList.remove('show', 'under'); value.classList.remove('pulse');
   // Put the delta under the number when it would not fit beside it inside the card.
   const wr = document.getElementById('heroValueWrap').getBoundingClientRect();
@@ -2006,7 +2461,10 @@ function askDeleteEntry(id, afterDelete){
   });
 }
 
+/* ---------- Edit sheet ---------- */
 let editOpenerList = 'entryList';
+let editTripId = '', editCur = 'THB', editRate = 1, editSplit = 1, editOverridden = false;
+function editTripObj(){ return findTrip(editTripId) || null; }
 function openEdit(id, listId){
   const e = state.entries.find(x => x.id === id);
   if(!e) return;
@@ -2014,14 +2472,79 @@ function openEdit(id, listId){
   editOpenerList = listId || 'entryList';
   editCategory = e.category;
   editPayment = e.paymentMethod && findPay(e.paymentMethod) ? e.paymentMethod : '';
+  editTripId = e.tripId || '';
+  editCur = e.currency || 'THB'; editRate = e.rate || 1; editSplit = e.splitCount || 1; editOverridden = !!e.amountOverridden;
   document.getElementById('editDate').value = e.date;
   document.getElementById('editAmount').value = e.amount;
+  document.getElementById('editOrig').value = e.tripId ? e.originalAmount : '';
   document.getElementById('editNote').value = e.note || '';
   document.getElementById('editError').textContent = '';
-  renderEditChips();
+  renderEditTrip();
   renderEditPay();
   document.getElementById('editModalOverlay').style.display = 'flex';
   document.getElementById('editAmount').focus();
+}
+// Shows or hides the trip-only fields and rebuilds the chips and link select for the current trip choice.
+function renderEditTrip(){
+  const t = editTripObj();
+  document.getElementById('editTripFields').hidden = !t;
+  document.getElementById('editAmountLab').textContent = t ? 'ยอดบาทส่วนของคุณ' : 'จำนวนเงิน';
+  if(t) document.getElementById('editOrigLab').textContent = `ยอดเต็มบิล (${editCur === 'THB' ? 'บาท' : editCur + ' ' + curInfo(editCur).sym})`;
+  document.getElementById('editSplitN').value = editSplit;
+  document.getElementById('editOverTag').hidden = !(t && editOverridden);
+  document.getElementById('editTitle').innerHTML = 'แก้ไขรายการ' + (t ? `<span class="trip-badge">✈︎ ${escapeHtml(t.name)}</span>` : '');
+  const e = state.entries.find(x => x.id === editingId);
+  const list = linkableTrips();
+  if(e && e.tripId && !list.some(x => x.id === e.tripId) && findTrip(e.tripId)) list.push(findTrip(e.tripId));
+  if(t && !list.some(x => x.id === t.id)) list.push(t);
+  const sel = document.getElementById('editLink');
+  document.getElementById('editLinkWrap').hidden = !list.length;
+  sel.innerHTML = '<option value="">ไม่ผูก</option>' + list.map(x => `<option value="${escapeHtml(x.id)}">${escapeHtml(x.name)}</option>`).join('');
+  sel.value = editTripId;
+  renderEditChips();
+}
+function onEditLinkChange(){
+  const v = document.getElementById('editLink').value;
+  const amountEl = document.getElementById('editAmount');
+  const baht = parseFloat(amountEl.value) || 0;
+  if(v){
+    const t = findTrip(v);
+    if(!t) return;
+    if(!editTripId){
+      // a normal entry moves into the trip: its baht amount is the whole bill in baht
+      editCur = 'THB'; editRate = 1; editSplit = 1; editOverridden = false;
+      document.getElementById('editOrig').value = baht || '';
+    }else if(editCur !== 'THB' && editCur !== t.currency){
+      editCur = 'THB'; editRate = 1; editSplit = 1; editOverridden = false;
+      document.getElementById('editOrig').value = baht || '';
+    }
+    editTripId = v;
+    if(!TRIP_CATS.includes(editCategory)) editCategory = 'อื่นๆ';
+  }else{
+    editTripId = '';
+    editCurSplitReset();
+    editCategory = '';   // the owner picks a normal category
+  }
+  document.getElementById('editError').textContent = '';
+  renderEditTrip();
+}
+function editCurSplitReset(){ editCur = 'THB'; editRate = 1; editSplit = 1; editOverridden = false; }
+function editRecalc(){
+  const orig = parseFloat(document.getElementById('editOrig').value);
+  if(orig > 0) document.getElementById('editAmount').value = round2(orig * editRate / editSplit);
+  editOverridden = false;
+  document.getElementById('editOverTag').hidden = true;
+  document.getElementById('editError').textContent = '';
+}
+function onEditAmountInput(){
+  document.getElementById('editError').textContent = '';
+  if(editTripId){ editOverridden = true; document.getElementById('editOverTag').hidden = false; }
+}
+function setEditSplit(n){
+  n = parseInt(n, 10);
+  editSplit = n >= 1 ? Math.min(n, 50) : 1;
+  document.getElementById('editSplitN').value = editSplit;
+  editRecalc();
 }
 function closeEdit(){
   const id = editingId;
@@ -2039,12 +2562,24 @@ async function saveEdit(){
   const dateVal = document.getElementById('editDate').value;
   const amount = parseFloat(document.getElementById('editAmount').value);
   const err = document.getElementById('editError');
+  if(editTripId){
+    const orig = parseFloat(document.getElementById('editOrig').value);
+    if(!(orig > 0)){ err.textContent = 'ใส่ยอดเต็มบิลก่อน'; return; }
+  }
   if(!amount || amount <= 0){ err.textContent = 'ใส่จำนวนเงินก่อน'; return; }
   if(!dateVal){ err.textContent = 'เลือกวันที่ก่อน'; return; }
+  if(!editCategory){ err.textContent = 'เลือกหมวดก่อน'; return; }
   e.date = dateVal;
   e.amount = amount;
   e.category = editCategory;
   e.note = document.getElementById('editNote').value.trim();
+  if(editTripId){
+    e.tripId = editTripId; e.currency = editCur; e.rate = editRate; e.splitCount = editSplit;
+    e.originalAmount = parseFloat(document.getElementById('editOrig').value);
+    e.amountOverridden = editOverridden;
+  }else{
+    ['tripId','currency','originalAmount','splitCount','rate','amountOverridden'].forEach(k => delete e[k]);
+  }
   if(editPayment && findPay(editPayment)) e.paymentMethod = editPayment; else delete e.paymentMethod;
   e.updatedAt = nowISO();
   await saveData();
@@ -2067,7 +2602,10 @@ document.addEventListener('keydown', ev=>{
   if(ev.key !== 'Escape') return;
   if(document.getElementById('infoModalOverlay').style.display !== 'none') closeInfo();
   else if(document.getElementById('confirmModalOverlay').style.display !== 'none') closeConfirm();
+  else if(document.getElementById('tripModalOverlay').style.display !== 'none') closeTripModal();
+  else if(document.getElementById('tripSheetOverlay').style.display !== 'none') closeTripSheet();
   else if(document.getElementById('editModalOverlay').style.display !== 'none') closeEdit();
+  else if(tripPageId) tripPageBack();
 });
 
 function shiftMonth(delta){
@@ -2075,9 +2613,24 @@ function shiftMonth(delta){
   render();
 }
 
-function entriesForMonth(d){
+// THE choke point for monthly maths: entriesForMonth() is the owner's normal spending and never includes trip entries.
+function allEntriesForMonth(d){
   const key = monthKey(d);
   return state.entries.filter(e => e.date.slice(0,7) === key);
+}
+function entriesForMonth(d){ return allEntriesForMonth(d).filter(e => !e.tripId); }
+function tripEntriesForMonth(d){ return allEntriesForMonth(d).filter(e => e.tripId); }
+
+// Income, fixed items, normal spending and trip money for one month. A trip funded from income comes off คงเหลือ.
+function monthFigures(d){
+  const eff = getEffectiveSettings(monthKey(d));
+  const entries = entriesForMonth(d), tripEntries = tripEntriesForMonth(d);
+  const income = eff.income || 0;
+  const fixed = eff.fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
+  const variable = entries.reduce((s,e)=> s + e.amount, 0);
+  const tripTotal = tripEntries.reduce((s,e)=> s + e.amount, 0);
+  const tripFromIncome = tripEntries.filter(e => tripFundingOf(e) === 'income').reduce((s,e)=> s + e.amount, 0);
+  return { eff, entries, tripEntries, income, fixed, variable, tripTotal, tripFromIncome, remaining: income - fixed - variable - tripFromIncome };
 }
 
 function fixedTotal(mKey){
@@ -2094,28 +2647,129 @@ function render(){
 function renderToday(){
   const now = new Date();
   const mKeyStr = monthKey(now);
-  const eff = getEffectiveSettings(mKeyStr);
-  const monthEntries = sortEntries(entriesForMonth(now));
-  const income = eff.income || 0;
-  const fixed = eff.fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
-  const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
-  const remaining = income - fixed - variable;
+  const fig = monthFigures(now);
+  const monthEntries = sortEntries(fig.entries);
+  const { income, remaining, variable } = fig;
+  const trip = activeTrip();
 
+  document.body.classList.toggle('travel', !!trip);
   renderHeader(now);
-  renderRepeat();
-  renderHero(income, remaining, variable, monthEntries);
-  renderDueCard();
-  renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries);
-  // Until income is set the hero CTA is the only primary button.
-  const secondary = !(income > 0);
+  renderTripBanner(trip);
+  renderRepeat(!!trip);
+  if(trip) renderTripHero(trip, normalDailyAllowance(fig, now)); else renderHero(income, remaining, variable, monthEntries);
+  renderDueCard(!!trip);
+  renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries, !!trip);
+  // Until income is set the hero CTA is the only primary button (normal mode only).
+  const secondary = !trip && !(income > 0);
   document.getElementById('addEntryBtn').classList.toggle('secondary', secondary);
   document.getElementById('kbSaveBtn').classList.toggle('secondary', secondary);
 
   const RECENT = 5;
-  renderEntryList(document.getElementById('recentList'), monthEntries, RECENT, false, true);
-  document.getElementById('recentEmpty').style.display = monthEntries.length === 0 ? 'block' : 'none';
-  document.getElementById('recentAllBtn').style.display = monthEntries.length ? '' : 'none';
-  document.getElementById('recentCount').textContent = monthEntries.length ? `เดือนนี้ ${monthEntries.length} รายการ` : '';
+  const list = trip ? sortEntries(tripEntriesOf(trip.id)) : monthEntries;
+  renderEntryList(document.getElementById('recentList'), list, RECENT, false, true);
+  document.getElementById('recentTitle').textContent = trip ? 'รายการทริปล่าสุด' : 'รายการล่าสุด';
+  document.getElementById('recentEmptyTxt').textContent = trip ? 'ยังไม่มีรายการในทริปนี้' : 'ยังไม่มีรายการเดือนนี้';
+  document.getElementById('recentEmpty').style.display = list.length === 0 ? 'block' : 'none';
+  document.getElementById('recentAllBtn').style.display = list.length ? '' : 'none';
+  document.getElementById('recentCount').textContent = list.length ? (trip ? `ทริป ${list.length} รายการ` : `เดือนนี้ ${list.length} รายการ`) : '';
+}
+
+/* ---------- Travel mode: banner, suggestion, trip hero ---------- */
+function tripDayText(t, today){
+  if(today < t.startDate) return `อีก ${dayNum(t.startDate) - dayNum(today)} วันออกเดินทาง`;
+  if(today > t.endDate) return 'ทริปจบแล้ว';
+  return `วันที่ ${dayNum(today) - dayNum(t.startDate) + 1}/${dayNum(t.endDate) - dayNum(t.startDate) + 1}`;
+}
+function suggestionTrip(today){
+  return state.trips.filter(t => t.startDate <= today && today <= t.endDate).sort((a,b)=> a.startDate < b.startDate ? -1 : 1)[0] || null;
+}
+function suggestDismissedForToday(){
+  if(suggestDismissedToday) return true;
+  try{ return localStorage.getItem(TRIP_SUGGEST_KEY) === todayISO(); }catch(e){ return false; }
+}
+function renderTripBanner(trip){
+  const today = todayISO();
+  const banner = document.getElementById('tripBanner');
+  const sug = document.getElementById('tripSuggest');
+  banner.hidden = !trip;
+  if(trip){
+    const day = tripDayText(trip, today);
+    document.getElementById('tbName').textContent = '✈\uFE0E ' + trip.name;
+    document.getElementById('tbDay').textContent = day;
+    document.getElementById('tripBannerMain').setAttribute('aria-label', `โหมดท่องเที่ยว ${trip.name} ${day} ดูสรุปทริป`);
+  }
+  const st = !trip ? suggestionTrip(today) : null;
+  const show = !!st && !suggestDismissedForToday();
+  sug.hidden = !show;
+  if(show){
+    document.getElementById('tripSuggestTxt').textContent = `อยู่ในช่วง${st.name} เปิดโหมดท่องเที่ยวไหม?`;
+    sug.dataset.id = st.id;
+  }
+}
+// What the normal monthly allowance is right now (same maths as the normal hero), for the muted line in the trip hero.
+function normalDailyAllowance(fig, now){
+  if(!(fig.income > 0) || fig.remaining < 0) return null;
+  const today = todayISO();
+  const todaySpent = fig.entries.filter(e => e.date === today).reduce((s,e)=> s + e.amount, 0);
+  const daysLeft = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate() - now.getDate() + 1;
+  return (fig.remaining + todaySpent) / daysLeft;
+}
+
+// The trip budget maths in one place: used by the วันนี้ hero and the trip summary page.
+function tripHeroModel(t, today){
+  const list = tripEntriesOf(t.id);
+  const spent = list.reduce((s,e)=> s + e.amount, 0);
+  const todaySpent = list.filter(e => e.date === today).reduce((s,e)=> s + e.amount, 0);
+  let label = '', cls = '', num = 0, dir = 'down', html = '';
+  if(!(t.budget > 0)){
+    label = 'ใช้ไปแล้ว'; num = spent; dir = 'up';
+  }else if(today < t.startDate){
+    label = 'ก่อนเดินทาง ใช้ไปแล้ว'; num = spent; dir = 'up';
+    html = `จากงบ ${fmt(t.budget)}`;
+  }else if(today > t.endDate){
+    label = 'ใช้ทั้งหมด'; num = spent; dir = 'up';
+    const diff = t.budget - spent;
+    html = `จากงบ ${fmt(t.budget)} <span class="${diff >= 0 ? 'pos' : 'neg'}">${diff >= 0 ? 'เหลือ ' : 'เกิน '}${fmt(Math.abs(diff))}</span>`;
+  }else{
+    const daysLeft = dayNum(t.endDate) - dayNum(today) + 1;
+    if(t.budget - spent < 0){
+      label = 'เกินงบทริปแล้ว'; num = spent - t.budget; cls = 'neg';
+      html = `ใช้ไปแล้ว ${fmt(spent)} จากงบ ${fmt(t.budget)}`;
+    }else{
+      // Stable for the whole day: today's spending is added back before dividing.
+      const daily = (t.budget - spent + todaySpent) / daysLeft;
+      const todayLeft = daily - todaySpent;
+      if(todayLeft >= 0){ label = 'วันนี้ใช้ได้อีก'; num = todayLeft; cls = 'pos'; }
+      else{ label = 'วันนี้ใช้เกินแล้ว'; num = Math.abs(todayLeft); cls = 'warn'; }
+      html = `ใช้ได้วันละ ${fmt(daily)} อีก ${daysLeft} วัน`;
+    }
+  }
+  return { label, num, cls, dir, html };
+}
+// Reuses the normal hero's DOM and ids, so the count-up and delta in heroFeedback keep working.
+function renderTripHero(t, normalDaily){
+  cancelAnimationFrame(heroAnimRaf);
+  const card = document.getElementById('heroCard');
+  const label = document.getElementById('heroLabel');
+  const value = document.getElementById('heroValue');
+  const wrap = document.getElementById('heroValueWrap');
+  const sub = document.getElementById('heroSub');
+  const sub2 = document.getElementById('heroSub2');
+  const sub3 = document.getElementById('heroSub3');
+  document.getElementById('heroMeter').style.display = 'none';
+  document.getElementById('heroCta').style.display = 'none';
+  document.getElementById('heroInfo').style.display = 'none';
+  sub.innerHTML = ''; sub2.innerHTML = ''; sub3.innerHTML = '';
+  value.style.display = ''; wrap.style.display = '';
+  const m = tripHeroModel(t, todayISO());
+  label.textContent = m.label;
+  const { num, dir, cls, html } = m;
+  value.textContent = fmt(num);
+  heroShown = { label: label.textContent, num, dir };
+  value.className = 'hero-value ' + cls;
+  card.className = 'card hero trip-hero';
+  sub.innerHTML = html;
+  sub2.textContent = normalDaily === null ? '' : `เดือนนี้ใช้ได้วันละ ${fmt(normalDaily)}`;
 }
 
 /* ---------- Header: date + streak ---------- */
@@ -2148,7 +2802,7 @@ function repeatGroups(){
   const today = todayISO();
   const map = new Map();
   state.entries.forEach(e=>{
-    if(e.date < cutoff || e.date > today) return;
+    if(e.tripId || e.date < cutoff || e.date > today) return;
     const c = findCat(e.category);
     if(!c || c.archived) return;
     const note = String(e.note || '').trim();
@@ -2162,9 +2816,9 @@ function repeatGroups(){
   return [...map.values()].filter(g => g.count >= 2)
     .sort((a,b)=> b.count - a.count || (a.last < b.last ? 1 : a.last > b.last ? -1 : 0)).slice(0, 4);
 }
-function renderRepeat(){
+function renderRepeat(travel){
   const row = document.getElementById('repeatRow');
-  const groups = repeatGroups();
+  const groups = travel ? [] : repeatGroups();
   row.innerHTML = '';
   row.hidden = !groups.length;
   if(!groups.length) return;
@@ -2182,6 +2836,397 @@ function renderRepeat(){
     b.addEventListener('click', ()=> saveNewEntry({ date: todayISO(), amount: g.amount, category: g.category, note: g.note, paymentMethod: g.pay }, false));
     row.appendChild(b);
   });
+}
+
+/* ---------- Trips: switch, picker sheet, create / edit ---------- */
+let sheetOpener = null, tripModalOpener = null, editingTripId = null, tripFunding = 'savings';
+
+async function setActiveTrip(id){
+  state.activeTripId = id || null;
+  entryKind = 'trip'; entryLink = '';
+  await saveData();
+  renderForm();
+  render();
+}
+let tripSheetIds = null;   // null = the travel mode switch; an array = a picker of those trips for the summary page
+function openTripSheet(ids){
+  sheetOpener = document.activeElement;
+  tripSheetIds = Array.isArray(ids) ? ids : null;
+  document.getElementById('tripSheetTitle').textContent = tripSheetIds ? 'เลือกทริป' : 'โหมดท่องเที่ยว';
+  document.getElementById('tripNewBtn').style.display = tripSheetIds ? 'none' : '';
+  renderTripList();
+  document.getElementById('tripSheetOverlay').style.display = 'flex';
+  const first = document.querySelector('#tripList .tl-main') || document.getElementById('tripNewBtn');
+  first.focus();
+}
+function closeTripSheet(restore){
+  document.getElementById('tripSheetOverlay').style.display = 'none';
+  if(restore !== false && sheetOpener && sheetOpener.focus) sheetOpener.focus();
+  sheetOpener = null;
+}
+function renderTripList(){
+  const ul = document.getElementById('tripList');
+  ul.innerHTML = '';
+  const trips = sortedTrips().filter(t => !tripSheetIds || tripSheetIds.includes(t.id));
+  document.getElementById('tripSheetDesc').textContent = tripSheetIds ? 'ดูสรุปของทริปไหน' : (trips.length ? 'แตะชื่อเพื่อดูสรุป หรือกดเปิดเพื่อจดทริปนั้น' : 'ยังไม่มีทริป สร้างทริปแรกได้เลย');
+  ul.style.display = trips.length ? '' : 'none';
+  trips.forEach(t=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<button type="button" class="tl-main"><span class="tl-name">${escapeHtml(t.name)}</span><span class="tl-dates">${escapeHtml(tripDates(t))}</span></button>${tripSheetIds ? '' : `<button type="button" class="secondary tl-go" aria-label="เปิดโหมดท่องเที่ยว ${escapeHtml(t.name)}">เปิด</button>`}<button type="button" class="tl-edit" aria-label="แก้ไขทริป ${escapeHtml(t.name)}">${'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>'}</button>`;
+    li.querySelector('.tl-main').addEventListener('click', ()=>{ const op = sheetOpener; closeTripSheet(false); openTripPage(t.id, op); });
+    const go = li.querySelector('.tl-go'); if(go) go.addEventListener('click', ()=>{ closeTripSheet(false); setActiveTrip(t.id); });
+    li.querySelector('.tl-edit').addEventListener('click', ()=>{ const op = sheetOpener; closeTripSheet(false); openTripModal(t.id, op); });
+    ul.appendChild(li);
+  });
+}
+
+function syncRateLabels(){
+  const code = document.getElementById('tripCur').value || 'CNY';
+  document.getElementById('tripRateALab').textContent = `1 ${code} =`;
+  document.getElementById('tripRateBUnit').textContent = code;
+  const thb = code === 'THB';
+  ['tripRateA','tripRateB'].forEach(id => { document.getElementById(id).disabled = thb; });
+  if(thb){ document.getElementById('tripRateA').value = 1; document.getElementById('tripRateB').value = 1; }
+}
+// Two linked fields, one stored value: thbPerUnit is always what the first field shows.
+function onRateA(){
+  const v = parseFloat(document.getElementById('tripRateA').value);
+  document.getElementById('tripRateB').value = v > 0 ? roundSig(1 / v, 3) : '';
+  document.getElementById('tripRateErr').textContent = '';
+}
+function onRateB(){
+  const v = parseFloat(document.getElementById('tripRateB').value);
+  document.getElementById('tripRateA').value = v > 0 ? roundSig(1 / v, 4) : '';
+  document.getElementById('tripRateErr').textContent = '';
+}
+function setTripFunding(f, focus){
+  tripFunding = f === 'income' ? 'income' : 'savings';
+  document.querySelectorAll('#tripFund button').forEach(b=>{
+    const on = b.dataset.fund === tripFunding;
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+    b.tabIndex = on ? 0 : -1;
+    if(on && focus) b.focus();
+  });
+  document.getElementById('tripFundHint').textContent = tripFunding === 'savings' ? 'เงินเก็บ ไม่หักจากคงเหลือของเดือน' : 'หักจากคงเหลือของเดือนที่จ่าย';
+}
+function openTripModal(id, opener){
+  tripModalOpener = opener || document.activeElement;
+  editingTripId = id || null;
+  const t = findTrip(id);
+  const used = t ? tripEntriesOf(t.id).length : 0;
+  document.getElementById('tripModalTitle').textContent = t ? 'แก้ไขทริป' : 'สร้างทริป';
+  document.getElementById('tripName').value = t ? t.name : '';
+  const cur = document.getElementById('tripCur');
+  cur.value = t ? t.currency : 'CNY';
+  cur.disabled = used > 0;
+  document.getElementById('tripCurHint').hidden = !(used > 0);
+  document.getElementById('tripStart').value = t ? t.startDate : todayISO();
+  document.getElementById('tripEnd').value = t ? t.endDate : todayISO();
+  document.getElementById('tripRateA').value = t ? t.thbPerUnit : '';
+  document.getElementById('tripRateB').value = t ? roundSig(1 / t.thbPerUnit, 3) : '';
+  document.getElementById('tripBudget').value = t && t.budget > 0 ? t.budget : '';
+  ['tripNameErr','tripDateErr','tripRateErr'].forEach(i => { document.getElementById(i).textContent = ''; });
+  document.getElementById('tripName').removeAttribute('aria-invalid');
+  setTripFunding(t ? t.funding : 'savings');
+  document.getElementById('tripDeleteBtn').style.display = t ? '' : 'none';
+  syncRateLabels();
+  if(t && t.currency !== 'THB') document.getElementById('tripRateA').value = t.thbPerUnit;
+  document.getElementById('tripModalOverlay').style.display = 'flex';
+  document.getElementById('tripName').focus();
+}
+function closeTripModal(){
+  document.getElementById('tripModalOverlay').style.display = 'none';
+  const o = tripModalOpener; tripModalOpener = null;
+  if(o && o.focus && document.body.contains(o)) o.focus();
+}
+async function saveTrip(){
+  const name = document.getElementById('tripName').value.trim();
+  const code = document.getElementById('tripCur').value;
+  const start = document.getElementById('tripStart').value, end = document.getElementById('tripEnd').value;
+  const rate = code === 'THB' ? 1 : parseFloat(document.getElementById('tripRateA').value);
+  const budget = parseFloat(document.getElementById('tripBudget').value) || 0;
+  let bad = null;
+  const nameErr = document.getElementById('tripNameErr'), dateErr = document.getElementById('tripDateErr'), rateErr = document.getElementById('tripRateErr');
+  nameErr.textContent = dateErr.textContent = rateErr.textContent = '';
+  document.getElementById('tripName').removeAttribute('aria-invalid');
+  if(!name){ nameErr.textContent = 'ใส่ชื่อทริปก่อน'; document.getElementById('tripName').setAttribute('aria-invalid','true'); bad = bad || document.getElementById('tripName'); }
+  if(!start || !end){ dateErr.textContent = 'เลือกวันเริ่มและวันกลับก่อน'; bad = bad || document.getElementById(start ? 'tripEnd' : 'tripStart'); }
+  else if(end < start){ dateErr.textContent = 'วันกลับต้องไม่ก่อนวันเริ่ม'; bad = bad || document.getElementById('tripEnd'); }
+  if(!(rate > 0)){ rateErr.textContent = 'ใส่เรตก่อน'; bad = bad || document.getElementById('tripRateA'); }
+  if(bad){ bad.focus(); return; }
+
+  const stamp = nowISO();
+  let t = findTrip(editingTripId), recalc = [], isNew = !t;
+  if(t){
+    const rateChanged = rate !== t.thbPerUnit;
+    t.name = name; t.currency = code; t.startDate = start; t.endDate = end; t.budget = budget; t.funding = tripFunding;
+    t.thbPerUnit = rate; t.updatedAt = stamp;
+    if(rateChanged) recalc = tripEntriesOf(t.id).filter(e => e.currency === t.currency && e.currency !== 'THB' && !e.amountOverridden);
+  }else{
+    t = { id: 'trip-' + genId(), name, currency: code, thbPerUnit: rate, startDate: start, endDate: end, budget, funding: tripFunding, createdAt: stamp, updatedAt: stamp };
+    state.trips.push(t);
+  }
+  await saveData();
+  closeTripModal();
+  const today = todayISO();
+  if(isNew && start <= today && today <= end){ await setActiveTrip(t.id); }
+  else{ renderForm(); render(); if(isNew) flashToast('สร้างทริปแล้ว', true); }
+  if(recalc.length){
+    openConfirm({
+      title: 'คำนวณยอดบาทใหม่ไหม?',
+      desc: `ใช้เรตใหม่กับรายการเดิม ${recalc.length} รายการ ยกเว้นรายการที่แก้ยอดบาทเอง`,
+      confirmLabel: 'คำนวณใหม่',
+      onConfirm: async ()=>{
+        const st = nowISO();
+        recalc.forEach(e=>{ e.rate = t.thbPerUnit; e.amount = round2(e.originalAmount * e.rate / e.splitCount); e.updatedAt = st; });
+        await saveData();
+        render();
+      }
+    });
+  }
+}
+function askDeleteTrip(){
+  const t = findTrip(editingTripId);
+  if(!t) return;
+  const n = tripEntriesOf(t.id).length;
+  openConfirm({
+    title: n ? `ลบทริปและรายการทั้งหมด ${n} รายการไหม?` : `ลบทริป "${t.name}" ไหม?`,
+    desc: n ? `ทริป "${t.name}" ลบแล้วเอากลับมาไม่ได้` : 'ลบแล้วเอากลับมาไม่ได้',
+    confirmLabel: 'ลบ',
+    onConfirm: async ()=>{
+      state.trips = state.trips.filter(x => x.id !== t.id);
+      state.entries = state.entries.filter(e => e.tripId !== t.id);
+      if(state.activeTripId === t.id) state.activeTripId = null;   // travel mode turns off
+      if(entryLink === t.id) entryLink = '';
+      if(tripPageId === t.id){ try{ history.replaceState(null, '', '#' + activeTab); }catch(e){} closeTripPage(); }
+      closeTripModal();
+      await saveData();
+      renderForm();
+      render();
+    }
+  });
+}
+function dismissSuggestion(){
+  suggestDismissedToday = true;
+  try{ localStorage.setItem(TRIP_SUGGEST_KEY, todayISO()); }catch(e){}
+  renderTripBanner(activeTrip());
+}
+
+/* ---------- Trip summary page (C6) ---------- */
+let tripPageId = null, tripPageOpener = null, tripPageDirect = false;
+function tripIdsInMonth(d){ return [...new Set(tripEntriesForMonth(d).map(e => e.tripId))].filter(findTrip); }
+function openMonthTrips(opener){
+  const ids = tripIdsInMonth(currentMonth);
+  if(ids.length === 1) openTripPage(ids[0], opener);
+  else if(ids.length) openTripSheet(ids);
+}
+// "23–29 ต.ค. 2569", spanning months or years when it has to.
+function tripRangeText(t){
+  const a = parseISODate(t.startDate), b = parseISODate(t.endDate);
+  const mo = d => d.toLocaleDateString('th-TH', { month:'short' });
+  const yr = d => String(d.getFullYear() + 543);
+  if(t.startDate === t.endDate) return `${a.getDate()} ${mo(a)} ${yr(a)}`;
+  if(a.getFullYear() !== b.getFullYear()) return `${a.getDate()} ${mo(a)} ${yr(a)}–${b.getDate()} ${mo(b)} ${yr(b)}`;
+  if(a.getMonth() !== b.getMonth()) return `${a.getDate()} ${mo(a)}–${b.getDate()} ${mo(b)} ${yr(b)}`;
+  return `${a.getDate()}–${b.getDate()} ${mo(b)} ${yr(b)}`;
+}
+function openTripPage(id, opener, fromHash){
+  const t = findTrip(id);
+  if(!t) return;
+  if(tripPageId === id) return;
+  if(tripPageId) closeTripPage({ restore:false });
+  scrollPos[activeTab] = window.scrollY;
+  tripPageOpener = opener && opener.focus ? opener : null;
+  tripPageDirect = !!fromHash && !history.length ? true : !!fromHash;
+  tripPageId = id;
+  TABS.forEach(n => { document.getElementById('panel-' + n).hidden = true; });
+  document.getElementById('tripPage').hidden = false;
+  renderTripPage();
+  window.scrollTo(0, 0);
+  if(!fromHash && location.hash !== '#trip/' + id) location.hash = 'trip/' + id;
+  document.getElementById('tpBack').focus({ preventScroll:true });
+}
+// opts.restore:false skips bringing the old tab and its scroll position back (the caller is switching tabs).
+function closeTripPage(opts){
+  if(!tripPageId) return;
+  tripPageId = null;
+  document.getElementById('tripPage').hidden = true;
+  document.getElementById('panel-' + activeTab).hidden = false;
+  if(!(opts && opts.restore === false)){
+    window.scrollTo(0, scrollPos[activeTab] || 0);
+    const o = tripPageOpener;
+    if(o && document.body.contains(o)) o.focus({ preventScroll:true });
+  }
+  tripPageOpener = null;
+  if(activeTab === 'overview'){ resizeCharts(); requestAnimationFrame(resizeCharts); }
+}
+// ‹ กลับ and Escape: go back in history when we pushed the hash, otherwise just close.
+function tripPageBack(){
+  if(!tripPageId) return;
+  if(/^#trip\//.test(location.hash) && !tripPageDirect) history.back();
+  else{
+    try{ history.replaceState(null, '', '#' + activeTab); }catch(e){}
+    closeTripPage();
+  }
+}
+function syncFromHash(){
+  const m = /^#trip\/(.+)$/.exec(location.hash);
+  if(m){
+    const id = decodeURIComponent(m[1]);
+    if(findTrip(id)) openTripPage(id, null, true);
+    else{ try{ history.replaceState(null, '', '#' + activeTab); }catch(e){} closeTripPage(); }
+    return;
+  }
+  if(tripPageId) closeTripPage();
+  const t = tabFromHash();
+  if(t !== activeTab) applyTab(t);
+}
+
+function renderTripPage(){
+  if(!tripPageId) return;
+  const t = findTrip(tripPageId);
+  if(!t){ closeTripPage(); return; }
+  const $ = id => document.getElementById(id);
+  const today = todayISO();
+  const list = tripEntriesOf(t.id);
+  const spent = list.reduce((s,e)=> s + e.amount, 0);
+  $('tpTitle').textContent = t.name;
+  $('tpDates').textContent = tripRangeText(t);
+  // hero: same maths as วันนี้
+  $('tpHero').hidden = !(t.budget > 0);
+  if(t.budget > 0){
+    const m = tripHeroModel(t, today);
+    $('tpHeroLabel').textContent = m.label;
+    $('tpHeroValue').textContent = fmt(m.num);
+    $('tpHeroValue').className = 'hero-value ' + m.cls;
+    $('tpHeroSub').innerHTML = m.html;
+  }
+  // stats
+  const cells = [['รวม', fmt(spent)]];
+  if(t.currency !== 'THB'){
+    const local = list.filter(e => e.currency === t.currency).reduce((s,e)=> s + e.originalAmount / e.splitCount, 0);
+    cells.push([`เป็น ${t.currency}`, '≈ ' + fmtCur(round2(local), t.currency)]);
+  }
+  if(today >= t.startDate){
+    const total = dayNum(t.endDate) - dayNum(t.startDate) + 1;
+    const elapsed = Math.min(total, dayNum(today) - dayNum(t.startDate) + 1);
+    const inTrip = list.filter(e => e.date >= t.startDate && e.date <= t.endDate).reduce((s,e)=> s + e.amount, 0);
+    cells.push(['เฉลี่ยวันละ', fmt(inTrip / elapsed)]);
+  }
+  const st = $('tpStats');
+  st.style.gridTemplateColumns = `repeat(${cells.length},minmax(0,1fr))`;
+  st.innerHTML = cells.map(c => `<div><span class="k">${escapeHtml(c[0])}</span><span class="v">${escapeHtml(c[1])}</span></div>`).join('');
+  // budget bar
+  $('tpBudgetCard').hidden = !(t.budget > 0);
+  if(t.budget > 0){
+    const ratio = spent / t.budget, pct = Math.round(ratio * 100);
+    $('tpBudgetNums').textContent = `${fmt(spent)} / ${fmt(t.budget)}`;
+    const fill = $('tpBudgetFill');
+    fill.style.width = Math.min(ratio, 1) * 100 + '%';
+    fill.className = ratio > 1 ? 'neg' : ratio >= 0.8 ? 'warn' : '';
+    $('tpBudgetBar').setAttribute('aria-valuenow', String(Math.min(pct, 100)));
+    $('tpBudgetBar').setAttribute('aria-valuetext', `ใช้ไป ${pct}%`);
+    const foot = $('tpBudgetFoot');
+    foot.className = 'budget-foot' + (ratio > 1 ? ' neg' : '');
+    foot.textContent = `ใช้ไป ${pct}%`;
+  }
+  // by category
+  const by = {};
+  list.forEach(e => { by[e.category] = (by[e.category] || 0) + e.amount; });
+  const rows = Object.keys(by).map(n => ({ n, sum: by[n] })).sort((a,b)=> b.sum - a.sum);
+  const cb = $('tpCatBody');
+  cb.innerHTML = '';
+  $('tpCatCard').style.display = rows.length ? '' : 'none';
+  rows.forEach(r=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="pb-head"><span class="nm"><span class="dot" style="background:${tripCatColor(r.n)}" aria-hidden="true"></span><span class="t">${escapeHtml(r.n)}</span></span><span class="amt">${fmt(r.sum)}</span><span class="pct">${spent > 0 ? Math.round(r.sum / spent * 100) : 0}%</span></div><div class="pb-bar" aria-hidden="true"><span class="cat" style="width:${rows[0].sum > 0 ? r.sum / rows[0].sum * 100 : 0}%"></span></div>`;
+    cb.appendChild(li);
+  });
+  // by payment method: the same renderer as the monthly card
+  renderPayBreakdown(list, { card: $('tpPayCard'), body: $('tpPayBody'), total: $('tpPayTotal') });
+  // entries: after the trip, the trip days, then before the trip (newest first like everywhere else)
+  const box = $('tripPageList');
+  box.innerHTML = '';
+  $('tpEmpty').style.display = list.length ? 'none' : 'block';
+  $('tpCount').textContent = list.length ? `${list.length} รายการ` : '';
+  const sorted = sortEntries(list);
+  const groups = [
+    { label:'หลังกลับ', items: sorted.filter(e => e.date > t.endDate) },
+    { label:'', items: sorted.filter(e => e.date >= t.startDate && e.date <= t.endDate) },
+    { label:'ก่อนเดินทาง', items: sorted.filter(e => e.date < t.startDate) }
+  ];
+  const yest = new Date(); yest.setDate(yest.getDate() - 1);
+  groups.forEach(g=>{
+    if(!g.items.length) return;
+    if(g.label){
+      const h = document.createElement('h3');
+      h.className = 'tp-group';
+      h.innerHTML = `<span>${g.label}</span><span>${fmt(g.items.reduce((s,e)=> s + e.amount, 0))}</span>`;
+      box.appendChild(h);
+    }
+    let last = null;
+    g.items.forEach(e=>{
+      if(e.date !== last){
+        last = e.date;
+        const head = document.createElement('div');
+        head.className = 'day-head';
+        const word = e.date === today ? 'วันนี้ ' : e.date === isoOf(yest) ? 'เมื่อวาน ' : '';
+        head.innerHTML = `<span>${escapeHtml(word + fmtThaiDate(e.date))}</span><span>${fmt(g.items.filter(x => x.date === e.date).reduce((s,x)=> s + x.amount, 0))}</span>`;
+        box.appendChild(head);
+      }
+      box.appendChild(entryRowEl(e, 'tripPageList', true, true));
+    });
+  });
+}
+
+/* ---------- Trip CSV ---------- */
+function csvField(v, guard){
+  let s = v === undefined || v === null ? '' : String(v);
+  if(guard && /^[=+\-@\t\r]/.test(s)) s = "'" + s;   // stop spreadsheets running a note as a formula
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function tripCsv(t){
+  const rows = [['date','category','payment','note','currency','originalAmount','splitCount','rate','amountTHB']];
+  tripEntriesOf(t.id).slice().sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0).forEach(e=>{
+    rows.push([e.date, e.category, payName(e.paymentMethod), e.note || '', e.currency, e.originalAmount, e.splitCount, e.rate, e.amount]);
+  });
+  return '\uFEFF' + rows.map(r => r.map((v,i)=> csvField(v, i === 1 || i === 2 || i === 3)).join(',')).join('\r\n') + '\r\n';
+}
+function tripCsvName(t){
+  const safe = t.name.replace(/[\\/:*?"<>|,;'\s]+/g, '-').replace(/^-+|-+$/g, '') || 'trip';
+  return `trip-${safe}-${t.startDate}.csv`;
+}
+function exportTripCsv(){
+  const t = findTrip(tripPageId);
+  if(!t) return;
+  const blob = new Blob([tripCsv(t)], { type:'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = tripCsvName(t);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// settings: every trip, newest first
+function renderTripsSettings(){
+  const box = document.getElementById('tripsSettingsList');
+  if(!box) return;
+  box.innerHTML = '';
+  const trips = sortedTrips();
+  if(!trips.length){ box.innerHTML = '<div class="empty" style="padding:6px 0;">ยังไม่มีทริป</div>'; return; }
+  const ul = document.createElement('ul');
+  ul.className = 'trip-list';
+  trips.forEach(t=>{
+    const n = tripEntriesOf(t.id).length;
+    const li = document.createElement('li');
+    li.innerHTML = `<button type="button" class="tl-main"><span class="tl-name">${escapeHtml(t.name)}</span><span class="tl-dates">${escapeHtml(tripRangeText(t))} · ${n} รายการ</span></button><button type="button" class="tl-edit" aria-label="แก้ไขทริป ${escapeHtml(t.name)}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`;
+    const main = li.querySelector('.tl-main');
+    main.addEventListener('click', ()=> openTripPage(t.id, main));
+    const ed = li.querySelector('.tl-edit');
+    ed.addEventListener('click', ()=> openTripModal(t.id, ed));
+    ul.appendChild(li);
+  });
+  box.appendChild(ul);
 }
 
 /* ---------- Info dialog ---------- */
@@ -2203,7 +3248,8 @@ function kbBarLabelText(){
   ensureSelectedCategory();
   ensureSelectedPayment();
   const pm = shortPayName(selectedPayment);
-  return (a > 0 ? `จด ${fmtExact(a)} ${selectedCategory}` : `จด ${selectedCategory}`) + (pm ? ' ' + pm : '');
+  const cat = formCategory();
+  return (a > 0 ? `จด ${fmtCur(a, formCurrency())} ${cat}` : `จด ${cat}`) + (pm ? ' ' + pm : '');
 }
 function updateKbBarLabel(){
   const b = document.getElementById('kbSaveBtn');
@@ -2234,18 +3280,35 @@ function renderMonthViews(){
   document.getElementById('stripGroup').setAttribute('aria-label', isNow ? 'สรุปเดือนนี้' : 'สรุป ' + viewedMonthWord());
 
   const mKeyStr = monthKey(currentMonth);
-  const eff = getEffectiveSettings(mKeyStr);
-  const monthEntries = sortEntries(entriesForMonth(currentMonth));
-  const income = eff.income || 0;
-  const fixed = eff.fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
-  const variable = monthEntries.reduce((s,e)=> s+e.amount, 0);
-  const remaining = income - fixed - variable;
+  const fig = monthFigures(currentMonth);
+  const eff = fig.eff;
+  const monthEntries = sortEntries(fig.entries);
+  const { fixed, variable, remaining } = fig;
 
   document.getElementById('statFixed').textContent = fmt(fixed);
   document.getElementById('statVariable').textContent = fmt(variable);
   const remEl = document.getElementById('statRemaining');
   remEl.textContent = fmt(remaining);
   remEl.className = 'v' + (remaining < 0 ? ' neg' : '');
+  // ทริป cell: only when the month has trip entries (the grid adapts from 3 to 4 columns)
+  const tripCell = document.getElementById('stripTripCell');
+  const hasTrip = fig.tripEntries.length > 0;
+  tripCell.hidden = !hasTrip;
+  document.getElementById('stripGroup').classList.toggle('has-trip', hasTrip);
+  if(hasTrip){
+    document.getElementById('statTrip').textContent = fmt(fig.tripTotal);
+    const fundings = new Set(fig.tripEntries.map(tripFundingOf));
+    document.getElementById('statTripSub').textContent = fundings.size > 1 ? 'หลายทริป' : (fundings.has('income') ? 'หักจากรายได้' : 'ใช้เงินเก็บ');
+  }
+  const tn = document.getElementById('tripNote');
+  tn.innerHTML = '';
+  if(hasTrip){
+    tn.appendChild(document.createTextNode(`มีรายการทริป ${fig.tripEntries.length} รายการ `));
+    const lk = document.createElement('button');
+    lk.type = 'button'; lk.className = 'linkbtn'; lk.textContent = 'ดูในหน้าทริป';
+    lk.addEventListener('click', ()=> openMonthTrips(lk));
+    tn.appendChild(lk);
+  }
 
   pruneFilters();
   renderFilterChips();
@@ -2259,6 +3322,8 @@ function renderMonthViews(){
   renderPieChart(monthEntries, eff.fixedItems);
   renderTrendChart();
   renderSettingsForm();
+  renderTripsSettings();
+  renderTripPage();
 }
 
 function isoOf(d){ return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); }
@@ -2273,7 +3338,7 @@ let filterText = '', filterCats = new Set(), searchAll = false;
 let filterTimer = null;
 function filterActive(){ return !!filterText.trim() || filterCats.size > 0 || searchAll; }
 function pruneFilters(){ [...filterCats].forEach(n => { if(!findCat(n)) filterCats.delete(n); }); }
-function refreshEntryList(){ renderEntriesTab(sortEntries(entriesForMonth(currentMonth))); }
+function refreshEntryList(){ renderEntriesTab(sortEntries(entriesForMonth(currentMonth))); }   // never trip entries
 function updateFilterSummary(){
   const parts = [];
   if(searchAll) parts.push('ทุกเดือน');
@@ -2337,14 +3402,30 @@ function renderEntriesTab(monthEntries){
 // Day-grouped rows into `list`. `limit`: max rows (null = all). `useFilters`: apply search/filter (F5).
 // Muted second line of a row: note and short method name; nothing when neither exists.
 function entrySub(e){
-  return [e.note, shortPayName(e.paymentMethod)].filter(Boolean).join(' · ');
+  const parts = [];
+  if(e.tripId){
+    if(e.currency && e.currency !== 'THB') parts.push(fmtCur(e.originalAmount, e.currency) + (e.splitCount > 1 ? ` ÷${e.splitCount}` : ''));
+    else if(e.splitCount > 1) parts.push(`÷${e.splitCount}`);
+  }
+  return parts.concat([e.note, shortPayName(e.paymentMethod)]).filter(Boolean).join(' · ');
+}
+// One entry row (shared by the lists and the trip summary). `noBadge` hides the trip badge inside the trip page itself.
+function entryRowEl(e, listId, noDelete, noBadge){
+  const row = document.createElement('div');
+  row.className = 'entry-row';
+  row.dataset.id = e.id;
+  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
+  row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, listId));
+  const delBtn = row.querySelector('.del');
+  if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
+  return row;
 }
 function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
   list.innerHTML = '';
   const active = !!useFilters && filterActive();
   let source = monthEntries;
   if(active){
-    source = searchAll ? sortEntries(state.entries) : monthEntries;
+    source = searchAll ? sortEntries(state.entries.filter(e => !e.tripId)) : monthEntries;
     const q = filterText.trim().toLowerCase();
     source = source.filter(e =>
       (!filterCats.size || filterCats.has(e.category)) &&
@@ -2365,13 +3446,7 @@ function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
       head.innerHTML = `<span>${escapeHtml(label)}</span><span>${fmt(total)}</span>`;
       list.appendChild(head);
     }
-    const row = document.createElement('div');
-    row.className = 'entry-row';
-    row.dataset.id = e.id;
-    row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${categoryColor(e.category)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
-    row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, list.id));
-    const delBtn = row.querySelector('.del');
-    if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
+    const row = entryRowEl(e, list.id, noDelete, false);
     list.appendChild(row);
   });
   return { active, source, shown };
@@ -2490,19 +3565,19 @@ function renderBudgetCard(budgets, monthEntries){
 
 /* ---------- Breakdown by payment method (ภาพรวม) ---------- */
 // The one place that decides which entries feed the method breakdown (a later phase can exclude trip entries here).
-function paymentStatsEntries(monthEntries){ return monthEntries; }
-function renderPayBreakdown(entries){
-  const card = document.getElementById('payCard');
-  const body = document.getElementById('payBody');
+function paymentStatsEntries(monthEntries){ return monthEntries.filter(e => !e.tripId); }
+function renderPayBreakdown(entries, els){
+  els = els || { card: document.getElementById('payCard'), body: document.getElementById('payBody'), total: document.getElementById('payTotal') };
+  const card = els.card, body = els.body;
   body.innerHTML = '';
   card.style.display = entries.length ? '' : 'none';
-  if(!entries.length){ document.getElementById('payTotal').textContent = ''; return; }
+  if(!entries.length){ els.total.textContent = ''; return; }
   const by = new Map();
   entries.forEach(e=>{ const k = findPay(e.paymentMethod) ? e.paymentMethod : ''; by.set(k, (by.get(k) || 0) + e.amount); });
   const rows = [...by.entries()].map(([id, sum]) => ({ id, sum, name: id ? payName(id) : 'ไม่ระบุ' })).sort((a,b)=> b.sum - a.sum);
   const total = rows.reduce((s,r)=> s + r.sum, 0);
   const max = rows[0].sum;
-  document.getElementById('payTotal').textContent = 'รวม ' + fmt(total);
+  els.total.textContent = 'รวม ' + fmt(total);
   rows.forEach(r=>{
     const li = document.createElement('li');
     li.innerHTML = `<div class="pb-head"><span class="nm">${escapeHtml(r.name)}</span><span class="amt">${fmt(r.sum)}</span><span class="pct">${Math.round(r.sum / total * 100)}%</span></div><div class="pb-bar" aria-hidden="true"><span style="width:${max > 0 ? r.sum / max * 100 : 0}%"></span></div>`;
@@ -2512,8 +3587,9 @@ function renderPayBreakdown(entries){
 
 /* ---------- Budget alert (inside the hero) ---------- */
 // Categories at 80% or more of their budget this calendar month. Colour plus the words used / over.
-function renderBudgetAlert(budgets, monthEntries){
+function renderBudgetAlert(budgets, monthEntries, travel){
   const btn = document.getElementById('budgetAlert');
+  if(travel){ btn.style.display = 'none'; btn.innerHTML = ''; return; }
   const spentBy = {};
   monthEntries.forEach(e=>{ spentBy[e.category] = (spentBy[e.category]||0) + e.amount; });
   const hits = state.categories.map(c => c.name).filter(n => budgets[n] > 0 && spentBy[n] / budgets[n] >= 0.8)
@@ -2546,12 +3622,12 @@ function upcomingPayments(now){
   }
   return out;
 }
-function renderDueCard(){
+function renderDueCard(travel){
   const card = document.getElementById('dueCard');
   const list = document.getElementById('dueList');
   list.innerHTML = '';
   const now = new Date();
-  const items = upcomingPayments(now);
+  const items = travel ? [] : upcomingPayments(now);
   card.style.display = items.length ? '' : 'none';
   items.forEach(p=>{
     const li = document.createElement('li');
@@ -2791,15 +3867,18 @@ function trendSeries(n){
   const series = colouredCatsBySlot().map(c => ({ label:c.name, color:SLOT_COLORS[c.slot], data: keys.map(()=>0) }));
   const idx = new Map(series.map((s,i)=>[s.label, i]));
   const other = keys.map(()=>0);
+  const tripSum = keys.map(()=>0);
   state.entries.forEach(e=>{
     const mi = keys.indexOf(e.date.slice(0,7));
     if(mi < 0) return;
+    if(e.tripId){ tripSum[mi] += e.amount; return; }   // trips stack on top as their own segment
     const si = idx.get(e.category);
     if(si !== undefined) series[si].data[mi] += e.amount; else other[mi] += e.amount;
   });
   const bars = [{ label:'รายการประจำ', color:FIXED_COLOR, data:fixed }]
     .concat(series.filter(s => s.data.some(v => v > 0)));
   if(other.some(v => v > 0)) bars.push({ label:'อื่นๆ', color:NEUTRAL_COLOR, data:other });
+  if(tripSum.some(v => v > 0)) bars.push({ label:'ทริป', color:TRIP_COLOR, trip:true, data:tripSum });
   const totals = keys.map((_,i)=> bars.reduce((s,b)=> s + b.data[i], 0));
   return { months, keys, bars, income, totals };
 }
@@ -2833,9 +3912,20 @@ function renderTrendChart(){
   const dim = (hex, i) => i === last ? hex : hex + '73';
   // top-most non-zero bar segment of each month gets the rounded corners
   const topIdx = t.keys.map((_,mi)=>{ let top = -1; t.bars.forEach((b,di)=>{ if(b.data[mi] > 0) top = di; }); return top; });
+  // The trip segment is ice cyan with a diagonal hatch (a pattern, so it differs from the flat category colours without relying on hue).
+  const patCtx = document.getElementById('trendChart').getContext('2d');
+  const tripPattern = alpha => {
+    const c = document.createElement('canvas'); c.width = c.height = 8;
+    const x = c.getContext('2d');
+    x.fillStyle = `rgba(92,225,230,${alpha * .3})`; x.fillRect(0, 0, 8, 8);
+    x.strokeStyle = `rgba(92,225,230,${alpha})`; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(0, 8); x.lineTo(8, 0); x.moveTo(-1, 1); x.lineTo(1, -1); x.moveTo(7, 9); x.lineTo(9, 7); x.stroke();
+    return patCtx.createPattern(c, 'repeat');
+  };
+  const patFull = t.bars.some(b => b.trip) ? tripPattern(1) : null, patDim = patFull ? tripPattern(.45) : null;
   const datasets = t.bars.map(b => ({
-    type:'bar', label:b.label, data:b.data, stack:'spend', order:1, solidColor:b.color,
-    backgroundColor: c => dim(b.color, c.dataIndex), borderColor:CHART_PANEL, borderWidth:2, borderSkipped:false,
+    type:'bar', label:b.label, data:b.data, stack:'spend', order:1, solidColor:b.color, swatch: b.trip ? patFull : null,
+    backgroundColor: c => b.trip ? (c.dataIndex === last ? patFull : patDim) : dim(b.color, c.dataIndex), borderColor:CHART_PANEL, borderWidth:2, borderSkipped:false,
     maxBarThickness:28, categoryPercentage:.62, barPercentage:1,
     borderRadius: c => topIdx[c.dataIndex] === c.datasetIndex ? { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } : 0
   }));
@@ -2867,7 +3957,7 @@ function renderTrendChart(){
           // legend swatches use the full-strength colour, not the dimmed past-month fill
           generateLabels: chart => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l => {
             const ds = chart.data.datasets[l.datasetIndex];
-            if(ds.solidColor){ l.fillStyle = ds.solidColor; l.strokeStyle = ds.solidColor; }
+            if(ds.solidColor){ l.fillStyle = ds.swatch || ds.solidColor; l.strokeStyle = ds.solidColor; }
             return l;
           }) } },
         tooltip:Object.assign(chartTooltip(), {
@@ -2967,7 +4057,7 @@ function setupUi(){
   document.getElementById('entryNote').addEventListener('input', updateDateSummary);
   document.querySelectorAll('[data-month-nav]').forEach(el => { el.innerHTML = MONTH_NAV_HTML; });
   document.querySelectorAll('#tabBar button').forEach(b => b.addEventListener('click', ()=> goTab(b.dataset.tab)));
-  window.addEventListener('hashchange', ()=>{ const t = tabFromHash(); if(t !== activeTab) applyTab(t); });
+  window.addEventListener('hashchange', syncFromHash);
   try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
   // The bottom bar would float above the iOS keyboard: hide it while a field has focus.
   const isField = el => !!el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=file]):not([type=range]), select, textarea');
@@ -2981,7 +4071,8 @@ function setupUi(){
     clearTimeout(kbTimer);
     kbTimer = setTimeout(()=>{ if(!isField(document.activeElement)) document.body.classList.remove('kb-open'); syncKbBar(); }, 150);
   });
-  document.getElementById('entryAmount').addEventListener('input', updateKbBarLabel);
+  document.getElementById('entryAmount').addEventListener('input', ()=>{ updateConv(); updateKbBarLabel(); });
+  setupTripUi();
   const kbBtn = document.getElementById('kbSaveBtn');
   // Keep the input focused (and the keyboard up) until the click lands.
   ['pointerdown','mousedown'].forEach(t => kbBtn.addEventListener(t, ev => ev.preventDefault()));
@@ -3010,6 +4101,51 @@ function setupUi(){
   document.getElementById('newCatName').addEventListener('input', ()=>{ setCatMsg(''); document.getElementById('newCatName').removeAttribute('aria-invalid'); });
 }
 
+function setupTripUi(){
+  const $ = id => document.getElementById(id);
+  // radiogroup arrow keys: switch to the other option
+  const arrows = (ev, fn)=>{ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(ev.key)){ ev.preventDefault(); fn(); } };
+  $('kindSeg').querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=> setKind(b.dataset.kind));
+    b.addEventListener('keydown', ev=> arrows(ev, ()=> setKind(entryKind === 'trip' ? 'normal' : 'trip', true)));
+  });
+  $('splitMinus').addEventListener('click', ()=> setSplit(entrySplit - 1));
+  $('splitPlus').addEventListener('click', ()=> setSplit(entrySplit + 1));
+  $('splitN').addEventListener('change', ev=> setSplit(ev.target.value));
+  $('entryLink').addEventListener('change', ev=>{ entryLink = ev.target.value; renderForm(); });
+  // edit sheet
+  $('editOrig').addEventListener('input', editRecalc);
+  $('editSplitMinus').addEventListener('click', ()=> setEditSplit(editSplit - 1));
+  $('editSplitPlus').addEventListener('click', ()=> setEditSplit(editSplit + 1));
+  $('editSplitN').addEventListener('change', ev=> setEditSplit(ev.target.value));
+  $('editLink').addEventListener('change', onEditLinkChange);
+  // travel mode switch, banner, suggestion
+  $('tripSwitchBtn').addEventListener('click', ()=> openTripSheet());
+  $('tripOffBtn').addEventListener('click', ()=> setActiveTrip(null));
+  $('tripBannerMain').addEventListener('click', ()=> openTripPage(state.activeTripId, $('tripBannerMain')));
+  $('tripSuggestYes').addEventListener('click', ()=> setActiveTrip($('tripSuggest').dataset.id));
+  $('tripSuggestNo').addEventListener('click', dismissSuggestion);
+  $('tripNewBtn').addEventListener('click', ()=>{ const op = sheetOpener; closeTripSheet(false); openTripModal(null, op); });
+  // trip modal
+  $('tripCur').innerHTML = CURRENCIES.map(c => `<option value="${c.code}">${c.code} ${c.sym}${c.code === 'CNY' ? '' : ' ' + escapeHtml(c.name)}</option>`).join('');
+  $('tripCur').addEventListener('change', ()=>{ syncRateLabels(); if($('tripCur').value !== 'THB'){ $('tripRateA').value = ''; $('tripRateB').value = ''; } });
+  $('tripRateA').addEventListener('input', onRateA);
+  $('tripRateB').addEventListener('input', onRateB);
+  $('tripFund').querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=> setTripFunding(b.dataset.fund));
+    b.addEventListener('keydown', ev=> arrows(ev, ()=> setTripFunding(tripFunding === 'savings' ? 'income' : 'savings', true)));
+  });
+  $('tpBack').addEventListener('click', tripPageBack);
+  $('tpEdit').addEventListener('click', ()=> openTripModal(tripPageId, $('tpEdit')));
+  $('tpCsv').addEventListener('click', exportTripCsv);
+  $('stripTripBtn').addEventListener('click', ()=> openMonthTrips($('stripTripBtn')));
+  $('tripsNewBtn').addEventListener('click', ()=> openTripModal(null, $('tripsNewBtn')));
+  $('tripSaveBtn').addEventListener('click', saveTrip);
+  $('tripDeleteBtn').addEventListener('click', askDeleteTrip);
+  $('tripName').addEventListener('input', ()=>{ $('tripNameErr').textContent = ''; $('tripName').removeAttribute('aria-invalid'); });
+  ['tripStart','tripEnd'].forEach(i => $(i).addEventListener('input', ()=>{ $('tripDateErr').textContent = ''; }));
+}
+
 async function init(){
   state = await loadData();
   loadLastCategory();
@@ -3022,6 +4158,7 @@ async function init(){
   render();
   // Always open on วันนี้ unless the URL carries a valid tab hash.
   applyTab(TABS.includes(location.hash.replace(/^#/, '')) ? tabFromHash() : 'today', { keepScroll:true });
+  if(/^#trip\//.test(location.hash)) syncFromHash();   // direct load of a trip page (falls back to วันนี้ if the trip is gone)
 }
 init();
 

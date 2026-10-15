@@ -1,5 +1,5 @@
 // Keep in sync with <meta name="app-version"> in index.html; bump on every release.
-const VERSION = '2.3.0';
+const VERSION = '2.4.0';
 const CACHE = 'spend-tracker-' + VERSION;
 const ASSETS = ['./', './index.html', './manifest.json', './vendor/chart.umd.js', './icon-180.png', './icon-192.png', './icon-512.png'];
 const NETWORK_TIMEOUT = 5000;
