@@ -53,4 +53,8 @@ Planned refactor (after the China trip, before phase 4): split into `css/` + cla
 
 ## Roadmap status
 
-Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0. Next: phase 4 credit-card bill reminders (Round 2 B4), then the file split, then v3b (Supabase sync, slip reading, iOS Shortcut — see the owner's ROADMAP).
+Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0. Next (after the China trip; until then bug fixes only): the file split, then phase 4 card bills, then wealth tracking (scope to be shaped with the owner), then v3b (Supabase sync, slip reading, iOS Shortcut — see the owner's ROADMAP).
+
+Phase 4 card bills, as agreed with the owner:
+- **บัตรเครดิต TTB** is billed to someone else's account and the owner transfers money back later: no statement cycle, just a running `ค้างโอนคืน ฿X` (TTB spend since the last repayment) and a `โอนคืนแล้ว` action that records a repayment (partial allowed, history kept, no expense created). No reminder or banner.
+- **บัตรเครดิต KBANK** is the owner's own card: Round 2 B4 statement cycles, due-date banner with `ประมาณ ฿X`, `จ่ายแล้ว`, `.ics` reminder. Until the statement/due days are entered show the running total since first use; once entered, compute cycles back to the card's first use (don't drop cycles before the configuration date).
