@@ -18,6 +18,18 @@ This folder is a git clone of that repo (`origin/main`). Commit and push from he
 4. **Verify independently** (main session) before reporting: rerun the tests, measure, look at screenshots. Report results honestly, including what was not tested.
 5. **Push only when the owner says "push".** Then confirm the Pages build and check the live files/version.
 
+## Keeping this file current
+
+Update CLAUDE.md as the last step of a work round, in the same commit as the code, so it always matches what is live. Update it when:
+1. A version ships or a phase finishes — refresh "Roadmap status" (done / next).
+2. The owner makes a lasting decision — colours, terms, display formats (e.g. CNY as 元), feature behaviour (e.g. TTB repayments with no reminder).
+3. The code structure changes — e.g. after the file split, record which code lives where and that new files go into the SW `ASSETS` list.
+4. A new rule or constraint appears — e.g. a new data field that `migrateState()` must handle, a new no-go.
+5. A costly gotcha is found — e.g. the Browser pane can't run service workers, iOS canvas text alignment, the npm cache permission issue.
+6. The way of working changes — skills added/dropped, steps in the workflow.
+
+Don't add: small bug fixes, single copy tweaks, in-progress task details, or anything already obvious from the code or git history. When the owner states a new lasting rule mid-task, add it right away.
+
 ## Hard constraints
 
 - **Data safety:** everything is in `localStorage['spendTrackerState']`. Never rename the key. Data changes are additive only; every new field gets handled in `migrateState()`; old backups (v1 `settings` shape onward) must still import. Every localStorage access in try/catch. `entry.amount` is always baht (the owner's share).
