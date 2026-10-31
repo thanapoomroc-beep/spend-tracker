@@ -33,8 +33,11 @@ Don't add: small bug fixes, single copy tweaks, in-progress task details, or any
 ## Hard constraints
 
 - **Data safety:** everything is in `localStorage['spendTrackerState']`. Never rename the key. Data changes are additive only; every new field gets handled in `migrateState()`; old backups (v1 `settings` shape onward) must still import. Every localStorage access in try/catch. `entry.amount` is always baht (the owner's share).
-- **Static, offline-first, zero third-party network:** no build step, no framework, no backend, no CDN, no web fonts. Chart.js 4.5.0 is self-hosted at `vendor/chart.umd.js` (unmodified; SRI sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi). `grep -c "https://" index.html sw.js` must stay 0. The app is used in mainland China on filtered networks. Planned exception (agreed 2026-10-18, extended 2026-10-30, not built yet): wealth W2/W3 may call our own price function and sync endpoint, v5 our briefing payload endpoint, and v3b our slip endpoints. All calls are on demand, and every failure falls back silently to local data. Nothing else gets network access.
-- **Service worker (`sw.js`):** stale-while-revalidate for every same-origin GET including navigation, 5 s network timeout, precache list `ASSETS` (add any new file there). On each release bump BOTH `<meta name="app-version">` in `index.html` and `VERSION` in `sw.js` to the same value.
+- **Static, offline-first, zero third-party network:** no build step, no framework, no backend, no CDN, no web fonts. Chart.js 4.5.0 is self-hosted at `vendor/chart.umd.js` (unmodified; SRI sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi). `grep -c "https://" index.html sw.js css/*.css js/*.js` must stay 0 (`tests/version.test.js` checks it). The app is used in mainland China on filtered networks. Planned exception (agreed 2026-10-18, extended 2026-10-30, not built yet): wealth W2/W3 may call our own price function and sync endpoint, v5 our briefing payload endpoint, and v3b our slip endpoints. All calls are on demand, and every failure falls back silently to local data. Nothing else gets network access.
+- **Service worker (`sw.js`):** stale-while-revalidate for every same-origin GET including navigation, 5 s network timeout, precache list `ASSETS`.
+  - css/js URLs carry `?v=VERSION`. A new js file goes into `JS_FILES` in `sw.js` and gets a `<script src="js/x.js?v=…" onerror=…>` tag in `index.html`.
+  - The SW only caches an `index.html` whose app-version equals its own `VERSION`. A newer page triggers `registration.update()`, and the new SW announces `update-available` on activate. This keeps page, css and js from the same release.
+  - On each release bump `<meta name="app-version">`, `VERSION` in `sw.js` and every `?v=` in `index.html` to the same value (the version test fails otherwise).
 - **Mobile:** 375px width, no horizontal scroll, inputs ≥ 16px, touch targets ≥ 44px, safe-area aware. On วันนี้ the save button (`#addEntryBtn`) must stay above the bottom tab bar at 375×812 — measure it after any change to that tab.
 - **Accessibility:** labelled controls, radiogroups for chip/segment pickers, dialogs `role="dialog"` with focus management and Escape, colour never the only signal.
 
@@ -51,21 +54,25 @@ Don't add: small bug fixes, single copy tweaks, in-progress task details, or any
 
 Short, natural, like mainstream Thai apps. No `·`/`—` chaining facts inside sentences (`·` only as a separator in small muted metadata). Per-period amounts as `วันละ ฿X` / `เดือนละ ฿X`, never `฿X/วัน`. Confirm titles end with `ไหม?` and use short verb buttons. Avoid ไม่สามารถ / สำเร็จ / passive จะถูก. Terms: `รายการประจำ` (fixed items), `งบ` (category budgets only), `รายได้`, `คงเหลือ`, `ใช้จ่ายรายวัน`, `หมวด`. CNY is shown with a `元` suffix (e.g. `300元`); JPY keeps `¥`.
 
-## App structure (single `index.html` today)
+## App structure (split since 2.4.1)
 
 Four tabs via hash: `#today` (always the current month: hero, entry form, due card, recent), `#entries` (month list + search/filter), `#overview` (strip, budgets, payment breakdown, installments, charts), `#settings` (per-month settings, categories, payment methods, trips, budgets, backup). Trip summary page at `#trip/{id}`. Month-scoped views share `currentMonth`; วันนี้ never depends on it. `entriesForMonth()` returns non-trip entries only — trip entries are excluded from normal monthly maths; `คงเหลือ` subtracts only trips funded from income.
 
-Planned refactor (next, before phase 4): split into `css/` + classic-script `js/` files and add `tests/`; keep it build-free and update the SW `ASSETS` list.
+Files: `index.html` (markup only), `css/app.css`, and classic scripts in `js/` loaded in this order: `core` (constants, dates, migration, load/save, settings resolution, global state), `format`, `chips-settings`, `entry-form`, `edit-month` (incl. month maths `monthFigures`), `trips`, `entries-hero`, `overview-charts`, `data-ui`, `boot` (`init()` + SW registration).
+- They share one global scope. Never use modules or IIFEs, because inline `on*=` handlers call globals. Function declarations only hoist within their own file, so anything run at load time may only use the same or an earlier file.
+- If a script fails to load, its `onerror` shows `#loadFail`.
+- New code goes in new files (e.g. `js/wealth-core.js`) rather than growing the old ones. Pure maths stays DOM-free so `tests/` can load it.
 
 ## Testing
 
+- Unit tests: `node --test` from the repo root (Node 22; `node --test tests/` fails on this version). `tests/load.js` loads every js file except `boot.js` into a `vm` context with DOM/localStorage stubs, taking the order from `index.html`'s script tags.
 - Local server: `python3 -m http.server 8765` in this folder (stop it afterwards).
 - The in-app Browser pane is fine for layout/logic checks at 375×812 but **cannot register service workers** (it logs a known "unknown error occurred when fetching the script"). Test offline / hanging-network / update behaviour with headless Chrome via puppeteer-core (`/Applications/Google Chrome.app`); npm needs `--cache` pointed at a scratch dir because `~/.npm` has a permissions problem.
 - Seed realistic demo data for tests and restore the owner's localStorage exactly afterwards.
 
 ## Roadmap status
 
-Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0. The owner is back from the China trip (2026-10-30), so feature work is open again. Next, in order: the file split, phase 4 card bills, wealth tracking W1–W4, v5 briefing integration, v3b slip reading + iOS Shortcut. `ROADMAP.md` (rev 4) is the owner's long-form spec; this section wins where they differ.
+Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0, file split + tests 2.4.1. The owner is back from the China trip (2026-10-30), so feature work is open again. Next, in order: phase 4 card bills, wealth tracking W1–W4, v5 briefing integration, v3b slip reading + iOS Shortcut. `ROADMAP.md` (rev 4) is the owner's long-form spec; this section wins where they differ.
 
 North Star (ROADMAP rev 3+): the owner's existing morning briefing (kept private, outside this repo) should also answer "กระทบเราอย่างไร / ควรทำอะไร" from a compact summary of the owner's finances. Numbers and triggers are computed by code; the LLM only explains. `ไม่มีอะไรต้องทำวันนี้` is the normal answer. Every figure carries `as_of` and `source`; never scrape bank or broker sites.
 
@@ -82,7 +89,7 @@ Wealth tracking (5th tab `ทรัพย์สิน`, piggy-bank icon), as agr
   - Price function: a single Vercel function `POST /api/prices` in a separate private repo. API keys live in Vercel env vars, never in this public repo. It returns native price + THB, caches 15 min, returns partial results when a source fails, and accepts only our origin + a personal token entered in settings.
   - Sources: Yahoo Finance for Thai `.BK` and foreign stocks (unofficial; Finnhub/Twelve Data as fallback), SEC Thailand API for fund NAV (free key), the Thai gold-traders association site for 96.5% gold (scraped, most fragile), Bitkub public API for crypto in THB (CoinGecko fallback), Frankfurter for FX.
   - Supabase is used only as an encrypted backup/sync store. The client encrypts with the owner's passphrase so the server never sees amounts, and merges per record by `updatedAt`. Never make the app depend on Supabase being online (blocked in China; free projects pause after 7 idle days). Prices stay on Vercel, not Supabase.
-- Phases (after the file split and phase 4):
+- Phases (after phase 4):
   - W1+W2 ship together as one release (owner decision 2026-10-31: no manual-only release). It contains the wealth tab per the mockup (holdings, snapshots), the Vercel price function, a `ดึงราคาล่าสุด` button, and auto-fetch on open when online and prices are older than 6 h. Build it in two sub-agent rounds (tab + maths first, then fetching). Manual price entry stays as the fallback for offline use and failed sources. The owner sets up Vercel and keys before the release.
   - W3: encrypted Supabase backup/sync.
   - W4: push alerts (due dates, big price moves) driven only by the non-amount v5 payload and the morning price refresh. Net-worth snapshots stay on the phone (taken on open) because the server can't read encrypted data.

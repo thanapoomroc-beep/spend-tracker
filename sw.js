@@ -1,7 +1,13 @@
 // Keep in sync with <meta name="app-version"> in index.html; bump on every release.
-const VERSION = '2.4.0';
+const VERSION = '2.4.1';
 const CACHE = 'spend-tracker-' + VERSION;
-const ASSETS = ['./', './index.html', './manifest.json', './vendor/chart.umd.js', './icon-180.png', './icon-192.png', './icon-512.png'];
+// css/js carry ?v=VERSION in index.html so every release has its own URLs: a page can never pair with another release's files.
+const JS_FILES = ['core', 'format', 'chips-settings', 'entry-form', 'edit-month', 'trips', 'entries-hero', 'overview-charts', 'data-ui', 'boot'];
+const ASSETS = [
+  './', './index.html', './manifest.json', './vendor/chart.umd.js', './icon-180.png', './icon-192.png', './icon-512.png',
+  `./css/app.css?v=${VERSION}`,
+  ...JS_FILES.map(n => `./js/${n}.js?v=${VERSION}`)
+];
 const NETWORK_TIMEOUT = 5000;
 
 self.addEventListener('install', event => {
@@ -16,8 +22,14 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
+    const isUpgrade = keys.some(k => k.startsWith('spend-tracker-') && k !== CACHE);
     await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
     await self.clients.claim();
+    // The page offers the update toast; only an upgrade (an older cache existed) announces it, not a first install.
+    if (isUpgrade) {
+      const clients = await self.clients.matchAll({ type: 'window' });
+      clients.forEach(c => c.postMessage({ type: 'update-available', version: VERSION }));
+    }
   })());
 });
 
@@ -30,15 +42,6 @@ function fetchWithTimeout(request) {
 function appVersionOf(html) {
   const m = /<meta\s+name="app-version"\s+content="([^"]+)"/.exec(html);
   return m ? m[1] : null;
-}
-
-async function notifyIfNewVersion(oldRes, newRes) {
-  try {
-    const [oldV, newV] = [appVersionOf(await oldRes.text()), appVersionOf(await newRes.text())];
-    if (!newV || newV === oldV) return;
-    const clients = await self.clients.matchAll({ type: 'window' });
-    clients.forEach(c => c.postMessage({ type: 'update-available', version: newV }));
-  } catch (e) {}
 }
 
 // Stale-while-revalidate for every same-origin GET, navigation included:
@@ -56,14 +59,19 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const cached = await cache.match(key, { ignoreSearch: isPage });
-    // Clone before `cached` is handed to the page; its body can't be read afterwards.
-    const cachedCopy = isPage && cached ? cached.clone() : null;
-
     const update = (async () => {
       try {
         const res = await fetchWithTimeout(isPage ? new Request('./index.html', { cache: 'no-cache' }) : new Request(req, { cache: 'no-cache' }));
         if (!res || !res.ok) return null;
-        if (cachedCopy) await notifyIfNewVersion(cachedCopy, res.clone());
+        if (isPage) {
+          // Keep the cached page and the cached css/js from the same release: a page from another release is never
+          // stored. The newer sw.js installs instead and precaches the whole matching set (then notifies the page).
+          const v = appVersionOf(await res.clone().text());
+          if (v !== VERSION) {
+            self.registration.update().catch(() => {});
+            return cached ? null : res;
+          }
+        }
         await cache.put(key, res.clone());
         return res;
       } catch (e) {
