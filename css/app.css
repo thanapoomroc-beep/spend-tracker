@@ -275,8 +275,8 @@
   @keyframes pop{from{opacity:0; transform:translateY(10px) scale(.98);} to{opacity:1; transform:none;}}
   @media (max-width:600px){
     /* edit dialog becomes a bottom sheet: reachable with a thumb */
-    #editModalOverlay,#tripSheetOverlay,#tripModalOverlay{align-items:flex-end; padding:0;}
-    #editModalOverlay .modal-card,#tripSheetOverlay .modal-card,#tripModalOverlay .modal-card{max-width:none; border-radius:20px 20px 0 0; border-bottom:none; padding:20px 16px calc(16px + env(safe-area-inset-bottom)); animation:sheet .28s var(--ease);}
+    #editModalOverlay,#tripSheetOverlay,#tripModalOverlay,#cardPayOverlay{align-items:flex-end; padding:0;}
+    #editModalOverlay .modal-card,#tripSheetOverlay .modal-card,#tripModalOverlay .modal-card,#cardPayOverlay .modal-card{max-width:none; border-radius:20px 20px 0 0; border-bottom:none; padding:20px 16px calc(16px + env(safe-area-inset-bottom)); animation:sheet .28s var(--ease);}
   }
   @keyframes sheet{from{transform:translateY(40px); opacity:0;} to{transform:none; opacity:1;}}
   .modal-title{font-size:17px; font-weight:700; margin-bottom:6px;}
@@ -396,6 +396,16 @@
   .pay-row .hide{font-size:12.5px; font-weight:600;}
   .pay-row .del-fixed{background:var(--panel2); color:var(--red-text); border:1px solid var(--border); border-radius:10px;}
   .pay-row .del-fixed:hover{background:var(--border);}
+  .pay-block{padding:0 0 14px; margin-bottom:14px; border-bottom:1px solid var(--border);}
+  .pay-block:last-child{border-bottom:none; margin-bottom:6px;}
+  .pay-block .pay-row{margin-bottom:10px;}
+  .pay-type-lab{font-size:12.5px; color:var(--muted); margin-bottom:4px;}
+  .opt-seg.pay-type{grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:0;}
+  .opt-seg.pay-type button{padding:4px 3px; font-size:13px; font-weight:500; line-height:1.25; overflow-wrap:anywhere;}
+  .opt-seg.pay-type button[aria-checked="true"]{font-weight:600;}
+  .pay-days{display:grid; grid-template-columns:1fr 1fr; gap:0 10px; margin-top:10px;}
+  .pay-days input{margin-bottom:0; min-height:44px;}
+  .pay-days .pay-days-err{grid-column:1 / -1; min-height:20px; margin:4px 0 0;}
   .pay-break{list-style:none; margin:0; padding:0;}
   .pay-break li{margin-bottom:14px;}
   .pay-break li:last-child{margin-bottom:0;}
@@ -444,6 +454,38 @@
   #dueList .due-name{min-width:0; overflow-wrap:anywhere;}
   #dueList .due-when{color:var(--muted); font-size:12.5px; margin-left:6px; white-space:nowrap;}
   #dueList .due-amt{flex:0 0 auto; text-align:right; font-variant-numeric:tabular-nums;}
+  #dueList .due-when.warn{color:var(--amber);}
+  #dueList .due-when.neg{color:var(--red-text);}
+  /* Card bills: name and when on the left, amount on top right, the pay button under it */
+  #dueList li.card-due{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:0 10px; align-items:center;}
+  #dueList li.card-due .due-name{grid-row:1 / 3;}
+  #dueList li.card-due .due-when{display:block; margin-left:0;}
+  #dueList li.card-due .due-amt{grid-column:2; grid-row:1;}
+  #dueList li.card-due .due-pay{grid-column:2; grid-row:2; width:auto; min-height:44px; padding:0 16px; font-size:14px; justify-self:end;}
+
+  /* บัตรเครดิต card on ภาพรวม */
+  .cc{padding:14px 0; border-top:1px solid var(--border);}
+  .cc:first-child{padding-top:0; border-top:none;}
+  .cc:last-child{padding-bottom:0;}
+  .cc-name{font-size:13px; color:var(--muted);}
+  .cc-main{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px;}
+  .cc-amt{font-size:18px; font-weight:700;}
+  .cc-due{font-size:14px;}
+  .cc-flag{font-size:13px; font-weight:600;}
+  .cc-flag.warn{color:var(--amber);} .cc-flag.neg{color:var(--red-text);}
+  .cc-meta{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .cc-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .cc-actions button{width:auto; flex:1 1 0; min-width:120px; min-height:44px; font-size:14px;}
+  .cc-hist{margin-top:6px;}
+  .cc-hist summary{display:flex; align-items:center; min-height:44px; cursor:pointer; font-size:13px; color:var(--muted); list-style:none; border-radius:10px;}
+  .cc-hist summary::-webkit-details-marker{display:none;}
+  .cc-hist summary::after{content:""; width:7px; height:7px; margin-left:8px; border-right:1.75px solid currentColor; border-bottom:1.75px solid currentColor; transform:rotate(45deg) translateY(-2px); transition:transform .2s var(--ease);}
+  .cc-hist[open] summary::after{transform:rotate(-135deg) translate(-2px,-1px);}
+  .cc-pays{list-style:none; margin:0; padding:0;}
+  .cc-pays li{display:flex; align-items:center; gap:10px; font-size:14px;}
+  .cc-pays .cp-date{flex:1; min-width:0; color:var(--muted);}
+  .cc-pays .cp-amt{font-variant-numeric:tabular-nums;}
+  .cc-pays .del-fixed{width:44px; height:44px; padding:0; flex:0 0 44px; display:grid; place-items:center; color:var(--red-text); border-radius:10px;}
 
   /* Keyboard save bar (pinned to the visual viewport by JS) */
   .kb-bar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:900; background:var(--panel); border-top:1px solid var(--border); padding:8px max(14px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}

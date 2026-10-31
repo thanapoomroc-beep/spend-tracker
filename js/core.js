@@ -5,7 +5,7 @@ const LAST_PAY_TRIP_KEY = 'spendTrackerLastPaymentTrip';
 const LAST_CAT_TRIP_KEY = 'spendTrackerLastCategoryTrip';
 const TRIP_SUGGEST_KEY = 'spendTrackerTripSuggestDismissed';   // today's ISO date when the suggestion was dismissed
 function lastPaymentKey(mode){ return mode === 'trip' ? LAST_PAY_TRIP_KEY : LAST_PAY_KEY; }
-const PAYMENT_SEEDS = [{ id:'cash', name:'เงินสด' }, { id:'ttb', name:'บัตรเครดิต TTB' }, { id:'kbank', name:'บัตรเครดิต KBANK' }];
+const PAYMENT_SEEDS = [{ id:'cash', name:'เงินสด', cardType:'' }, { id:'ttb', name:'บัตรเครดิต TTB', cardType:'repay' }, { id:'kbank', name:'บัตรเครดิต KBANK', cardType:'statement' }];
 const SUBSCRIPTION_DEFAULTS = ['อินเทอร์เน็ต','YouTube Premium','Netflix','Spotify','Claude'];
 // 6 validated hue slots in fixed order (never cycled, never by rank). Status colours stay reserved for status.
 const SLOT_COLORS = ['#d95926','#3987e5','#199e70','#c98500','#d55181','#9085e9'];
@@ -78,15 +78,16 @@ function seedCategories(stamp){
 //   monthlySettings[m]: { income, fixedItems:[{id,name,amount,group, dueDay?, startMonth?, totalTerms?}], updatedAt }
 //   budgetSettings[m]:  { [category]: number }  - a plain map, so it must hold budgets only.
 //   budgetUpdatedAt[m]: ISO string              - the updatedAt of budgetSettings[m] lives here for that reason.
-//   paymentMethods: [{ id, name, archived, updatedAt }]          (array order = display order; ids are stable)
+//   paymentMethods: [{ id, name, archived, updatedAt, cardType: ''|'repay'|'statement', statementDay?, dueDay? }]   (array order = display order; ids are stable)
+//   cardPayments: [{ id, methodId, date, amount>0, updatedAt }]   card repayments / bill payments (see cards.js); never expenses
 //   entries: [{ id, date, amount, category, note, paymentMethod?, updatedAt }]  (category by name, paymentMethod by id)
 function seedPayments(stamp){
-  return PAYMENT_SEEDS.map(p => ({ id:p.id, name:p.name, archived:false, updatedAt: stamp }));
+  return PAYMENT_SEEDS.map(p => ({ id:p.id, name:p.name, archived:false, cardType:p.cardType, updatedAt: stamp }));
 }
 //   trips: [{ id, name, currency, thbPerUnit, startDate, endDate, budget, funding:'savings'|'income', createdAt, updatedAt }]   activeTripId: id|null
 //   trip entries add: tripId, currency, originalAmount, splitCount, rate, amountOverridden.  entry.amount is ALWAYS the owner's share in baht.
 function freshState(){
-  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), entries: [], trips: [], activeTripId: null };
+  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), cardPayments: [], entries: [], trips: [], activeTripId: null };
 }
 
 function cleanBudgets(b){
@@ -204,10 +205,25 @@ function migrateState(parsed){
       const name = m.name.trim();
       if(!name) return;
       ids.add(m.id);
-      pms.push({ id:m.id, name, archived: !!m.archived, updatedAt: m.updatedAt || EPOCH });
+      const pm = { id:m.id, name, archived: !!m.archived, updatedAt: m.updatedAt || EPOCH };
+      // cardType arrived in 2.5.0: backups without it get the old seeds' meaning (TTB repay, KBANK statement); anything invalid counts as missing.
+      const defaultType = m.id === 'ttb' ? 'repay' : m.id === 'kbank' ? 'statement' : '';
+      pm.cardType = (m.cardType === '' || m.cardType === 'repay' || m.cardType === 'statement') ? m.cardType : defaultType;
+      ['statementDay','dueDay'].forEach(k => { if(Number.isInteger(m[k]) && m[k] >= 1 && m[k] <= 31) pm[k] = m[k]; });
+      pms.push(pm);
     });
     parsed.paymentMethods = pms;
   }
+  // Card payments: keep only well-formed records that point at an existing method.
+  const pmIds = new Set(parsed.paymentMethods.map(m => m.id));
+  const cpIds = new Set();
+  parsed.cardPayments = (Array.isArray(parsed.cardPayments) ? parsed.cardPayments : []).filter(p => {
+    if(!p || typeof p.id !== 'string' || !p.id || cpIds.has(p.id) || !pmIds.has(p.methodId)) return false;
+    if(typeof p.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(p.date)) return false;
+    if(typeof p.amount !== 'number' || !isFinite(p.amount) || !(p.amount > 0)) return false;
+    cpIds.add(p.id);
+    return true;
+  }).map(p => ({ id:p.id, methodId:p.methodId, date:p.date, amount:p.amount, updatedAt: p.updatedAt || EPOCH }));
   parsed.entries.forEach(e=>{ if(e.paymentMethod !== undefined && (typeof e.paymentMethod !== 'string' || !e.paymentMethod)) delete e.paymentMethod; });
   parsed.schemaVersion = SCHEMA_VERSION;
   return parsed;

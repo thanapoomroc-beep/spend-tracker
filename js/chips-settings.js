@@ -60,7 +60,8 @@ function renderEditChips(){
 function findPay(id){ return id ? state.paymentMethods.find(m => m.id === id) : undefined; }
 function activePays(){ return state.paymentMethods.filter(m => !m.archived); }
 function payName(id){ const m = findPay(id); return m ? m.name : ''; }
-function payUsed(id){ return state.entries.some(e => e.paymentMethod === id); }
+// In use = has entries or card payments; such a method can be hidden but not deleted.
+function payUsed(id){ return state.entries.some(e => e.paymentMethod === id) || state.cardPayments.some(p => p.methodId === id); }
 // Short form for tight spots: the last word when the name has a space, else the name; capped with an ellipsis.
 function shortPayName(id){
   const n = payName(id).trim();
@@ -434,9 +435,11 @@ function renderPaySettings(){
   activePays().forEach(m=>{
     const used = payUsed(m.id);
     const nm = escapeHtml(m.name);
+    const block = document.createElement('div');
+    block.className = 'pay-block';
+    block.dataset.id = m.id;
     const row = document.createElement('div');
     row.className = 'pay-row';
-    row.dataset.id = m.id;
     row.setAttribute('role','group');
     row.setAttribute('aria-label','ช่องทาง ' + m.name);
     row.innerHTML = `<input type="text" class="pay-name" value="${nm}" maxlength="24" aria-label="ชื่อช่องทาง" autocomplete="off">` +
@@ -445,7 +448,9 @@ function renderPaySettings(){
     const inp = row.querySelector('.pay-name');
     inp.addEventListener('change', ()=> renamePay(m.id, inp));
     row.querySelector('.pay-act').addEventListener('click', ()=> used ? askArchivePay(m.id) : askDeletePay(m.id));
-    list.appendChild(row);
+    block.appendChild(row);
+    buildCardSettings(m, block);
+    list.appendChild(block);
   });
   const arch = state.paymentMethods.filter(m => m.archived);
   document.getElementById('payArchWrap').style.display = arch.length ? '' : 'none';
@@ -473,7 +478,7 @@ async function addPay(){
   const err = payNameError(name, null);
   if(err){ setPayMsg(err); inp.setAttribute('aria-invalid','true'); inp.focus(); return; }
   setPayMsg(''); inp.removeAttribute('aria-invalid');
-  state.paymentMethods.push({ id: 'pm-' + genId(), name, archived:false, updatedAt: nowISO() });
+  state.paymentMethods.push({ id: 'pm-' + genId(), name, archived:false, cardType:'', updatedAt: nowISO() });
   inp.value = '';
   await afterPayChange();
 }

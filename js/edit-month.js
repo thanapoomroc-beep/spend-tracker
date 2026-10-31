@@ -139,6 +139,7 @@ document.addEventListener('keydown', ev=>{
   if(ev.key !== 'Escape') return;
   if(document.getElementById('infoModalOverlay').style.display !== 'none') closeInfo();
   else if(document.getElementById('confirmModalOverlay').style.display !== 'none') closeConfirm();
+  else if(document.getElementById('cardPayOverlay').style.display !== 'none') closeCardPay();
   else if(document.getElementById('tripModalOverlay').style.display !== 'none') closeTripModal();
   else if(document.getElementById('tripSheetOverlay').style.display !== 'none') closeTripSheet();
   else if(document.getElementById('editModalOverlay').style.display !== 'none') closeEdit();

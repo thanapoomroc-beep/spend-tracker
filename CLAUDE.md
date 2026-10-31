@@ -58,7 +58,7 @@ Short, natural, like mainstream Thai apps. No `·`/`—` chaining facts inside s
 
 Four tabs via hash: `#today` (always the current month: hero, entry form, due card, recent), `#entries` (month list + search/filter), `#overview` (strip, budgets, payment breakdown, installments, charts), `#settings` (per-month settings, categories, payment methods, trips, budgets, backup). Trip summary page at `#trip/{id}`. Month-scoped views share `currentMonth`; วันนี้ never depends on it. `entriesForMonth()` returns non-trip entries only — trip entries are excluded from normal monthly maths; `คงเหลือ` subtracts only trips funded from income.
 
-Files: `index.html` (markup only), `css/app.css`, and classic scripts in `js/` loaded in this order: `core` (constants, dates, migration, load/save, settings resolution, global state), `format`, `chips-settings`, `entry-form`, `edit-month` (incl. month maths `monthFigures`), `trips`, `entries-hero`, `overview-charts`, `data-ui`, `boot` (`init()` + SW registration).
+Files: `index.html` (markup only), `css/app.css`, and classic scripts in `js/` loaded in this order: `core` (constants, dates, migration, load/save, settings resolution, global state), `cards` (pure card maths + `.ics`), `format`, `chips-settings`, `entry-form`, `edit-month` (incl. month maths `monthFigures`), `trips`, `entries-hero`, `overview-charts`, `cards-ui` (card settings, due rows, ภาพรวม `บัตรเครดิต` card, payment sheet), `data-ui`, `boot` (`init()` + SW registration).
 - They share one global scope. Never use modules or IIFEs, because inline `on*=` handlers call globals. Function declarations only hoist within their own file, so anything run at load time may only use the same or an earlier file.
 - If a script fails to load, its `onerror` shows `#loadFail`.
 - New code goes in new files (e.g. `js/wealth-core.js`) rather than growing the old ones. Pure maths stays DOM-free so `tests/` can load it.
@@ -72,11 +72,14 @@ Files: `index.html` (markup only), `css/app.css`, and classic scripts in `js/` l
 
 ## Roadmap status
 
-Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0, file split + tests 2.4.1. The owner is back from the China trip (2026-10-30), so feature work is open again. Next, in order: phase 4 card bills, wealth tracking W1–W4, v5 briefing integration, v3b slip reading + iOS Shortcut. `ROADMAP.md` (rev 4) is the owner's long-form spec; this section wins where they differ.
+Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0, file split + tests 2.4.1, phase 4 card bills 2.5.0. The owner is back from the China trip (2026-10-30), so feature work is open again. Next, in order: wealth tracking W1–W4, v5 briefing integration, v3b slip reading + iOS Shortcut. `ROADMAP.md` (rev 4) is the owner's long-form spec; this section wins where they differ.
 
 North Star (ROADMAP rev 3+): the owner's existing morning briefing (kept private, outside this repo) should also answer "กระทบเราอย่างไร / ควรทำอะไร" from a compact summary of the owner's finances. Numbers and triggers are computed by code; the LLM only explains. `ไม่มีอะไรต้องทำวันนี้` is the normal answer. Every figure carries `as_of` and `source`; never scrape bank or broker sites.
 
-Phase 4 card bills, as agreed with the owner:
+Phase 4 card bills, as agreed with the owner (details 2026-10-31):
+- Each payment method has a type in settings: `ทั่วไป`, `บัตร (โอนคืน)` or `บัตร (มีรอบบิล)`. Migration sets ttb → โอนคืน and kbank → มีรอบบิล. No hard-coded ids in the logic.
+- Card balances count the owner's share (`entry.amount`), trip entries included. Repayments and bill payments are stored in `cardPayments` and never create expenses. Every card figure is labelled `ประมาณ`.
+- The KBANK due row lives in the วันนี้ `ใกล้ถึงวันตัดเงิน` card (not a separate banner). In travel mode only card-bill rows show there.
 - **บัตรเครดิต TTB** is billed to someone else's account and the owner transfers money back later: no statement cycle, just a running `ค้างโอนคืน ฿X` (TTB spend since the last repayment) and a `โอนคืนแล้ว` action that records a repayment (partial allowed, history kept, no expense created). No reminder or banner.
 - **บัตรเครดิต KBANK** is the owner's own card: Round 2 B4 statement cycles, due-date banner with `ประมาณ ฿X`, `จ่ายแล้ว`, `.ics` reminder. Until the statement/due days are entered show the running total since first use; once entered, compute cycles back to the card's first use (don't drop cycles before the configuration date).
 
@@ -89,7 +92,7 @@ Wealth tracking (5th tab `ทรัพย์สิน`, piggy-bank icon), as agr
   - Price function: a single Vercel function `POST /api/prices` in a separate private repo. API keys live in Vercel env vars, never in this public repo. It returns native price + THB, caches 15 min, returns partial results when a source fails, and accepts only our origin + a personal token entered in settings.
   - Sources: Yahoo Finance for Thai `.BK` and foreign stocks (unofficial; Finnhub/Twelve Data as fallback), SEC Thailand API for fund NAV (free key), the Thai gold-traders association site for 96.5% gold (scraped, most fragile), Bitkub public API for crypto in THB (CoinGecko fallback), Frankfurter for FX.
   - Supabase is used only as an encrypted backup/sync store. The client encrypts with the owner's passphrase so the server never sees amounts, and merges per record by `updatedAt`. Never make the app depend on Supabase being online (blocked in China; free projects pause after 7 idle days). Prices stay on Vercel, not Supabase.
-- Phases (after phase 4):
+- Phases (next):
   - W1+W2 ship together as one release (owner decision 2026-10-31: no manual-only release). It contains the wealth tab per the mockup (holdings, snapshots), the Vercel price function, a `ดึงราคาล่าสุด` button, and auto-fetch on open when online and prices are older than 6 h. Build it in two sub-agent rounds (tab + maths first, then fetching). Manual price entry stays as the fallback for offline use and failed sources. The owner sets up Vercel and keys before the release.
   - W3: encrypted Supabase backup/sync.
   - W4: push alerts (due dates, big price moves) driven only by the non-amount v5 payload and the morning price refresh. Net-worth snapshots stay on the phone (taken on open) because the server can't read encrypted data.

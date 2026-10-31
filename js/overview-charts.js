@@ -62,10 +62,17 @@ function renderDueCard(travel){
   const list = document.getElementById('dueList');
   list.innerHTML = '';
   const now = new Date();
-  const items = travel ? [] : upcomingPayments(now);
-  card.style.display = items.length ? '' : 'none';
-  items.forEach(p=>{
+  // Fixed items stay hidden in travel mode; statement-card bills still show (they are real money due).
+  const fixed = travel ? [] : upcomingPayments(now);
+  const cards = cardDueRowsNow(todayISO());
+  const rows = fixed.map(p => ({ kind:'fixed', off:p.off, p })).concat(cards.map(r => ({ kind:'card', off:r.off, r })));
+  rows.sort((a, b) => a.off - b.off);   // stable: fixed items keep their order within a day
+  card.style.display = rows.length ? '' : 'none';
+  document.getElementById('dueNote').style.display = fixed.length ? '' : 'none';
+  rows.forEach(row=>{
     const li = document.createElement('li');
+    if(row.kind === 'card'){ fillCardDueRow(li, row.r); list.appendChild(li); return; }
+    const p = row.p;
     if(p.off === 0) li.className = 'today';
     const when = p.off === 0 ? 'วันนี้' : p.off === 1 ? 'พรุ่งนี้' : `อีก ${p.off} วัน`;
     li.innerHTML = `<span class="due-name">${escapeHtml(p.name)}<span class="due-when">${when}</span></span><span class="due-amt">${fmt(p.amount)}</span>`;

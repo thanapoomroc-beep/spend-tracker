@@ -85,6 +85,7 @@ function renderMonthViews(){
 
   renderBudgetCard(getEffectiveBudgets(mKeyStr), monthEntries);
   renderPayBreakdown(paymentStatsEntries(monthEntries));
+  renderCardsCard();
   renderInstallCard(eff.fixedItems);
   renderCompareChart();
   renderHeatmap();

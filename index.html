@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.4.1">
+<meta name="app-version" content="2.5.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
 <script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
-<link rel="stylesheet" href="css/app.css?v=2.4.1">
+<link rel="stylesheet" href="css/app.css?v=2.5.0">
 </head>
 <body>
 
@@ -105,7 +105,7 @@
 
     <div class="card" id="dueCard" style="display:none;">
       <h2>ใกล้ถึงวันตัดเงิน</h2>
-      <div class="due-note">หักไว้แล้ว ไม่ลดยอดวันนี้</div>
+      <div class="due-note" id="dueNote">หักไว้แล้ว ไม่ลดยอดวันนี้</div>
       <ul class="plain-list" id="dueList"></ul>
     </div>
 
@@ -158,6 +158,11 @@
     <div class="card" id="payCard" style="display:none;">
       <h2><span>แยกตามช่องทางจ่าย</span> <span class="h2-note" id="payTotal"></span></h2>
       <ul class="pay-break" id="payBody"></ul>
+    </div>
+
+    <div class="card" id="cardsCard" style="display:none;">
+      <h2><span>บัตรเครดิต</span> <span class="h2-note">ยอด ณ วันนี้</span></h2>
+      <div id="cardsBody"></div>
     </div>
 
     <div class="card" id="installCard" style="display:none;">
@@ -360,6 +365,23 @@
   </div>
 </div>
 
+<!-- Card payment (โอนคืน / จ่ายบิล) -->
+<div id="cardPayOverlay" class="modal-overlay" style="display:none;" onclick="closeCardPay()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="cardPayTitle" onclick="event.stopPropagation()">
+    <div class="modal-title" id="cardPayTitle"></div>
+    <label for="cardPayAmount" style="margin-top:10px;">จำนวนเงิน</label>
+    <input type="number" id="cardPayAmount" min="0" step="0.01" inputmode="decimal" aria-describedby="cardPayError">
+    <label for="cardPayDate">วันที่</label>
+    <input type="date" id="cardPayDate">
+    <div class="field-error" id="cardPayError" role="alert"></div>
+    <div class="modal-desc" style="margin-bottom:14px;">ไม่นับเป็นรายจ่าย</div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeCardPay()">ยกเลิก</button>
+      <button type="button" id="cardPaySaveBtn" onclick="saveCardPay()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- Generic confirm -->
 <div id="confirmModalOverlay" class="modal-overlay" style="display:none;" onclick="closeConfirm()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" onclick="event.stopPropagation()">
@@ -435,15 +457,17 @@
 
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
-<script src="js/core.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/format.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/chips-settings.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entry-form.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/edit-month.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/trips.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entries-hero.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/overview-charts.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/data-ui.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/boot.js?v=2.4.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/core.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/format.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/chips-settings.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entry-form.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/edit-month.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/trips.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entries-hero.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/overview-charts.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards-ui.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/data-ui.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/boot.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
 </body>
 </html>
