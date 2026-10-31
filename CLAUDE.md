@@ -83,8 +83,7 @@ Wealth tracking (5th tab `ทรัพย์สิน`, piggy-bank icon), as agr
   - Sources: Yahoo Finance for Thai `.BK` and foreign stocks (unofficial; Finnhub/Twelve Data as fallback), SEC Thailand API for fund NAV (free key), the Thai gold-traders association site for 96.5% gold (scraped, most fragile), Bitkub public API for crypto in THB (CoinGecko fallback), Frankfurter for FX.
   - Supabase is used only as an encrypted backup/sync store. The client encrypts with the owner's passphrase so the server never sees amounts, and merges per record by `updatedAt`. Never make the app depend on Supabase being online (blocked in China; free projects pause after 7 idle days). Prices stay on Vercel, not Supabase.
 - Phases (after the file split and phase 4):
-  - W1: manual wealth tab per the mockup, including holdings and snapshots.
-  - W2: Vercel price function plus a `ดึงราคาล่าสุด` button; auto-fetch on open when online and prices are older than 6 h.
+  - W1+W2 ship together as one release (owner decision 2026-10-31: no manual-only release). It contains the wealth tab per the mockup (holdings, snapshots), the Vercel price function, a `ดึงราคาล่าสุด` button, and auto-fetch on open when online and prices are older than 6 h. Build it in two sub-agent rounds (tab + maths first, then fetching). Manual price entry stays as the fallback for offline use and failed sources. The owner sets up Vercel and keys before the release.
   - W3: encrypted Supabase backup/sync.
   - W4: push alerts (due dates, big price moves) driven only by the non-amount v5 payload and the morning price refresh. Net-worth snapshots stay on the phone (taken on open) because the server can't read encrypted data.
   - A share-sheet backup export to iCloud Drive comes before W3 and can slot in any time.

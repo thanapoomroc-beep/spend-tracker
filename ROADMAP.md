@@ -33,7 +33,7 @@
 | v3b | 📋 | อ่านสลิป, iOS Shortcut (sync ย้ายไป v4 W3) | **ใช่** | ลดการพิมพ์เอง |
 
 ลำดับและ dependency:
-- **แยกไฟล์ → phase 4 บัตร → v4 (W1 → W2 → W3 → W4) → v5 → v3b**
+- **แยกไฟล์ → phase 4 บัตร → v4 (W1+W2 → W3 → W4) → v5 → v3b**
 - v4 ไม่พึ่ง Supabase: W1 ทำงานในเครื่องล้วน ใช้ข้อมูล v3a F2/F3 และ phase 4 ถ้ามี (ถ้าไม่มีให้ข้ามส่วนนั้นได้โดยไม่ error)
 - v5 พึ่ง v4 (`wealth-core.js`) และ morning briefing ที่ใช้งานอยู่
 - v3b ทำหลังสุด และใช้ sync เข้ารหัสของ v4 W3 แทน S1 เดิม
@@ -304,7 +304,7 @@ Client:
 > Goal: answer "รวยขึ้นไหม" and keep reliable personal data that v5 can summarise. Agreed with the owner 2026-10-18 (mockup: https://claude.ai/artifact/DuW1eDQUoZRc2YGL3hRAVh, private). Comes **after the file split and phase 4 card bills**, and before v3b.
 
 > ⚠️ Owner actions:
-> - Before W2: a separate **private** repo with one Vercel function `POST /api/prices`. API keys (SEC Thailand API, optional Finnhub/Twelve Data) go in Vercel env vars, never in this public repo. A personal token goes in app settings.
+> - Before the W1+W2 release: a separate **private** repo with one Vercel function `POST /api/prices`. API keys (SEC Thailand API, optional Finnhub/Twelve Data) go in Vercel env vars, never in this public repo. A personal token goes in app settings.
 > - Before W3: a Supabase project (publishable key only in the client) and a sync passphrase that the owner remembers. It is not stored anywhere else.
 > - List the accounts to track. Business assets are out of scope unless added as a manual `other` account.
 
@@ -317,8 +317,9 @@ Client:
 - Charts follow the v3a colour rules. Bump `app-version` + SW `VERSION`, and add new files to `ASSETS`.
 
 ### Phases
-- **W1** — manual wealth tab (5th tab `ทรัพย์สิน`, piggy-bank icon) per the mockup, including holdings, the `อัปเดตราคา` sheet, metrics and daily snapshots.
-- **W2** — Vercel price function plus a `ดึงราคาล่าสุด` button. Auto-fetch on open when online and prices are older than 6 h.
+- **W1+W2 ship as one release** (owner decision 2026-10-31). Build it in two rounds:
+  - **W1** — the wealth tab (5th tab `ทรัพย์สิน`, piggy-bank icon) per the mockup: holdings, the `อัปเดตราคา` sheet, metrics and daily snapshots.
+  - **W2** — the Vercel price function plus a `ดึงราคาล่าสุด` button. Auto-fetch on open when online and prices are older than 6 h. Manual prices remain the fallback (offline, failed source) and always win over auto.
   - Sources: Yahoo Finance for `.BK` and foreign stocks (Finnhub/Twelve Data fallback), SEC Thailand for fund NAV, the Thai gold-traders association for 96.5% gold (scraped, most fragile), Bitkub for crypto in THB (CoinGecko fallback), Frankfurter for FX.
   - The function returns native price + THB, caches for 15 min, returns partial results when a source fails, and accepts only our origin + token.
 - **W3** — encrypted Supabase backup/sync. The client encrypts each record with the passphrase, so the server never sees amounts. Merge is per record by `updatedAt`, with tombstones. The app never depends on Supabase being online (free projects pause after 7 idle days).
