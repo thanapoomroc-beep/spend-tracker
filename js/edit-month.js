@@ -179,6 +179,7 @@ function fixedTotal(mKey){
 function render(){
   renderToday();
   renderMonthViews();
+  if(activeTab === 'wealth') renderWealth();
 }
 
 // วันนี้ is always the current calendar month and never reads currentMonth.

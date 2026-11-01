@@ -50,7 +50,7 @@ function loadApp(opts = {}) {
   const ctx = vm.createContext({
     document: doc, localStorage, window: win, navigator: {}, location: { protocol: 'http:', hostname: 'localhost', hash: '' },
     matchMedia: win.matchMedia, requestAnimationFrame: () => 0, cancelAnimationFrame() {}, setTimeout: () => 0, clearTimeout() {},
-    history: { pushState() {}, back() {} }, console, Date: FakeDate, Intl, JSON, Math, Set, Map, Promise
+    history: { pushState() {}, back() {} }, console, Date: FakeDate, URL, Intl, JSON, Math, Set, Map, Promise
   });
   for (const f of scriptFiles()) {
     if (f === 'js/boot.js') continue;

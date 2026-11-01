@@ -576,14 +576,14 @@ function openConfirm({ title, desc, confirmLabel, onConfirm }){
   document.getElementById('confirmTitle').textContent = title || '';
   document.getElementById('confirmDesc').textContent = desc || '';
   document.getElementById('confirmOkBtn').textContent = confirmLabel || 'ตกลง';
-  ['editModalOverlay','tripModalOverlay','tripSheetOverlay'].forEach(id => { document.getElementById(id).style.visibility = 'hidden'; });
+  ['editModalOverlay','tripModalOverlay','tripSheetOverlay','wSheetOverlay'].forEach(id => { document.getElementById(id).style.visibility = 'hidden'; });
   document.getElementById('confirmModalOverlay').style.display = 'flex';
   document.querySelector('#confirmModalOverlay .secondary').focus();
 }
 function closeConfirm(){
   confirmHandler = null;
   document.getElementById('confirmModalOverlay').style.display = 'none';
-  ['editModalOverlay','tripModalOverlay','tripSheetOverlay'].forEach(id => { document.getElementById(id).style.visibility = ''; });
+  ['editModalOverlay','tripModalOverlay','tripSheetOverlay','wSheetOverlay'].forEach(id => { document.getElementById(id).style.visibility = ''; });
 }
 async function runConfirm(){
   const h = confirmHandler;

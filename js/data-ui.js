@@ -88,6 +88,7 @@ function setupUi(){
   });
   document.getElementById('entryAmount').addEventListener('input', ()=>{ updateConv(); updateKbBarLabel(); });
   setupTripUi();
+  setupWealthUi();
   const kbBtn = document.getElementById('kbSaveBtn');
   // Keep the input focused (and the keyboard up) until the click lands.
   ['pointerdown','mousedown'].forEach(t => kbBtn.addEventListener(t, ev => ev.preventDefault()));

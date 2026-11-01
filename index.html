@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.5.0">
+<meta name="app-version" content="2.6.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
 <script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
-<link rel="stylesheet" href="css/app.css?v=2.5.0">
+<link rel="stylesheet" href="css/app.css?v=2.6.0">
 </head>
 <body>
 
@@ -204,6 +204,12 @@
   </section>
 
   <!-- 4. ตั้งค่า -->
+  <section class="tab-panel" id="panel-wealth" data-tab="wealth" aria-labelledby="h-wealth" hidden>
+    <header class="top"><h1 id="h-wealth">ทรัพย์สิน</h1><button type="button" class="secondary icon-btn" id="wealthEyeBtn" aria-pressed="false" aria-label="ซ่อนตัวเลข"></button></header>
+    <div id="wealthMain"></div>
+    <div id="wealthHoldings" hidden></div>
+  </section>
+
   <section class="tab-panel" id="panel-settings" data-tab="settings" aria-labelledby="h-settings" hidden>
     <header class="top"><h1 id="h-settings">ตั้งค่า</h1></header>
     <div class="month-nav" data-month-nav></div>
@@ -272,6 +278,21 @@
       <button type="button" class="secondary add-fixed-btn" id="tripsNewBtn">+ สร้างทริปใหม่</button>
     </div>
 
+    <div class="card" id="priceServiceCard">
+      <h2 id="priceSettings">ราคาอัตโนมัติ</h2>
+      <div class="set-note">ใช้ดึงราคาหุ้น กองทุน ทอง และคริปโตในหน้าทรัพย์สิน ที่อยู่และรหัสเก็บในเครื่องนี้เท่านั้น ไม่อยู่ในไฟล์สำรอง</div>
+      <label for="priceUrl">ที่อยู่บริการราคา</label>
+      <input type="url" id="priceUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="priceMsg">
+      <label for="priceToken">รหัสส่วนตัว</label>
+      <input type="password" id="priceToken" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="priceMsg">
+      <div class="field-error" id="priceMsg" role="status" aria-live="polite" style="color:var(--muted);"></div>
+      <div class="row2">
+        <button type="button" id="priceSaveBtn">บันทึก</button>
+        <button type="button" class="secondary" id="priceTestBtn">ทดสอบ</button>
+      </div>
+      <button type="button" class="link-danger" id="priceClearBtn" style="margin-top:8px;">ล้าง</button>
+    </div>
+
     <div class="card">
       <h2>สำรองข้อมูล</h2>
       <div class="row2">
@@ -321,6 +342,7 @@
     <button type="button" data-tab="today" id="tabbtn-today" aria-label="วันนี้" aria-current="page"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1.6" fill="currentColor"/></svg><span>วันนี้</span></button>
     <button type="button" data-tab="entries" id="tabbtn-entries" aria-label="รายการ"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>รายการ</span></button>
     <button type="button" data-tab="overview" id="tabbtn-overview" aria-label="ภาพรวม"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span>ภาพรวม</span></button>
+    <button type="button" data-tab="wealth" id="tabbtn-wealth" aria-label="ทรัพย์สิน"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/></svg><span>ทรัพย์สิน</span></button>
     <button type="button" data-tab="settings" id="tabbtn-settings" aria-label="ตั้งค่า"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>ตั้งค่า</span></button>
   </nav>
 </div>
@@ -380,6 +402,11 @@
       <button type="button" id="cardPaySaveBtn" onclick="saveCardPay()">บันทึก</button>
     </div>
   </div>
+</div>
+
+<!-- Wealth sheets (one dialog, filled per sheet by wealth-ui.js) -->
+<div id="wSheetOverlay" class="modal-overlay" style="display:none;" onclick="closeWSheet()">
+  <div class="modal-card" id="wSheetCard" role="dialog" aria-modal="true" aria-labelledby="wSheetTitle" onclick="event.stopPropagation()"></div>
 </div>
 
 <!-- Generic confirm -->
@@ -457,17 +484,20 @@
 
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
-<script src="js/core.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/format.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/chips-settings.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entry-form.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/edit-month.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/trips.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entries-hero.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/overview-charts.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards-ui.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/data-ui.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/boot.js?v=2.5.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/core.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-core.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-prices.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/format.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/chips-settings.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entry-form.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/edit-month.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/trips.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entries-hero.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/overview-charts.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards-ui.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-ui.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/data-ui.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/boot.js?v=2.6.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
 </body>
 </html>

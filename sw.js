@@ -1,8 +1,8 @@
 // Keep in sync with <meta name="app-version"> in index.html; bump on every release.
-const VERSION = '2.5.0';
+const VERSION = '2.6.0';
 const CACHE = 'spend-tracker-' + VERSION;
 // css/js carry ?v=VERSION in index.html so every release has its own URLs: a page can never pair with another release's files.
-const JS_FILES = ['core', 'cards', 'format', 'chips-settings', 'entry-form', 'edit-month', 'trips', 'entries-hero', 'overview-charts', 'cards-ui', 'data-ui', 'boot'];
+const JS_FILES = ['core', 'cards', 'wealth-core', 'wealth-prices', 'format', 'chips-settings', 'entry-form', 'edit-month', 'trips', 'entries-hero', 'overview-charts', 'cards-ui', 'wealth-ui', 'data-ui', 'boot'];
 const ASSETS = [
   './', './index.html', './manifest.json', './vendor/chart.umd.js', './icon-180.png', './icon-192.png', './icon-512.png',
   `./css/app.css?v=${VERSION}`,

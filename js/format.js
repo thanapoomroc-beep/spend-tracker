@@ -128,7 +128,7 @@ function openBudgetSettings(){
 }
 
 /* ---------- Tabs ---------- */
-const TABS = ['today','entries','overview','settings'];
+const TABS = ['today','entries','overview','wealth','settings'];
 const MONTH_NAV_HTML = `<button type="button" class="secondary icon-btn" onclick="shiftMonth(-1)" aria-label="เดือนก่อนหน้า"><svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="month-center">
       <div class="month-label" aria-live="polite"></div>
@@ -159,6 +159,7 @@ function applyTab(name, opts){
     resizeCharts();
     requestAnimationFrame(resizeCharts);
   }
+  if(name === 'wealth') showWealthTab();
 }
 function resizeCharts(){
   [compareChart, pieChart, trendChart].forEach(c=>{ if(c){ try{ c.resize(); }catch(e){} } });

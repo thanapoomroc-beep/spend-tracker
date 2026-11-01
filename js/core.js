@@ -84,10 +84,12 @@ function seedCategories(stamp){
 function seedPayments(stamp){
   return PAYMENT_SEEDS.map(p => ({ id:p.id, name:p.name, archived:false, cardType:p.cardType, updatedAt: stamp }));
 }
+//   wealth (2.6.0, see wealth-core.js): accounts, balances, holdings, liabilities, debtOverrides, priceCache, fxCache, snapshots
 //   trips: [{ id, name, currency, thbPerUnit, startDate, endDate, budget, funding:'savings'|'income', createdAt, updatedAt }]   activeTripId: id|null
 //   trip entries add: tripId, currency, originalAmount, splitCount, rate, amountOverridden.  entry.amount is ALWAYS the owner's share in baht.
 function freshState(){
-  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), cardPayments: [], entries: [], trips: [], activeTripId: null };
+  return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), cardPayments: [], entries: [], trips: [], activeTripId: null,
+    accounts: [], balances: [], holdings: [], liabilities: [], debtOverrides: {}, priceCache: {}, fxCache: {}, snapshots: {} };   // wealth (wealth-core.js)
 }
 
 function cleanBudgets(b){
@@ -225,6 +227,7 @@ function migrateState(parsed){
     return true;
   }).map(p => ({ id:p.id, methodId:p.methodId, date:p.date, amount:p.amount, updatedAt: p.updatedAt || EPOCH }));
   parsed.entries.forEach(e=>{ if(e.paymentMethod !== undefined && (typeof e.paymentMethod !== 'string' || !e.paymentMethod)) delete e.paymentMethod; });
+  migrateWealth(parsed);   // wealth fields (2.6.0): accounts, balances, holdings, liabilities, debtOverrides, priceCache, fxCache, snapshots
   parsed.schemaVersion = SCHEMA_VERSION;
   return parsed;
 }
