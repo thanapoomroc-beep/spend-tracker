@@ -73,6 +73,7 @@ Added by the endpoint:
 | `contract_version` | Always `1` for this file. If it is not `1`, stop and tell the owner the contract is out of date. |
 | `stale` | `true` when `personal_as_of` is older than one day (Bangkok date). Prices may still be fresh. |
 | `freshness.prices_as_of` | When the morning run last fetched prices. `personal_as_of` is when the phone last sent its own figures. They are separate. |
+| `markets` | Computed by the morning run: `SET`, `SP500`, `NDX`, `USDTHB`, `GOLD`, `BTC`, each `{ label, close, change_pct, session, source, proxy? }` or `null` when its source failed, plus `as_of`. `session` is the date of that close; `proxy` names an ETF used in place of the index. Use these figures for market moves instead of looking them up. A `null` entry is left out of the message. |
 
 Field notes:
 
@@ -105,23 +106,24 @@ T10 (goals) is not in version 1.
 
 ## Output rules
 
-Write the personal part of the briefing in Thai, in exactly three sections, in this order:
+Revised 2026-11-02 (owner decision; additive, still version 1). The personal part is one message titled `🎯 กระทบเรา`, written in Thai, in this order:
 
-1. `เกิดอะไรขึ้น` what happened in the news or markets today.
-2. `กระทบเราอย่างไร` how it touches the owner's holdings and finances.
+1. `ตลาดที่เราถือ` one compact line built only from `markets` (direction and `change_pct` of each non-null entry; say the `session` date when it is not today's).
+2. News bullets: each is what happened (short) + how it affects the owner, with the source URL on the next line.
 3. `ควรทำอะไร` what to check.
 
 Rules:
 
-- **Link news to the owner only when it is real.** A news item may be tied to the owner's finances only if it names a held `symbol`, that symbol's sector, a market present in `allocation`, a currency in `fx_at_upload` / the holdings' `currency`, or a fired trigger. Otherwise write nothing about the owner for that item. Do not guess sectors for symbols you cannot place.
-- **Cite every impact sentence.** Each sentence in `กระทบเราอย่างไร` ends with the symbol or the trigger id in square brackets, for example `[PTT]` or `[T1]`. A sentence without a citation must not be written.
+- **Link news to the owner only when it is real.** A news item may be tied to the owner's finances only if it names a held `symbol`, that symbol's sector (only a sector the company is actually in), a market present in `allocation`, a currency in `fx_at_upload` / the holdings' `currency`, or a fired trigger. Otherwise write nothing about the owner for that item. Do not guess sectors for symbols you cannot place.
+- **Cover every holding.** Look for news on every symbol in `holdings` (index funds and ETFs by their index or asset class). For a holding with `change_1d_pct` at or beyond ±3, find and give the reason, or say none was found.
+- **Cite every bullet.** Each news bullet ends with the symbol, market, currency or trigger id in square brackets, for example `[PTT]`, `[US]`, `[USD]` or `[T1]`. A bullet without a citation must not be written. With no qualifying news, write one line `วันนี้ไม่มีข่าวเฉพาะของหุ้นที่ถือ`.
 - **At most 3 actions.** Each item in `ควรทำอะไร` is tied to a trigger with severity `act` or `watch` and cites it (`[T6]`). Phrase it as a check or a review: `ทบทวน…`, `ตรวจ…`, `โอน… ก่อนวันที่…`. Never tell the owner to buy or sell, and never name a price to trade at.
 - **Nothing to do is a normal answer.** With no `act` or `watch` trigger, write exactly `ไม่มีอะไรต้องทำวันนี้` under `ควรทำอะไร`. Do not invent a task to fill the section.
 - **Never invent numbers.** State a figure only if it is in the payload or in the news source. Do not compute new percentages, projections or baht amounts. Without `amounts`, never mention a baht amount for the owner's money.
 - **Stale data.** If `stale` is `true`, say once that the personal data is old, with `personal_as_of` as the date. If `freshness.stale_items > 0`, add one line `ข้อมูลบางส่วนเก่า (ณ {date})` where `{date}` is `personal_as_of`.
-- **Length.** The whole personal part is at most 150 Thai words.
+- **Length.** The whole personal part is at most 220 Thai words, URLs not counted.
 - **Privacy.** The payload has no account names, notes or amounts by design. Do not ask for more and do not infer them.
 
 ## Changing this contract
 
-Any change to the schema or the rules raises `Contract version`. The app (`js/health-core.js`), the Vercel endpoint and the briefing job must all be updated to the new version together.
+A breaking change to the schema or the rules raises `Contract version`. Additive fields (such as `markets`) and layout revisions agreed with the owner keep the version and are dated in this file. The app (`js/health-core.js`), the Vercel endpoint and the briefing job must all be updated to the new version together.
