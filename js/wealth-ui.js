@@ -174,7 +174,7 @@ function setupPriceSettings(){
     $w('priceUrl').value = c.url; $w('priceToken').value = ''; $w('priceToken').placeholder = '••••••••';
     priceMsg('บันทึกแล้ว');
     if(activeTab === 'wealth') renderWealth();
-    renderCloudCard();
+    renderCloudCard(); renderBriefingCard();
   });
   $w('priceTestBtn').addEventListener('click', async () => {
     const c = read(); if(!c) return;
@@ -188,7 +188,7 @@ function setupPriceSettings(){
     $w('priceUrl').value = ''; $w('priceToken').value = ''; $w('priceToken').placeholder = '';
     priceMsg('ล้างแล้ว');
     if(activeTab === 'wealth') renderWealth();
-    renderCloudCard();
+    renderCloudCard(); renderBriefingCard();
   });
 }
 
@@ -263,6 +263,7 @@ function renderWealthMain(sum){
   let h = '';
   if(sum.hasData){
     h += wealthHeroHtml(sum, series, today);
+    h += healthCardHtml();
   }else{
     h += `<div class="card w-empty"><div class="w-empty-t">ยังไม่ได้เพิ่มบัญชี</div><p>เพิ่มบัญชีเงินฝาก เงินลงทุน หรือหนี้ แล้วแอปจะรวมเป็นความมั่งคั่งสุทธิให้ ใส่ยอดเดือนละครั้งก็พอ</p><button type="button" data-act="add">+ เพิ่มบัญชี</button></div>`;
   }
@@ -661,6 +662,7 @@ function openHoldingSheet(accId, holdingId, opener){
   if(holdingId && !edit) return;
   let type = edit ? edit.assetType : 'th_stock';
   let gunit = edit && edit.unit === 'baht' ? 'baht' : 'gram';
+  let divers = edit ? healthHoldingDiversified(edit) : defaultDiversified(type), diversTouched = !!edit;   // follows the type until the owner touches it
   const TYPES = ASSET_TYPES.map(t => ({ v:t, label:ASSET_LABEL[t] }));
   const curDefault = t => t === 'foreign_stock' ? 'USD' : 'THB';
   const html = wSheetHead(edit ? holdingName(edit) : 'เพิ่มตัว', acc.name) +
@@ -671,6 +673,8 @@ function openHoldingSheet(accId, holdingId, opener){
     <input id="ws-units" inputmode="decimal" autocomplete="off" aria-describedby="ws-err">
     <label for="ws-cost" class="w-lab">ต้นทุนรวม (ไม่ใส่ก็ได้)</label>
     <div class="rate-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);"><input id="ws-cost" inputmode="decimal" autocomplete="off" aria-label="ต้นทุนรวม" style="margin:0;"><select id="ws-cur" aria-label="สกุลเงิน" style="margin:0;"></select></div>
+    <label class="w-check" for="ws-div"><input type="checkbox" id="ws-div"><span>กระจายความเสี่ยงแล้ว (กองทุน ETF)</span></label>
+    <div class="field-hint">กองทุนและ ETF ไม่นับเป็นหุ้นรายตัวตอนดูความเสี่ยง</div>
     ${edit ? '' : `<label for="ws-price" class="w-lab" id="ws-priceLab" style="margin-top:4px;"></label><input id="ws-price" inputmode="decimal" autocomplete="off" aria-describedby="ws-priceHint ws-err">
     <div class="field-hint" id="ws-priceHint" hidden>ใช้จนกว่าจะดึงราคาใหม่ได้</div>
     <div id="ws-fxWrap" hidden><div class="w-fx-row"><label for="ws-fx" id="ws-fxLab"></label><input id="ws-fx" inputmode="decimal" autocomplete="off" aria-label="เรตแลกเงิน"></div></div>`}
@@ -702,12 +706,15 @@ function openHoldingSheet(accId, holdingId, opener){
     $w('ws-cost').value = edit.cost ? wInputNum(edit.cost) : '';
   }
   sync();
+  $w('ws-div').checked = divers;
+  $w('ws-div').addEventListener('change', () => { divers = $w('ws-div').checked; diversTouched = true; });
   { const ph = $w('ws-priceHint'); if(ph) ph.hidden = !loadPriceConfig(); }   // only when a price service can fetch it
   $w('ws-cur').addEventListener('change', syncFx);
   const groups = $w('wSheetCard').querySelectorAll('[role=radiogroup]');   // [0] = type, [1] = gold unit
   wRadioBind(groups[0], v => {
     const was = type;
     type = v;
+    if(!diversTouched){ divers = defaultDiversified(v); $w('ws-div').checked = divers; }
     if(!edit) $w('ws-cur').value = curDefault(v);
     else if((was === 'gold') !== (v === 'gold')){
       // Only crossing to or from gold touches the currency the owner already set.
@@ -736,6 +743,7 @@ function openHoldingSheet(accId, holdingId, opener){
       edit.assetType = type; edit.symbol = symbol;
       edit.units = units; edit.cost = round2(cost); edit.currency = cur; edit.updatedAt = stamp;
       if(type === 'gold') edit.unit = gunit; else delete edit.unit;
+      edit.diversified = divers;
     }else{
       const price = $w('ws-price').value.trim() === '' ? null : parseWNum($w('ws-price').value);
       if(price !== null && (!isFinite(price) || !(price > 0))) return wErr('ใส่ราคามากกว่า 0', 'ws-price');
@@ -743,6 +751,7 @@ function openHoldingSheet(accId, holdingId, opener){
       if(fxv !== null && (!isFinite(fxv) || !(fxv > 0))) return wErr('ใส่เรตมากกว่า 0', 'ws-fx');
       const h = { id: 'hold-' + genId(), accountId: accId, assetType: type, symbol, units, cost: round2(cost), currency: cur, updatedAt: stamp, deleted: false };
       if(type === 'gold') h.unit = gunit;
+      h.diversified = divers;
       state.holdings.push(h);
       if(price !== null) setManualPrice(state.priceCache, priceKey(type, symbol), price, cur, stamp);
       if(fxv !== null) setManualFx(state.fxCache, cur, fxv, stamp);

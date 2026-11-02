@@ -704,6 +704,40 @@
   .linkbtn.cb-off{display:block; margin:6px auto 0; color:var(--muted); font-weight:500;}
   .cb-list{margin:0 -2px;}
   #wSheetCard #cb-show{display:block; margin:0 0 4px;}
+  /* financial health + briefing (2.8.0) */
+  .w-pill.neg{color:var(--red-text);}
+  .w-health{padding:14px 16px 10px;}
+  .w-health h2{margin-bottom:4px;}
+  .h-row{display:flex; align-items:center; gap:10px; min-height:52px; padding:6px 0; border-top:1px solid var(--border); font-size:15px;}
+  .h-row .w-main{flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.35;}
+  .h-row .w-name{font-weight:500; overflow-wrap:anywhere;}
+  .h-row .w-sub{font-size:12.5px; color:var(--muted); overflow-wrap:anywhere;}
+  .h-row .w-amt{font-weight:700; text-align:right; max-width:48%;}
+  .h-na{font-size:12.5px; font-weight:400; color:var(--muted);}
+  .h-trig{list-style:none; margin:0; padding:8px 0 0; border-top:1px solid var(--border);}
+  .h-trig li{display:flex; align-items:flex-start; gap:8px; min-height:36px; padding:4px 0; font-size:14px; line-height:1.4;}
+  .h-trig .w-pill{margin-top:2px; flex:0 0 auto;}
+  .h-trig-t{min-width:0; overflow-wrap:anywhere;}
+  .h-ok{display:flex; align-items:center; gap:8px; min-height:40px; padding-top:8px; border-top:1px solid var(--border); font-size:14px; color:var(--green);}
+  .h-ok svg{flex:0 0 auto;}
+  .w-check{display:flex; align-items:center; gap:10px; min-height:44px; margin:0 0 2px; font-size:15px; color:var(--text); cursor:pointer;}
+  .w-check input{width:22px; min-width:22px; height:22px; min-height:22px; margin:0; padding:0; flex:0 0 22px;}
+  .w-check span{min-width:0; overflow-wrap:anywhere;}
+  .sw-row{display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:48px;}
+  .sw-lab{font-size:15px; font-weight:500; min-width:0; overflow-wrap:anywhere;}
+  button.sw{width:auto; flex:0 0 auto; display:flex; align-items:center; gap:8px; min-height:44px; padding:0 0 0 8px; background:none; color:var(--muted); border:none; font-size:13px; font-weight:500;}
+  button.sw:hover{background:none;}
+  .sw-track{position:relative; width:46px; height:26px; border-radius:13px; background:var(--panel2); border:1px solid var(--border); transition:background-color .15s;}
+  .sw-knob{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--muted); transition:transform .15s var(--ease), background-color .15s;}
+  button.sw[aria-checked="true"]{color:var(--text);}
+  button.sw[aria-checked="true"] .sw-track{background:var(--accent); border-color:var(--accent);}
+  button.sw[aria-checked="true"] .sw-knob{transform:translateX(20px); background:var(--on-accent);}
+  .bp-status{margin:2px 0 10px;}
+  #briefingBody .row2{margin-top:6px;}
+  .th-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 10px;}
+  .th-grid label{min-height:36px; line-height:1.3;}
+  .th-unit{white-space:nowrap;}
+  .bp-json{margin:0 0 12px; padding:10px 12px; max-height:50vh; overflow:auto; background:var(--panel2); border:1px solid var(--border); border-radius:10px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; -webkit-overflow-scrolling:touch;}
   @media (max-width:600px){
     .w-net{font-size:40px;}
   }

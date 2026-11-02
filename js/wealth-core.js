@@ -5,7 +5,7 @@
 // Data (all records carry id, updatedAt, deleted:false - tombstones are kept for the later sync phase):
 //   accounts:   [{ id, name, group:'cash'|'invest', archived, sortOrder }]           debts are not accounts (see liabilities)
 //   balances:   [{ id, accountId, date, value }]                                      manual values, latest date per account wins
-//   holdings:   [{ id, accountId, assetType, symbol, units, cost, currency, unit? }]  cost = total cost in the holding's currency; unit 'gram'|'baht' for gold
+//   holdings:   [{ id, accountId, assetType, symbol, units, cost, currency, unit?, diversified }]  cost = total cost in the holding's currency; unit 'gram'|'baht' for gold
 //   liabilities:[{ id, name, date, balance }]                                         manual debts (one value + the date it was true)
 //   debtOverrides: { [derivedId]: { balance, date, updatedAt } }                      derivedId = 'inst:<fixedItemId>' | 'card:<methodId>'
 //   priceCache: { '<assetType>:<SYMBOL>': { price, currency, at, source:'manual'|'auto', auto? } }
@@ -17,6 +17,8 @@ const ASSET_TYPES = ['th_stock', 'foreign_stock', 'fund', 'gold', 'crypto'];
 const STALE_PRICE_DAYS = 5, STALE_FX_DAYS = 3, STALE_BALANCE_DAYS = 45;
 const WEALTH_GROUPS = ['cash', 'invest'];
 
+// New holdings and old backups: a fund is diversified unless the owner says otherwise, anything else is a single name.
+function defaultDiversified(assetType){ return assetType === 'fund'; }
 function wLive(list){ return (list || []).filter(x => x && !x.deleted); }
 
 /* ---------- Dates and staleness ---------- */
@@ -308,6 +310,7 @@ function migrateWealth(parsed){
     const currency = r.assetType === 'gold' ? 'THB' : (typeof r.currency === 'string' && /^[A-Z]{3}$/.test(r.currency) ? r.currency : 'THB');
     const c = { accountId: r.accountId, assetType: r.assetType, symbol, units: r.units, cost: r.cost, currency };
     if(r.assetType === 'gold') c.unit = r.unit === 'baht' ? 'baht' : 'gram';
+    c.diversified = typeof r.diversified === 'boolean' ? r.diversified : defaultDiversified(r.assetType);   // 2.8.0: funds/ETFs do not count as one-name concentration
     return c;
   });
   parsed.liabilities = fresh(parsed.liabilities, r => (typeof r.name === 'string' && r.name.trim() && isDay(r.date) && num(r.balance) && r.balance >= 0) ? { name: r.name.trim(), date: r.date, balance: r.balance } : null);

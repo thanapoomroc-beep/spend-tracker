@@ -26,6 +26,11 @@ const CURRENCIES = [
 const ZERO_DECIMAL = ['VND','JPY','KRW'];
 const TREND_KEY = 'spendTrackerTrendRange';
 const SCHEMA_VERSION = 3;
+// Wealth thresholds (v5, 2.8.0). min/max are what the settings inputs accept; migrateWealthSettings (health-core.js) clamps to them.
+// Kept here because freshState() runs when this file loads, before any later file exists.
+const WEALTH_SETTINGS_DEFAULTS = { emergencyMonthsTarget:6, savingsRateTarget:0.2, maxSingleHoldingPct:20, bigMovePct:7, bigMoveMinWeightPct:5, drawdownPct:5, spendPaceTolerancePct:15, fxExposureWatchPct:50, briefingShareAmounts:false, briefingEnabled:false, goals:[] };
+const WEALTH_SETTINGS_LIMITS = { emergencyMonthsTarget:[1,36], savingsRateTarget:[0.01,0.9], maxSingleHoldingPct:[5,100], bigMovePct:[1,50], bigMoveMinWeightPct:[1,100], drawdownPct:[1,50], spendPaceTolerancePct:[1,100], fxExposureWatchPct:[1,100] };
+function defaultWealthSettings(){ return { ...WEALTH_SETTINGS_DEFAULTS, goals: [] }; }
 
 function nowISO(){ return new Date().toISOString(); }
 function genId(){ return Date.now() + '-' + Math.random().toString(36).slice(2,7); }
@@ -85,11 +90,13 @@ function seedPayments(stamp){
   return PAYMENT_SEEDS.map(p => ({ id:p.id, name:p.name, archived:false, cardType:p.cardType, updatedAt: stamp }));
 }
 //   wealth (2.6.0, see wealth-core.js): accounts, balances, holdings, liabilities, debtOverrides, priceCache, fxCache, snapshots
+//   wealthSettings (2.8.0, see health-core.js): { emergencyMonthsTarget, savingsRateTarget, maxSingleHoldingPct, bigMovePct, bigMoveMinWeightPct, drawdownPct, spendPaceTolerancePct, fxExposureWatchPct, briefingShareAmounts, briefingEnabled, goals:[] }
 //   trips: [{ id, name, currency, thbPerUnit, startDate, endDate, budget, funding:'savings'|'income', createdAt, updatedAt }]   activeTripId: id|null
 //   trip entries add: tripId, currency, originalAmount, splitCount, rate, amountOverridden.  entry.amount is ALWAYS the owner's share in baht.
 function freshState(){
   return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), cardPayments: [], entries: [], trips: [], activeTripId: null,
-    accounts: [], balances: [], holdings: [], liabilities: [], debtOverrides: {}, priceCache: {}, fxCache: {}, snapshots: {} };   // wealth (wealth-core.js)
+    accounts: [], balances: [], holdings: [], liabilities: [], debtOverrides: {}, priceCache: {}, fxCache: {}, snapshots: {},   // wealth (wealth-core.js)
+    wealthSettings: defaultWealthSettings() };   // thresholds + briefing switches (health-core.js)
 }
 
 function cleanBudgets(b){
@@ -228,6 +235,7 @@ function migrateState(parsed){
   }).map(p => ({ id:p.id, methodId:p.methodId, date:p.date, amount:p.amount, updatedAt: p.updatedAt || EPOCH }));
   parsed.entries.forEach(e=>{ if(e.paymentMethod !== undefined && (typeof e.paymentMethod !== 'string' || !e.paymentMethod)) delete e.paymentMethod; });
   migrateWealth(parsed);   // wealth fields (2.6.0): accounts, balances, holdings, liabilities, debtOverrides, priceCache, fxCache, snapshots
+  migrateWealthSettings(parsed);   // thresholds + briefing switches (2.8.0)
   parsed.schemaVersion = SCHEMA_VERSION;
   return parsed;
 }
@@ -353,6 +361,7 @@ async function saveData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     flashSaveIndicator(true);
     if(typeof onCloudSaved === 'function'){ try{ onCloudSaved(); }catch(e){} }   // backup-cloud.js: mark dirty, schedule the online backup
+    if(typeof onBriefingSaved === 'function'){ try{ onBriefingSaved(); }catch(e){} }   // briefing-net.js: schedule the briefing upload
   }catch(e){
     console.error('Storage error:', e);
     flashSaveIndicator(false);

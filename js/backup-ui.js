@@ -229,7 +229,7 @@ async function cbRestore(parsed, item, keyInfo){
   initForm();
   render();
   flashToast('กู้ข้อมูลแล้ว', true);
-  renderCloudCard();
+  renderCloudCard(); renderThresholds(); renderBriefingCard();
   if(keyInfo && !cloudLoadConfig()){
     openConfirm({
       title: 'เปิดสำรองออนไลน์ไหม?',
