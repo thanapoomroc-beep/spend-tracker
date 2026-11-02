@@ -33,7 +33,7 @@
 | v3b | 📋 | อ่านสลิป, iOS Shortcut (sync ย้ายไป v4 W3) | **ใช่** | ลดการพิมพ์เอง |
 
 ลำดับและ dependency:
-- **แยกไฟล์ → phase 4 บัตร → v4 (W1+W2 → W3 → W4) → v5 → v3b**
+- **แยกไฟล์ → phase 4 บัตร → v4 (W1+W2 → W3) → v5 → v3b (W4 ตัดออก 2026-11-02)**
 - v4 ไม่พึ่ง Supabase: W1 ทำงานในเครื่องล้วน ใช้ข้อมูล v3a F2/F3 และ phase 4 ถ้ามี (ถ้าไม่มีให้ข้ามส่วนนั้นได้โดยไม่ error)
 - v5 พึ่ง v4 (`wealth-core.js`) และ morning briefing ที่ใช้งานอยู่
 - v3b ทำหลังสุด และใช้ sync เข้ารหัสของ v4 W3 แทน S1 เดิม
@@ -323,7 +323,7 @@ Client:
   - Sources: Yahoo Finance for `.BK` and foreign stocks (Finnhub/Twelve Data fallback), SEC Thailand for fund NAV, the Thai gold-traders association for 96.5% gold (scraped, most fragile), Bitkub for crypto in THB (CoinGecko fallback), Frankfurter for FX.
   - The function returns native price + THB, caches for 15 min, returns partial results when a source fails, and accepts only our origin + token.
 - **W3** — encrypted Supabase backup/sync. The client encrypts each record with the passphrase, so the server never sees amounts. Merge is per record by `updatedAt`, with tombstones. The app never depends on Supabase being online (free projects pause after 7 idle days).
-- **W4** — push alerts (due dates, big price moves) driven only by the non-amount v5 payload and the B5.1a morning refresh. Net-worth snapshots stay on the phone.
+- ~~**W4** — push alerts (due dates, big price moves) driven only by the non-amount v5 payload and the B5.1a morning refresh. Net-worth snapshots stay on the phone.~~ ตัดออกตามที่เจ้าของตัดสินใจ 2026-11-02
 - Any time before W3: a share-sheet backup export to iCloud Drive.
 
 ### 4.1 Data model (sketch; final shape decided in the W1 shape step)
@@ -492,7 +492,7 @@ Write this file in **this repo** as the source of truth (Thai output, English ru
 ---
 
 ## Later ideas (not scheduled)
-- (Moved to v4 W4: Web Push for due dates and `act` triggers, iOS 16.4+ Home Screen apps.)
+- (Web Push for due dates and `act` triggers was planned as v4 W4, which the owner dropped on 2026-11-02.)
 - Import credit-card e-statements and broker statements (CSV/PDF) to update v4 balances with less manual entry.
 - Email-alert ingestion via Zapier/Make → `add-from-slip`-style endpoint.
 - Weekly/monthly long-form review (net worth trend, savings rate, goal progress) in addition to the daily briefing.

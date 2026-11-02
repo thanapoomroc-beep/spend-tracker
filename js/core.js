@@ -352,6 +352,7 @@ async function saveData(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     flashSaveIndicator(true);
+    if(typeof onCloudSaved === 'function'){ try{ onCloudSaved(); }catch(e){} }   // backup-cloud.js: mark dirty, schedule the online backup
   }catch(e){
     console.error('Storage error:', e);
     flashSaveIndicator(false);

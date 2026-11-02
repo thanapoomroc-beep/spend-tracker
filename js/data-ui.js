@@ -1,9 +1,24 @@
 function exportData(){
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const json = JSON.stringify(state, null, 2), name = `spend-tracker-backup-${todayISO()}.json`;
+  // Share sheet first (Files / iCloud Drive on iPhone); no await before share(), it needs the tap's user activation.
+  if(cbCanShareFiles()){
+    try{
+      const file = new File([json], name, {type:'application/json'});
+      navigator.share({files:[file]}).catch(err=>{
+        if(err && err.name === 'AbortError') return;   // the owner closed the sheet
+        downloadBackupFile(json, name);
+      });
+      return;
+    }catch(e){ /* fall through to the download */ }
+  }
+  downloadBackupFile(json, name);
+}
+function downloadBackupFile(json, name){
+  const blob = new Blob([json], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `spend-tracker-backup-${todayISO()}.json`;
+  a.download = name;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -89,6 +104,7 @@ function setupUi(){
   document.getElementById('entryAmount').addEventListener('input', ()=>{ updateConv(); updateKbBarLabel(); });
   setupTripUi();
   setupWealthUi();
+  setupCloudBackupUi();
   const kbBtn = document.getElementById('kbSaveBtn');
   // Keep the input focused (and the keyboard up) until the click lands.
   ['pointerdown','mousedown'].forEach(t => kbBtn.addEventListener(t, ev => ev.preventDefault()));

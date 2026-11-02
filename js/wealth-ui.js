@@ -174,6 +174,7 @@ function setupPriceSettings(){
     $w('priceUrl').value = c.url; $w('priceToken').value = ''; $w('priceToken').placeholder = '••••••••';
     priceMsg('บันทึกแล้ว');
     if(activeTab === 'wealth') renderWealth();
+    renderCloudCard();
   });
   $w('priceTestBtn').addEventListener('click', async () => {
     const c = read(); if(!c) return;
@@ -187,6 +188,7 @@ function setupPriceSettings(){
     $w('priceUrl').value = ''; $w('priceToken').value = ''; $w('priceToken').placeholder = '';
     priceMsg('ล้างแล้ว');
     if(activeTab === 'wealth') renderWealth();
+    renderCloudCard();
   });
 }
 
