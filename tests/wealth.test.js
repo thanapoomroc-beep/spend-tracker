@@ -280,3 +280,30 @@ test('a holding with no price or no FX rate is worth 0 and flagged, never an err
   const snap = plain(run(`buildSnapshot(${JSON.stringify(s)})`));
   assert.deepEqual(snap.holdings.map(h => h.key), ['fund:KFUND']);   // unpriced holdings stay out of the market split
 });
+
+test('price layer: newest wins between manual and auto; bad dates', () => {
+  const { run } = loadApp();
+  const out = plain(run(`(() => {
+    const k = 'th_stock:PTT', r = [];
+    let c = {}; setManualPrice(c, k, 700, 'USD', '2026-11-01T10:00:00Z');
+    r.push(setAutoPrice(c, k, 690, 'USD', '2026-11-01T09:00:00Z'), c[k]);          // older auto: manual stays, auto filed under it
+    c = {}; setManualPrice(c, k, 700, 'USD', '2026-11-01T10:00:00Z');
+    r.push(setAutoPrice(c, k, 694.81, 'USD', '2026-11-01T11:00:00Z'), c[k]);       // newer auto replaces manual
+    c = {}; setManualPrice(c, k, 700, 'USD', '2026-11-01T10:00:00Z');
+    r.push(setAutoPrice(c, k, 1, 'USD', '2026-11-01T10:00:00Z'), c[k].source);     // same instant: manual stays
+    c = {}; setManualPrice(c, k, 700, 'USD', 'garbage');
+    r.push(setAutoPrice(c, k, 2, 'USD', '2026-11-01T10:00:00Z'), c[k].source);     // unparsable manual time counts as older
+    c = {}; setManualPrice(c, k, 700, 'USD', '2026-11-01T10:00:00Z');
+    r.push(setAutoPrice(c, k, 3, 'USD', 'garbage'), c[k].source);                  // unparsable auto time never replaces
+    c = {}; setManualPrice(c, k, 700, 'USD', '2026-11-01T10:00:00Z');
+    setAutoPrice(c, k, 690, 'USD', '2026-11-01T09:00:00Z');
+    r.push(clearManualPrice(c, k), c[k]);                                          // "use auto price" still works
+    return r;
+  })()`));
+  assert.equal(out[0], false); assert.equal(out[1].source, 'manual'); assert.equal(out[1].price, 700); assert.equal(out[1].auto.price, 690);
+  assert.equal(out[2], true); assert.equal(out[3].source, 'auto'); assert.equal(out[3].price, 694.81); assert.equal(out[3].manual, undefined);
+  assert.equal(out[4], false); assert.equal(out[5], 'manual');
+  assert.equal(out[6], true); assert.equal(out[7], 'auto');
+  assert.equal(out[8], false); assert.equal(out[9], 'manual');
+  assert.equal(out[10], 'restored'); assert.equal(out[11].price, 690); assert.equal(out[11].source, 'auto');
+});

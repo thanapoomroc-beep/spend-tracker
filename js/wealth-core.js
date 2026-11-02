@@ -67,10 +67,19 @@ function clearManualPrice(cache, key){
   delete cache[key];
   return 'removed';
 }
-// Round 2 calls this with fetched prices: a manual price is never overwritten (the fetch goes under it).
+// Fetched prices: the newest wins. A manual price stays until an auto price with a strictly later time arrives
+// (an unparsable manual time counts as older); until then the fetch is filed underneath in `.auto`.
 function setAutoPrice(cache, key, price, currency, at){
   const e = cache[key];
-  if(e && e.source === 'manual'){ e.auto = { price, currency, at }; return false; }
+  if(e && e.source === 'manual'){
+    const tAuto = Date.parse(at), tManual = Date.parse(e.at);
+    if(isFinite(tAuto) && (!isFinite(tManual) || tAuto > tManual)){
+      cache[key] = { price, currency, at, source: 'auto' };
+      return true;
+    }
+    e.auto = { price, currency, at };
+    return false;
+  }
   cache[key] = { price, currency, at, source: 'auto' };
   return true;
 }

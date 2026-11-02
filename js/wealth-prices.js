@@ -7,7 +7,8 @@ const PRICE_AUTO_AFTER_MS = 6 * 3600 * 1000;       // auto-fetch when the oldest
 const PRICE_RETRY_AFTER_MS = 30 * 60 * 1000;       // ...but never twice within this, so a source that stays down is not hammered
 let priceInFlight = null;
 let priceLastAttempt = 0;
-let priceStatus = { kind: 'idle', at: null, failed: [] };   // kind: idle | running | ok | partial | fail
+let pricePending = false;                           // a holding was added while a fetch ran: fetch once more afterwards
+let priceStatus = { kind: 'idle', at: null, failed: [], reasons: {} };   // kind: idle | running | ok | partial | fail
 
 /* ---------- Config ---------- */
 // Returns the normalised base address, or '' when it is not usable (https only; plain http only for localhost, for testing).
@@ -60,8 +61,8 @@ function needsPriceFetch(holdings, priceCache, nowMs){
     return !isFinite(t) || nowMs - t > PRICE_AUTO_AFTER_MS;
   });
 }
-// Writes a service response into the caches. Manual prices keep winning (setAutoPrice files the fetched one underneath).
-// Returns { updated: n, failed: [keys that came back in errors] }.
+// Writes a service response into the caches. A manual price stays only until a newer fetched one arrives (see setAutoPrice).
+// Returns { updated: n, failed: [keys in errors], reasons: { key: code } } with code = not_found | unsupported | source_down.
 function applyPriceResponse(priceCache, fxCache, resp){
   let updated = 0;
   const prices = resp && typeof resp.prices === 'object' && resp.prices ? resp.prices : {};
@@ -82,7 +83,9 @@ function applyPriceResponse(priceCache, fxCache, resp){
     updated++;
   });
   const failed = resp && typeof resp.errors === 'object' && resp.errors ? Object.keys(resp.errors).filter(k => !k.startsWith('fx:')) : [];
-  return { updated, failed };
+  const reasons = {};
+  failed.forEach(k => { const c = resp.errors[k]; reasons[k] = (c === 'not_found' || c === 'unsupported') ? c : 'source_down'; });
+  return { updated, failed, reasons };
 }
 
 /* ---------- Network ---------- */
@@ -128,7 +131,7 @@ function refreshPrices(opts){
   const hs = wLive(state.holdings);
   if(!cfg || !hs.length) return Promise.resolve(priceStatus);
   priceLastAttempt = Date.now();
-  priceStatus = { kind: 'running', at: priceStatus.at, failed: [] };
+  priceStatus = { kind: 'running', at: priceStatus.at, failed: [], reasons: {} };
   if(typeof onPriceStatus === 'function') onPriceStatus();
   priceInFlight = (async () => {
     const req = buildPriceRequest(hs);
@@ -137,16 +140,30 @@ function refreshPrices(opts){
       const out = applyPriceResponse(state.priceCache, state.fxCache, r.data);
       const asked = new Set(req.items.map(i => priceKey(i.type, i.symbol)));
       const failed = out.failed.filter(k => asked.has(k));
-      priceStatus = { kind: failed.length ? 'partial' : 'ok', at: Date.now(), failed };
+      const reasons = {};
+      failed.forEach(k => { reasons[k] = out.reasons[k]; });
+      priceStatus = { kind: failed.length ? 'partial' : 'ok', at: Date.now(), failed, reasons };
       if(out.updated) await wealthCommitQuiet();
     }else{
-      priceStatus = { kind: 'fail', at: priceStatus.at, failed: [], reason: r.reason };
+      priceStatus = { kind: 'fail', at: priceStatus.at, failed: [], reasons: {}, reason: r.reason };
     }
     priceInFlight = null;
     if(typeof onPriceStatus === 'function') onPriceStatus();
+    // A holding added during this fetch was not in the request: one follow-up, never a loop.
+    if(pricePending){
+      pricePending = false;
+      if(needsPriceFetch(state.holdings, state.priceCache, Date.now())) refreshPrices({ auto: true });
+    }
     return priceStatus;
   })();
   return priceInFlight;
+}
+// After a holding is added or edited: fetch now (or right after the running fetch). Silent when not configured or offline.
+function refreshPricesForNewHolding(){
+  if(!loadPriceConfig()) return;
+  if(typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  if(priceInFlight){ pricePending = true; return; }
+  refreshPrices({ auto: true });
 }
 // Called when the wealth tab is shown or the app opens.
 function maybeAutoRefreshPrices(){

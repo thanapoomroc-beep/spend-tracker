@@ -46,7 +46,7 @@ test('request body: unique items, gold is GOLD, fx for every foreign currency, n
 
 test('success: auto prices stored, fx auto, manual price kept, snapshot written, status ok', async () => {
   const { app, calls } = setup(() => ({ status: 200, body: OK }));
-  app.run(`setManualPrice(state.priceCache, 'th_stock:PTT', 36, 'THB', '2026-11-01T08:00:00+07:00')`);
+  app.run(`setManualPrice(state.priceCache, 'th_stock:PTT', 36, 'THB', '2026-11-01T09:30:00+07:00')`);
   const st = plain(await app.run(`refreshPrices()`));
   assert.equal(st.kind, 'ok');
   assert.equal(calls.length, 1);
@@ -150,7 +150,7 @@ test('6-hour rule and the auto-fetch gate', async () => {
   app.run(`maybeAutoRefreshPrices()`);
   await app.run(`priceInFlight`);
   assert.equal(calls.length, 1);
-  app.run(`priceStatus = { kind:'idle', at:null, failed:[] }; state.priceCache = {}`);
+  app.run(`priceStatus = { kind:'idle', at:null, failed:[], reasons:{} }; state.priceCache = {}`);
   app.run(`maybeAutoRefreshPrices()`);                    // needs prices again but the last attempt was seconds ago
   assert.equal(calls.length, 1);
   app.ctx.navigator.onLine = false;
@@ -173,4 +173,53 @@ test('address and token never reach the backup export or state', () => {
   assert.ok(!exported.includes('spendTrackerPriceService'));
   assert.ok(app.store.get('spendTrackerPriceService').includes(TOKEN));
   assert.ok(!app.store.has('spendTrackerState') || !app.store.get('spendTrackerState').includes(TOKEN));
+});
+
+test('reasons: not_found / unsupported are kept, anything else becomes source_down, fx errors are ignored', () => {
+  const { run } = loadApp();
+  const resp = { prices: {}, fx: {}, errors: { 'th_stock:VOO': 'not_found', 'fund:ZZ': 'unsupported', 'crypto:BTC': 'source_down', 'gold:GOLD': 'weird', 'fx:USD': 'not_found' } };
+  const out = plain(run(`applyPriceResponse({}, {}, ${JSON.stringify(resp)})`));
+  assert.deepEqual(out.failed.sort(), ['crypto:BTC', 'fund:ZZ', 'gold:GOLD', 'th_stock:VOO']);
+  assert.deepEqual(out.reasons, { 'th_stock:VOO': 'not_found', 'fund:ZZ': 'unsupported', 'crypto:BTC': 'source_down', 'gold:GOLD': 'source_down' });
+  assert.deepEqual(plain(run(`applyPriceResponse({}, {}, {})`)).reasons, {});
+});
+
+test('priceStatus keeps the reason per asked key, and is {} when idle, running or failed', async () => {
+  const resp = { at: NOW, prices: {}, fx: {}, errors: { 'th_stock:VOO': 'not_found', 'gold:GOLD': 'unsupported', 'th_stock:OTHER': 'not_found' } };
+  const { app } = setup(() => ({ status: 200, body: resp }), [hold('a', 'th_stock', 'VOO'), hold('b', 'gold', 'x')]);
+  assert.deepEqual(plain(app.run('priceStatus.reasons')), {});
+  const p = app.run('refreshPrices()');
+  assert.deepEqual(plain(app.run('priceStatus.reasons')), {});
+  const st = plain(await p);
+  assert.equal(st.kind, 'partial');
+  assert.deepEqual(st.reasons, { 'th_stock:VOO': 'not_found', 'gold:GOLD': 'unsupported' });
+  const f = setup(() => ({ status: 500, body: {} }));
+  assert.deepEqual(plain(await f.app.run('refreshPrices()')).reasons, {});
+});
+
+test('a holding added during a fetch gets exactly one follow-up fetch', async () => {
+  let release;
+  const first = new Promise(r => { release = r; });
+  let n = 0;
+  const { app, calls } = setup(() => { n++; return n === 1 ? first.then(() => ({ status: 200, body: { at: NOW, prices: {}, fx: {}, errors: {} } })) : { status: 200, body: { at: NOW, prices: {}, fx: {}, errors: {} } }; }, [hold('a', 'th_stock', 'PTT')]);
+  const p1 = app.run('refreshPrices()');
+  await new Promise(r => setTimeout(r, 20));
+  app.run(`state.holdings.push(${JSON.stringify(hold('n', 'foreign_stock', 'VOO', 'USD'))})`);
+  app.run('refreshPricesForNewHolding()');
+  assert.equal(calls.length, 1);
+  release();
+  await p1;
+  await new Promise(r => setTimeout(r, 50));
+  await app.run('priceInFlight');
+  assert.equal(calls.length, 2);                                   // one follow-up, no loop
+  assert.deepEqual(calls[1].body.items.map(i => i.symbol).sort(), ['PTT', 'VOO']);
+  // idle: fires straight away; offline: nothing
+  const b = setup(() => ({ status: 200, body: OK }));
+  b.app.run('refreshPricesForNewHolding()');
+  await b.app.run('priceInFlight');
+  assert.equal(b.calls.length, 1);
+  const c = setup(() => ({ status: 200, body: OK }));
+  c.app.ctx.navigator.onLine = false;
+  c.app.run('refreshPricesForNewHolding()');
+  assert.equal(c.calls.length, 0);
 });

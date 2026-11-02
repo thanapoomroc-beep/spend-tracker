@@ -577,6 +577,7 @@
   .strip-btn:hover{background:var(--panel2);}
   .linkbtn{width:auto; min-height:44px; padding:0 8px; background:none; color:var(--accent-hover); font-size:13px; font-weight:600; text-decoration:underline; border-radius:10px; display:inline-block;}
   .linkbtn:hover{background:var(--panel2);}
+  .linkbtn.w-rename{display:block; margin:6px auto 0;}
   .trip-list .tl-go{width:auto; flex:0 0 auto; min-height:44px; padding:0 14px; font-size:13.5px;}
   .tp-top{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;}
   .tp-top button{width:auto; padding:0 16px; font-size:14px;}
