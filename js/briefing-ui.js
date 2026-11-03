@@ -11,6 +11,11 @@ function hStatusPill(trig, label){
   return `<span class="w-pill ${trig.severity === 'act' ? 'neg' : trig.severity === 'watch' ? 'warn' : ''}">${wEsc(trig.severity === 'act' ? 'ควรรีบดู' : label)}</span>`;
 }
 function hPctText(p){ return (p < 0 ? '−' : '') + Math.abs(p).toFixed(1) + '%'; }
+// 'รวม SGOV' / 'รวม A, B, C และอีก 2': the flagged holdings that were added to the runway.
+function healthLiquidNote(syms){
+  if(!syms || !syms.length) return '';
+  return '\n' + 'รวม ' + syms.slice(0, 3).join(', ') + (syms.length > 3 ? ` และอีก ${syms.length - 3}` : '');
+}
 function healthRowHtml(label, value, sub, trig, pillLabel){
   const val = value === null ? '<span class="h-na">ยังไม่พอคำนวณ</span>' : wEsc(value);
   return `<div class="h-row"><span class="w-main"><span class="w-name">${wEsc(label)}</span>${sub ? `<span class="w-sub">${wEsc(sub)}</span>` : ''}</span>${hStatusPill(trig, pillLabel)}<span class="w-amt">${val}</span></div>`;
@@ -21,7 +26,7 @@ function healthCardHtml(){
   const byId = id => c.triggers.find(t => t.id === id) || null;
   const th = c.th, hm = c.health;
   const rows = [
-    healthRowHtml('เงินสำรองพอใช้', hm.cash_runway_months === null ? null : hm.cash_runway_months.toFixed(1) + ' เดือน', `เป้า ${hRound(th.emergencyMonthsTarget, 1)} เดือน`, byId('T1'), 'ต่ำกว่าเป้า'),
+    healthRowHtml('เงินสำรองพอใช้', hm.cash_runway_months === null ? null : hm.cash_runway_months.toFixed(1) + ' เดือน', `เป้า ${hRound(th.emergencyMonthsTarget, 1)} เดือน` + healthLiquidNote(c.liquidSymbols), byId('T1'), 'ต่ำกว่าเป้า'),
     healthRowHtml('อัตราการออม 3 เดือน', hm.savings_rate_3m === null ? null : hPctText(hm.savings_rate_3m * 100), `เป้า ${hRound(th.savingsRateTarget * 100, 1)}%`, byId('T9'), 'ต่ำกว่าเป้า'),
     healthRowHtml('หนี้ต่อทรัพย์สิน', hm.debt_to_assets === null ? null : hPctText(hm.debt_to_assets * 100), '', null),
     healthRowHtml('ถือหุ้นตัวใหญ่สุด', c.top_single_holding_pct === null ? null : (c.top_single_holding_symbol ? hPctText(c.top_single_holding_pct) : 'ไม่มีหุ้นรายตัว'),

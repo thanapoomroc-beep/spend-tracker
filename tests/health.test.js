@@ -337,3 +337,51 @@ test('migrateState: bad settings fall back or clamp, switches only accept true, 
   assert.ok(!('extra' in ws));
   assert.deepEqual(plain(run(`migrateState(${JSON.stringify(m)})`)), m);
 });
+
+/* ---------- 2.8.1: holdings flagged as near-cash count toward the runway ---------- */
+const sgov = extra => hold('hs', 'inv', 'foreign_stock', 'SGOV', 100, 'USD', Object.assign({ diversified: true }, extra || {}));
+const withSgov = extra => ({ holdings: fixture().holdings.concat([sgov(extra)]), priceCache: Object.assign(fixture().priceCache, { 'foreign_stock:SGOV': px(100, 'USD') }) });
+// SGOV: 100 units x $100 x 33 = 330,000 THB. Outflow stays 30,000 / month.
+test('liquid flag: migration default false, an existing value is kept', () => {
+  const { run } = loadApp();
+  const old = { monthlySettings: {}, entries: [], accounts: [acc('inv', 'พอร์ต', 'invest')],
+    holdings: [hold('a', 'inv', 'th_stock', 'PTT', 1), hold('b', 'inv', 'fund', 'KF', 1, 'THB', { liquid: true }), hold('c', 'inv', 'fund', 'KG', 1, 'THB', { liquid: 'yes' })] };
+  const m = plain(run(`migrateState(${JSON.stringify(old)})`));
+  assert.deepEqual(m.holdings.map(h => h.liquid), [false, true, false]);
+  assert.deepEqual(plain(run(`migrateState(${JSON.stringify(m)})`)).holdings.map(h => h.liquid), [false, true, false]);
+});
+test('runway counts flagged holdings: 150,000 cash vs 150,000 + 330,000 SGOV; net worth and weights do not change', () => {
+  const off = plain(setup(withSgov()).run('healthCompute(state, new Date())'));
+  const on = plain(setup(withSgov({ liquid: true })).run('healthCompute(state, new Date())'));
+  assert.equal(off.health.cash_runway_months, 5);              // 150000 / 30000
+  assert.equal(on.health.cash_runway_months, 16);              // 480000 / 30000
+  assert.deepEqual(on.liquidSymbols, ['SGOV']); assert.deepEqual(off.liquidSymbols, []);
+  assert.equal(on.summary.net, off.summary.net);
+  assert.equal(on.summary.assets, off.summary.assets);
+  assert.deepEqual(on.portfolio.allocation, off.portfolio.allocation);
+  assert.deepEqual(on.portfolio.holdings.map(h => h.weight_pct), off.portfolio.holdings.map(h => h.weight_pct));
+  assert.equal(on.portfolio.holdings.find(h => h.symbol === 'SGOV').liquid, true);
+  assert.ok(!('liquid' in off.portfolio.holdings.find(h => h.symbol === 'SGOV')));
+  assert.ok(!on.triggers.some(t => t.id === 'T1'));            // 16 months is above the target
+  assert.ok(off.triggers.some(t => t.id === 'T1'));
+});
+test('flagged holding without a price is ignored; runway works with only flagged holdings and no cash account', () => {
+  const noPrice = withSgov({ liquid: true }); delete noPrice.priceCache['foreign_stock:SGOV'];
+  assert.equal(plain(setup(noPrice).run('healthCompute(state, new Date())')).health.cash_runway_months, 5);
+  const only = Object.assign(withSgov({ liquid: true }), { accounts: fixture().accounts.filter(a => a.id !== 'bank'), balances: fixture().balances.filter(b => b.id !== 'b1') });
+  const c = plain(setup(only).run('healthCompute(state, new Date())'));
+  assert.equal(c.health.cash_runway_months, 11);               // 330000 / 30000
+});
+test('liquid payload: amounts.liquid uses the same total, privacy walk still passes, card note lists max 3 symbols', () => {
+  const app = setup(withSgov({ liquid: true }));
+  const p = plain(app.run('buildBriefingPayload(state, new Date())'));
+  assert.deepEqual(bigNumbers(p, [], []), []);
+  assert.ok(!JSON.stringify(p).includes('฿'));
+  app.run('state.wealthSettings.briefingShareAmounts = true');
+  assert.equal(plain(app.run('buildBriefingPayload(state, new Date())')).amounts.liquid, 480000);
+  const n = s => app.run(`healthLiquidNote(${JSON.stringify(s)})`);
+  assert.equal(n([]), '');
+  assert.equal(n(['SGOV']), '\nรวม SGOV');
+  assert.equal(n(['A', 'B', 'C']), '\nรวม A, B, C');
+  assert.equal(n(['A', 'B', 'C', 'D', 'E']), '\nรวม A, B, C และอีก 2');
+});

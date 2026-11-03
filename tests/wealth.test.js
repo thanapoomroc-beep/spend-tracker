@@ -7,7 +7,7 @@ const TODAY = '2026-11-01';
 const T = '2026-10-30T10:00:00+07:00';
 const acc = (id, name, group, extra) => Object.assign({ id, name, group, archived: false, sortOrder: 1, updatedAt: T, deleted: false }, extra || {});
 const bal = (id, accountId, date, value) => ({ id, accountId, date, value, updatedAt: T, deleted: false });
-const hold = (id, accountId, assetType, symbol, units, cost, currency, extra) => Object.assign({ id, accountId, assetType, symbol, units, cost, currency: currency || 'THB', diversified: assetType === 'fund', updatedAt: T, deleted: false }, extra || {});
+const hold = (id, accountId, assetType, symbol, units, cost, currency, extra) => Object.assign({ id, accountId, assetType, symbol, units, cost, currency: currency || 'THB', diversified: assetType === 'fund', liquid: false, updatedAt: T, deleted: false }, extra || {});
 const price = (price, currency, at, source) => ({ price, currency: currency || 'THB', at: at || TODAY, source: source || 'manual' });
 
 // ROADMAP v4 checklist item 2.

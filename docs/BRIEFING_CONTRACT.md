@@ -84,6 +84,7 @@ Field notes:
 - `change_1d_pct` is `null` in the phone's upload. The morning run fills it in. T3 and T8 can only appear in a refreshed payload.
 - `spending.pace` is `ahead`, `on_track`, `behind`, or `null` (before day 8 of the month, or no income set).
 - `upcoming[]` holds card bills and fixed items due in the next 7 days. `due_in_days` is negative when overdue.
+- `holdings[].liquid` is `true` only on holdings the owner flagged as near-cash (for example SGOV). It is additive and absent otherwise (added 2026-11-03, still version 1). These holdings are already inside `cash_runway_months`.
 - `trip` is `null` when no trip mode is on. `goals` is always `[]` in version 1.
 - `amounts` is `null` unless the owner turned on sharing. When present it holds `net_worth`, `liquid`, `liabilities`, `upcoming_thb` as whole baht. Otherwise the payload contains no baht amount at all. Unit prices (`price_at_upload`, `fx_at_upload`) are not amounts.
 - `text_th` of a trigger is already written in Thai. Use it as the basis for the sentence rather than rewording the numbers.

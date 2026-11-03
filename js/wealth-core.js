@@ -310,6 +310,7 @@ function migrateWealth(parsed){
     const currency = r.assetType === 'gold' ? 'THB' : (typeof r.currency === 'string' && /^[A-Z]{3}$/.test(r.currency) ? r.currency : 'THB');
     const c = { accountId: r.accountId, assetType: r.assetType, symbol, units: r.units, cost: r.cost, currency };
     if(r.assetType === 'gold') c.unit = r.unit === 'baht' ? 'baht' : 'gram';
+    c.liquid = r.liquid === true;   // 2.8.1: counts toward the cash runway (SGOV, money-market funds)
     c.diversified = typeof r.diversified === 'boolean' ? r.diversified : defaultDiversified(r.assetType);   // 2.8.0: funds/ETFs do not count as one-name concentration
     return c;
   });

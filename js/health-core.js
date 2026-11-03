@@ -76,11 +76,14 @@ function healthRates(stats, liquid){
 // summary = wealthSummary(). Returns everything the payload needs about investments, never a baht amount.
 function healthPortfolio(summary, fxCache){
   const assets = summary.assets, investable = summary.investTotal;
-  const merged = new Map();
+  const merged = new Map(), liquidRows = [];
   summary.invest.forEach(a => (a.holdings || []).forEach(r => {
     if(r.unitTHB === null || !(r.value > 0)) return;           // no price (or FX) yet: nothing to weigh
     const h = r.holding, e = merged.get(r.key);
-    if(e){ e.value += r.value; e.diversified = e.diversified && healthHoldingDiversified(h); return; }
+    if(e){
+      if(h.liquid === true) liquidRows.push({ symbol: h.symbol, value: r.value });
+ e.value += r.value; e.diversified = e.diversified && healthHoldingDiversified(h); return; }
+    if(h.liquid === true) liquidRows.push({ symbol: h.symbol, value: r.value });
     merged.set(r.key, { symbol: h.symbol, type: h.assetType, cls: HEALTH_CLASS[h.assetType], currency: r.priceCurrency || h.currency || 'THB',
       value: r.value, price: r.price, diversified: healthHoldingDiversified(h) });
   }));
@@ -92,6 +95,10 @@ function healthPortfolio(summary, fxCache){
   const shares = healthRoundShares(rawW.concat([rawOther]), 1);
   const holdings = rows.map((r, i) => ({ symbol: r.symbol, type: r.type, class: r.cls, currency: r.currency, weight_pct: shares[i],
     price_at_upload: hRound(r.price, 6), diversified: r.diversified, change_1d_pct: null }));
+  // Holdings the owner flagged as near-cash: they only add to the runway numerator, nothing else changes.
+  const liqSyms = [];
+  liquidRows.slice().sort((a, b) => b.value - a.value).forEach(x => { if(!liqSyms.includes(x.symbol)) liqSyms.push(x.symbol); });
+  holdings.forEach(x => { if(liqSyms.includes(x.symbol)) x.liquid = true; });
   const other = shares[rows.length];
 
   let allocation = [];
@@ -115,7 +122,8 @@ function healthPortfolio(summary, fxCache){
     investable_share_pct: assets > 0 ? hRound(investable / assets * 100, 1) : null,
     investable_other_pct: other, allocation, holdings,
     fx_exposure_pct: assets > 0 ? hRound(fxVal / assets * 100, 1) : null,
-    fx_at_upload: fx, top
+    fx_at_upload: fx, top,
+    liquid_value: round2(liquidRows.reduce((s, x) => s + x.value, 0)), liquid_symbols: liqSyms
   };
 }
 
@@ -264,6 +272,7 @@ function healthCompute(st, now){
     const th = healthThresholds(st.wealthSettings);
     const sum = wealthSummary(wealthData(), derivedDebtsNow(today), today);
     const pf = healthPortfolio(sum, st.fxCache);
+    const liquidTotal = round2(sum.cashTotal + pf.liquid_value);   // cash accounts + flagged near-cash holdings
 
     const entryMonths = st.entries.map(e => String(e.date).slice(0, 7)).filter(k => /^\d{4}-\d{2}$/.test(k)).sort();
     const firstMonth = entryMonths[0] || null;
@@ -271,7 +280,7 @@ function healthCompute(st, now){
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       return firstMonth && monthKey(d) >= firstMonth ? healthMonthStat(monthFigures(d)) : null;
     });
-    const rates = healthRates(stats, sum.cashTotal);
+    const rates = healthRates(stats, liquidTotal);
 
     const hist = healthHistory(st.snapshots, today, buildSnapshot(sum));
     const fig = monthFigures(now);
@@ -308,7 +317,7 @@ function healthCompute(st, now){
       cards: cardRows.map(r => ({ name: r.label, off: r.due_in_days })), freshness
     }, th);
     return {
-      today, th, summary: sum, health, portfolio: pf, freshness, triggers, upcoming, trip: tripOut,
+      today, th, summary: sum, liquidTotal, liquidSymbols: pf.liquid_symbols, health, portfolio: pf, freshness, triggers, upcoming, trip: tripOut,
       top_single_holding_pct: pf.top ? pf.top.pct : null, top_single_holding_symbol: pf.top ? pf.top.symbol : null,
       spending: { month_progress_pct: pace.month_progress_pct, pace: pace.pace, over_budget_categories: overBudget },
       ws: st.wealthSettings || defaultWealthSettings(),
@@ -344,7 +353,7 @@ function buildBriefingPayload(st, now){
   };
   if(c.ws.briefingShareAmounts === true){
     const s = c.summary;
-    payload.amounts = { net_worth: Math.round(s.net), liquid: Math.round(s.cashTotal), liabilities: Math.round(s.debtTotal),
+    payload.amounts = { net_worth: Math.round(s.net), liquid: Math.round(c.liquidTotal), liabilities: Math.round(s.debtTotal),
       upcoming_thb: Math.round(c.upcoming.reduce((t, u) => t + (u.amount || 0), 0)) };
   }
   return payload;
