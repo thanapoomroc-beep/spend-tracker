@@ -13,6 +13,7 @@ const W_MASK = '฿••••';
 const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>';
 const ICON_EYE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c1-2.5 5-7 10-7s9 4.5 10 7c-1 2.5-5 7-10 7S3 14.5 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_EYE_OFF = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4.5 10 7a12.6 12.6 0 0 1-3.2 4.2M6.6 6.6C4.3 8 2.7 10.2 2 12c1 2.5 5 7 10 7a9.6 9.6 0 0 0 4.4-1"/></svg>';
+const ICON_MORE = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/></svg>';
 const ICON_BACK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
 
 /* ---------- Formatting (every baht amount goes through wm so the eye button can mask it) ---------- */
@@ -240,7 +241,7 @@ function wealthAccountRow(a){
   if(a.hasHoldings) sub = `${a.holdingCount} ตัว ${a.asOf ? wAgeText(a.asOf) : 'ต้องใส่ราคา'}`;
   else sub = wAgeText(a.asOf);
   const pill = a.stale ? '<span class="w-pill warn">ข้อมูลเก่า</span>' : '';
-  return `<button type="button" class="w-row" data-act="acct" data-id="${wEsc(a.id)}"><span class="w-main"><span class="w-name">${wEsc(a.name)}</span><span class="w-sub">${wEsc(sub)}</span></span>${pill}<span class="w-amt">${wm(wMoney(a.value))}</span>${ICON_CHEV}</button>`;
+  return `<button type="button" class="w-row" data-act="acct" data-id="${wEsc(a.id)}"><span class="w-main"><span class="w-name">${wEsc(a.name)}</span><span class="w-sub">${wEsc(sub)}</span></span>${pill}<span class="w-amt">${wm(wMoney(a.value))}${a.dayPct !== null && a.dayPct !== undefined ? `<small class="${wDir(a.dayTHB)}">${wm(wPct(a.dayPct))}</small>` : ''}</span>${ICON_CHEV}</button>`;
 }
 function wealthDebtSub(d){
   if(d.overridden) return 'ยอดจริง ' + wAgeText(d.asOf);
@@ -275,7 +276,7 @@ function renderWealthMain(sum){
     h += '<button type="button" class="secondary w-add" data-act="add">+ เพิ่มบัญชี</button>';
     if(sum.hidden.length){
       h += `<details class="more w-hidden"><summary><span>บัญชีที่ซ่อนไว้ (${sum.hidden.length})</span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>` +
-        sum.hidden.map(a => `<div class="w-row"><span class="w-main"><span class="w-name">${wEsc(a.name)}</span><span class="w-sub">${GROUP_LABEL[a.group]}</span></span><button type="button" class="secondary" style="width:auto;" data-act="unhide" data-id="${wEsc(a.id)}" aria-label="แสดง ${wEsc(a.name)} อีกครั้ง">แสดงอีกครั้ง</button></div>`).join('') + '</details>';
+        sum.hidden.map(a => `<div class="w-row"><span class="w-main"><span class="w-name">${wEsc(a.name)}</span><span class="w-sub">${GROUP_LABEL[a.group]}</span></span><button type="button" class="icon-btn w-more" data-act="acct-menu" data-id="${wEsc(a.id)}" aria-label="จัดการบัญชี ${wEsc(a.name)}" aria-haspopup="dialog">${ICON_MORE}</button><button type="button" class="secondary" style="width:auto;" data-act="unhide" data-id="${wEsc(a.id)}" aria-label="แสดง ${wEsc(a.name)} อีกครั้ง">แสดงอีกครั้ง</button></div>`).join('') + '</details>';
     }
     h += '<div class="w-foot">ราคาดึงอัตโนมัติ หุ้นไทยบางวันอาจต้องใส่เอง</div>';
   }
@@ -350,10 +351,10 @@ function renderHoldingsView(sum){
   const el = $w('wealthHoldings');
   if(!a){ el.innerHTML = ''; return; }
   const rows = a.holdings;
-  let h = `<div class="w-backrow"><button type="button" class="icon-btn" data-act="back" aria-label="กลับ">${ICON_BACK}</button><h1>${wEsc(a.name)}</h1><span class="w-kind">${GROUP_LABEL[a.group]}</span></div>`;
+  let h = `<div class="w-backrow"><button type="button" class="icon-btn" data-act="back" aria-label="กลับ">${ICON_BACK}</button><h1>${wEsc(a.name)}</h1><span class="w-kind">${GROUP_LABEL[a.group]}</span><button type="button" class="icon-btn w-more" data-act="acct-menu" data-id="${wEsc(a.id)}" aria-label="จัดการบัญชี" aria-haspopup="dialog">${ICON_MORE}</button></div>`;
   if(rows.length){
     const plLine = a.cost > 0 ? `ต้นทุน ${wm(wMoney(a.cost))} <span class="${wDir(a.pl)}">${a.pl >= 0 ? 'กำไร' : 'ขาดทุน'} ${wm(wPlText(a.pl, a.plPct))}</span>` : '';
-    h += `<div class="card w-sum"><div class="k">มูลค่าตอนนี้</div><div class="v">${wm(wMoney(a.value))}</div><div class="m">${plLine}</div></div>`;
+    h += `<div class="card w-sum"><div class="k">มูลค่าตอนนี้</div><div class="v">${wm(wMoney(a.value))}</div><div class="m">${plLine}</div>${a.dayTHB !== null ? `<div class="m w-dayline">จากราคาปิดก่อนหน้า <span class="${wDir(a.dayTHB)}">${wm(wSigned(a.dayTHB) + (a.dayPct !== null ? ' (' + wPct(a.dayPct) + ')' : ''))}</span>${a.dayMissing > 0 ? ` <span class="w-dim">ไม่รวม ${a.dayMissing} ตัวที่ไม่มีราคาก่อนหน้า</span>` : ''}</div>` : ''}</div>`;
     h += priceBarHtml();
     h += '<div class="card w-list">' + rows.map(r => {
       const hd = r.holding;
@@ -362,7 +363,10 @@ function renderHoldingsView(sum){
       else if(r.missingFx) right = `<span class="w-sub">ต้องใส่เรต ${wEsc(r.priceCurrency)}</span>`;
       else right = `<span>${wm(wMoney(r.value))}</span>` + (r.pl !== null ? `<small class="${wDir(r.pl)}">${wm(wPlText(r.pl, r.plPct))}</small>` : '');
       if(r.stale) sub2 = '<span class="w-pill warn">ข้อมูลเก่า</span>';
-      return `<button type="button" class="w-row" style="min-height:64px;" data-act="hold-edit" data-id="${wEsc(hd.id)}"><span class="w-main"><span class="w-name" style="font-weight:600;">${wEsc(holdingName(hd))}</span><span class="w-sub">${wEsc(holdingQty(r))}</span>${priceSrcText(r) ? `<span class="w-sub">${wEsc(priceSrcText(r))}</span>` : ''}</span>${sub2}<span class="w-amt">${right}</span>${ICON_CHEV}</button>`;
+      const dayHtml = r.dayPct !== null && r.dayPct !== undefined
+        ? (wealthHidden ? ` <span class="w-day">${W_MASK}</span>`
+          : ` <span class="w-day ${wDir(r.dayTHB)}" role="img" aria-label="เปลี่ยนจากราคาปิดก่อนหน้า ${wPct(r.dayPct)}">${wPct(r.dayPct)}</span>`) : '';
+      return `<button type="button" class="w-row" style="min-height:64px;" data-act="hold-edit" data-id="${wEsc(hd.id)}"><span class="w-main"><span class="w-name" style="font-weight:600;">${wEsc(holdingName(hd))}</span><span class="w-sub">${wEsc(holdingQty(r))}${dayHtml}</span>${priceSrcText(r) ? `<span class="w-sub">${wEsc(priceSrcText(r))}</span>` : ''}</span>${sub2}<span class="w-amt">${right}</span>${ICON_CHEV}</button>`;
     }).join('') + '</div>';
   }else{
     h += '<div class="card w-empty"><div class="w-empty-t">ยังไม่มีรายการ</div><p>เพิ่มหุ้น กองทุน ทอง หรือคริปโตทีละตัว แอปจะคูณจำนวนกับราคาให้เอง</p></div>';
@@ -370,8 +374,6 @@ function renderHoldingsView(sum){
   h += `<div class="w-btnrow"><button type="button" class="secondary" data-act="hold-add">+ เพิ่มตัว</button>${rows.length ? '<button type="button" data-act="hold-prices">อัปเดตราคา</button>' : ''}</div>`;
   const newest = rows.map(r => dayOfStamp(r.priceAt)).filter(Boolean).sort().pop();
   h += `<div class="w-foot">${newest ? 'ราคาล่าสุดใส่เมื่อ ' + wEsc(fmtThaiDate(newest)) + ' แอปคูณจำนวนให้เอง' : 'ใส่ราคาแล้วแอปจะคูณจำนวนให้เอง'}</div>`;
-  h += '<button type="button" class="linkbtn w-rename" data-act="rename-acct" data-id="' + wEsc(a.id) + '">แก้ชื่อบัญชี</button>';
-  if(!a.archived) h += '<button type="button" class="link-danger" data-act="hide-acct" data-id="' + wEsc(a.id) + '">ซ่อนบัญชีนี้</button>';
   el.innerHTML = h;
 }
 
@@ -448,7 +450,8 @@ function openBalanceSheet(accId, opener){
     (a.group === 'invest' ? '<button type="button" class="secondary" id="ws-itemize" style="margin-top:10px;">จดเป็นรายตัว (หุ้น กองทุน ทอง)</button>' : '') +
     (hist.length ? `<div class="w-hist"><h3>ประวัติยอด</h3>${hist.slice(0, 6).map(b => `<div class="w-hist-row"><span>${wEsc(fmtThaiDate(b.date))}</span><span>${wm(wMoney(b.value))}</span></div>`).join('')}</div>` : '') +
     '<button type="button" class="linkbtn w-rename" id="ws-rename">แก้ชื่อบัญชี</button>' +
-    '<button type="button" class="link-danger" id="ws-hide">ซ่อนบัญชีนี้</button>';
+    '<button type="button" class="link-danger" id="ws-hide">ซ่อนบัญชีนี้</button>' +
+    '<button type="button" class="link-danger" id="ws-delacct">ลบบัญชีนี้</button>';
   openWSheet(html, { focus: '#ws-amount', restore: opener });
   const amt = $w('ws-amount');
   const delta = () => {
@@ -460,6 +463,7 @@ function openBalanceSheet(accId, opener){
   wBind('ws-save', 'click', () => saveBalance(accId));
   wBind('ws-itemize', 'click', () => { closeWSheet(); openHoldings(accId); });
   wBind('ws-hide', 'click', () => askHideAccount(accId));
+  wBind('ws-delacct', 'click', () => openDeleteAccountSheet(accId, opener));
   wBind('ws-rename', 'click', () => { wSheetRestore = null; closeWSheet(); openRenameSheet(a, 'acct', wSheetFocusSel('acct', a.id)); });
   amt.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); saveBalance(accId); } });
 }
@@ -496,6 +500,60 @@ async function unhideAccount(accId){
   if(!a) return;
   a.archived = false; a.updatedAt = nowISO();
   await wealthCommit();
+}
+
+/* ----- Account menu (⋯) and delete (2.9.0) ----- */
+function openAccountMenu(accId, opener){
+  const a = findWAccount(accId);
+  if(!a) return;
+  const html = wSheetHead('จัดการบัญชี', a.name) +
+    `<div class="w-menu">
+      <button type="button" class="secondary" id="wm-rename">แก้ชื่อบัญชี</button>
+      <button type="button" class="secondary" id="wm-hide">${a.archived ? 'แสดงบัญชีนี้' : 'ซ่อนบัญชีนี้'}</button>
+      <button type="button" class="secondary w-danger" id="wm-del">ลบบัญชีนี้</button>
+    </div>
+    <div class="modal-actions"><button type="button" class="secondary" id="ws-cancel">ปิด</button></div>`;
+  openWSheet(html, { focus: '#wm-rename', restore: opener });
+  wBind('ws-cancel', 'click', closeWSheet);
+  wBind('wm-rename', 'click', () => { wSheetRestore = null; closeWSheet(); openRenameSheet(a, 'acct', wSheetFocusSel('acct-menu', a.id)); });
+  wBind('wm-hide', 'click', () => {
+    if(a.archived){ wSheetRestore = null; closeWSheet(); unhideAccount(accId); }
+    else askHideAccount(accId);
+  });
+  wBind('wm-del', 'click', () => openDeleteAccountSheet(accId, opener));
+}
+function openDeleteAccountSheet(accId, opener){
+  const a = findWAccount(accId);
+  if(!a) return;
+  const hs = a.group === 'invest' ? liveHoldingsOf(accId) : [];
+  const targets = wLive(state.accounts).filter(x => x.group === 'invest' && !x.archived && x.id !== accId)
+    .sort((x, y) => ((x.sortOrder || 0) - (y.sortOrder || 0)) || (x.name < y.name ? -1 : 1));
+  let mode = hs.length && targets.length ? 'move' : 'drop';
+  let holdPart = '';
+  if(hs.length){
+    const opts = targets.length ? [{ v:'move', label:'ย้ายไปบัญชีอื่น' }, { v:'drop', label:'ลบทิ้งด้วย' }] : [{ v:'drop', label:'ลบทิ้งด้วย' }];
+    holdPart = `<div class="w-lab" id="ws-delLab">หุ้นในบัญชีนี้ ${hs.length} ตัว</div>` + wRadioHtml('ws-delLab', opts, mode, 'w-seg2') +
+      (targets.length ? `<div id="ws-moveWrap"><label for="ws-moveTo" class="w-lab">ไปบัญชี</label><select id="ws-moveTo">${targets.map(t => `<option value="${wEsc(t.id)}">${wEsc(t.name)}</option>`).join('')}</select></div>` : '');
+  }
+  const html = wSheetHead('ลบบัญชีนี้ไหม?') +
+    `<p class="w-del-desc">${wEsc(a.name)} จะหายจากหน้าทรัพย์สิน กราฟย้อนหลังไม่เปลี่ยน</p>` + holdPart +
+    '<div class="modal-actions"><button type="button" class="secondary" id="ws-cancel">ยกเลิก</button><button type="button" class="danger" id="ws-save">ลบ</button></div>';
+  openWSheet(html, { focus: hs.length ? '[role=radio][tabindex="0"]' : '#ws-cancel', restore: opener });
+  const sync = () => { const m = $w('ws-moveWrap'); if(m) m.hidden = mode !== 'move'; };
+  sync();
+  const grp = $w('wSheetCard').querySelector('[role=radiogroup]');
+  if(grp) wRadioBind(grp, v => { mode = v; sync(); });
+  wBind('ws-cancel', 'click', closeWSheet);
+  wBind('ws-save', 'click', async () => {
+    const moveTo = mode === 'move' && $w('ws-moveTo') ? $w('ws-moveTo').value : null;
+    const undo = deleteWealthAccount(state, accId, moveTo ? { moveTo } : null);
+    if(!undo){ closeWSheet(); return; }
+    if(wealthView === accId) wealthView = null;
+    wSheetRestore = null;
+    closeWSheet();
+    await wealthCommit();
+    flashToast(`ลบ ${a.name} แล้ว`, true, { label: 'เลิกทำ', onClick: async () => { restoreWealthRecords(state, undo); await wealthCommit(); } });
+  });
 }
 
 /* ----- A manual debt ----- */
@@ -666,6 +724,9 @@ function openHoldingSheet(accId, holdingId, opener){
   let liq = !!(edit && edit.liquid);
   const TYPES = ASSET_TYPES.map(t => ({ v:t, label:ASSET_LABEL[t] }));
   const curDefault = t => t === 'foreign_stock' ? 'USD' : 'THB';
+  // Moving a holding: every live, shown invest account, plus the current one even when it is hidden.
+  const acctChoices = edit ? wLive(state.accounts).filter(x => x.group === 'invest' && (!x.archived || x.id === accId))
+    .sort((x, y) => ((x.sortOrder || 0) - (y.sortOrder || 0)) || (x.name < y.name ? -1 : 1)) : [];
   const html = wSheetHead(edit ? holdingName(edit) : 'เพิ่มตัว', acc.name) +
     '<div class="w-lab" id="ws-typeLab">ประเภท</div>' + wRadioHtml('ws-typeLab', TYPES, type, 'w-seg3') +
     `<div id="ws-symWrap"><label for="ws-sym" class="w-lab" id="ws-symLab"></label><input id="ws-sym" maxlength="24" autocomplete="off" autocapitalize="characters" aria-describedby="ws-err"></div>
@@ -678,6 +739,7 @@ function openHoldingSheet(accId, holdingId, opener){
     <div class="field-hint">กองทุนและ ETF ไม่นับเป็นหุ้นรายตัวตอนดูความเสี่ยง</div>
     <label class="w-check" for="ws-liq"><input type="checkbox" id="ws-liq"><span>นับเป็นเงินสำรอง</span></label>
     <div class="field-hint">ขายได้เร็ว ราคาแทบไม่ขยับ เช่น SGOV หรือกองทุนตลาดเงิน</div>
+    ${acctChoices.length >= 2 ? `<label for="ws-acct" class="w-lab">บัญชี</label><select id="ws-acct">${acctChoices.map(x => `<option value="${wEsc(x.id)}"${x.id === accId ? ' selected' : ''}>${wEsc(x.name)}</option>`).join('')}</select>` : ''}
     ${edit ? '' : `<label for="ws-price" class="w-lab" id="ws-priceLab" style="margin-top:4px;"></label><input id="ws-price" inputmode="decimal" autocomplete="off" aria-describedby="ws-priceHint ws-err">
     <div class="field-hint" id="ws-priceHint" hidden>ใช้จนกว่าจะดึงราคาใหม่ได้</div>
     <div id="ws-fxWrap" hidden><div class="w-fx-row"><label for="ws-fx" id="ws-fxLab"></label><input id="ws-fx" inputmode="decimal" autocomplete="off" aria-label="เรตแลกเงิน"></div></div>`}
@@ -744,7 +806,10 @@ function openHoldingSheet(accId, holdingId, opener){
     if(!isFinite(units) || !(units > 0)) return wErr('ใส่จำนวนมากกว่า 0', 'ws-units');
     if(!isFinite(cost) || cost < 0) return wErr('ใส่ต้นทุนเป็นตัวเลข 0 ขึ้นไป', 'ws-cost');
     const stamp = nowISO();
+    let movedTo = null;
     if(edit){
+      const sel = $w('ws-acct');
+      if(sel && sel.value !== edit.accountId){ const t = findWAccount(sel.value); if(t && t.group === 'invest'){ edit.accountId = t.id; movedTo = t; } }
       edit.assetType = type; edit.symbol = symbol;
       edit.units = units; edit.cost = round2(cost); edit.currency = cur; edit.updatedAt = stamp;
       if(type === 'gold') edit.unit = gunit; else delete edit.unit;
@@ -765,6 +830,7 @@ function openHoldingSheet(accId, holdingId, opener){
     wSheetRestore = null;
     closeWSheet();
     await wealthCommit();
+    if(movedTo) flashToast(`ย้าย ${holdingName(edit)} ไป ${movedTo.name} แล้ว`, true);
     refreshPricesForNewHolding();
   });
 }
@@ -856,6 +922,7 @@ function wealthClick(ev){
   else if(act === 'debt') openDebtSheet(id, t);
   else if(act === 'add') openAddSheet(t);
   else if(act === 'unhide') unhideAccount(id);
+  else if(act === 'acct-menu') openAccountMenu(id, t);
   else if(act === 'back') wealthBack();
   else if(act === 'hold-add') openHoldingSheet(wealthView, null, t);
   else if(act === 'hold-edit') openHoldingSheet(wealthView, id, t);

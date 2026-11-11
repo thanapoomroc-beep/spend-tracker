@@ -1,4 +1,4 @@
-# Spend Tracker → Personal Intelligence — Roadmap (v1 → v5) · rev 4
+# Spend Tracker → Personal Intelligence — Roadmap (v1 → v5) · rev 5
 
 ## เป้าหมายปลายทาง (North Star)
 
@@ -30,7 +30,7 @@
 | phase 4 บัตร (2.5.0) | ✅ เสร็จ | TTB `ค้างโอนคืน` + KBANK รอบบิล/วันครบกำหนด | ไม่ | ยอดบัตรค้างจ่าย = หนี้ระยะสั้น |
 | v4 | 🔨 W1+W2 เสร็จ (2.6.0) ถัดไป W3 | **Wealth (แท็บ `ทรัพย์สิน`): บัญชี พอร์ต หนี้สิน net worth ตัวชี้วัดสุขภาพการเงิน** | W2 ราคา (Vercel), W3 sync เข้ารหัส (Supabase) | ข้อมูลส่วนตัวครบ = ฐานของ personalization |
 | v5 | 🎯 | **ต่อเข้า morning briefing: triggers + บริบทการเงินแบบสรุป (คำนวณบนมือถือ)** | เก็บ payload อย่างเดียว | ตอบ "กระทบเราอย่างไร / ควรทำอะไร" |
-| v3b | 📋 | อ่านสลิป, iOS Shortcut (sync ย้ายไป v4 W3) | **ใช่** | ลดการพิมพ์เอง |
+| v3b | 📋 ถัดไป (2.10.0) | สลิปอัตโนมัติ: Shortcut อ่านสลิปใหม่ตอนปิดแอปธนาคาร ส่งข้อความเข้า inbox แอปดึงมาเป็น `รอตรวจ` | inbox บน Vercel | ลดการพิมพ์เอง |
 
 ลำดับและ dependency:
 - **แยกไฟล์ → phase 4 บัตร → v4 (W1+W2 → W3) → v5 → v3b (W4 ตัดออก 2026-11-02)**
@@ -39,6 +39,12 @@
 - v3b ทำหลังสุด และใช้ sync เข้ารหัสของ v4 W3 แทน S1 เดิม
 
 วิธีทำงานกับ Claude Code: ทำตามขั้นตอนใน `CLAUDE.md` (วางแผนด้วย skill → scrutinize → ให้ Sonnet sub-agent ลงมือ → ตรวจเอง → push เมื่อเจ้าของสั่ง) ถ้า CLAUDE.md กับไฟล์นี้ขัดกัน ให้ยึด CLAUDE.md
+
+### สิ่งที่เปลี่ยนใน rev 5 (สลิปอัตโนมัติ, 2026-11-11)
+- v3b เขียนใหม่: ไม่ต้องกด share เอง automation ทำงานตอนปิด K PLUS / ttb touch แล้วหาสลิปใหม่ในอัลบั้ม ไม่มีก็จบเงียบๆ
+- อ่านข้อความบนมือถือ (Extract Text) ส่งแค่ข้อความเข้า `/api/slip` แอปแยกยอดเอง ไม่ใช้ Claude อ่านรูป ไม่มี Edge Function, OTP, Supabase Auth
+- รายการจากสลิปนับเข้ายอดทันที ติดป้าย `รอตรวจ` ช่องทางจ่าย `เงินสด`
+- ตัด S1–S3 เดิมทิ้ง
 
 ### สิ่งที่เปลี่ยนใน rev 4 (local-first, 2026-10-30)
 - เปลี่ยนลำดับเป็น แยกไฟล์ → phase 4 → v4 → v5 → v3b; อัปเดตสถานะ (v2, v3a เสร็จแล้ว)
@@ -183,119 +189,126 @@ Acceptance: on 28 Oct, Spotify dueDay 2 → `อีก 5 วัน · Spotify`; 
 
 ---
 
-## v3b — Backend: slip reading, iOS Shortcut (sync moved to v4 W3)
+## v3b — Slip inbox via iOS Shortcut (rev 5, 2026-11-11)
 
-> ⚠️ Owner actions before coding:
-> 1. Create a free Supabase project; provide `SUPABASE_URL` and the **publishable** key (`sb_publishable_…`, safe in the client because of Row Level Security). Use the new publishable/secret keys, **not** the legacy `anon`/`service_role` JWT keys — Supabase is deprecating those by end of 2026. Disable the legacy keys in Settings → API Keys once the app works.
-> 2. Provide an Anthropic API key, stored **only** as a Supabase Edge Function secret — never in `index.html` or the repo. The Supabase **secret** key (`sb_secret_…`) is likewise server-side only.
-> 3. Turn on MFA for the Supabase account (it is the master key to all data).
-> 4. Site stays on GitHub Pages at the same URL.
+> Owner decisions 2026-11-11:
+> - No share-sheet step. A Personal Automation runs when **K PLUS** or **ttb touch** is closed, finds new slips in that app's Photos album, and does nothing when there are none.
+> - The slip is read **on the phone** (iOS `Extract Text from Image`). Only the text leaves the phone; images never do. No Claude/Anthropic call, no Edge Functions, no Supabase Auth or OTP.
+> - Slip entries **count at once** (they are already spent) and carry a `รอตรวจ` tag until the owner checks them.
+> - Payment method: the existing `เงินสด` (`cash`).
+> - This replaces S1–S3 of rev 4. Sync stays the encrypted W3 backup.
 
-### Global rules for v3b
-- **rev 4: S1 below is superseded** by the encrypted v4 W3 sync (the server can't read amounts, so no plaintext `entries` tables). Kept for reference: OTP login (not magic link) and the multi-writer acceptance test still apply to W3.
-- The app must keep working **fully offline and without login**, exactly like v3a. Sync is opt-in.
-- `localStorage` stays the local cache; the server is a replica.
-- `@supabase/supabase-js` v2 (if used) is **self-hosted** in `vendor/` like Chart.js, pinned exact version, in the SW `ASSETS` list. No CDN.
-- No secrets in the repo. SQL in `supabase/migrations/*.sql`; functions in `supabase/functions/<name>/index.ts`.
+### Flow
+1. Shortcut `ส่งสลิป` (one shortcut; input: `source` = `kplus` or `ttb`, plus the album name). Two Personal Automations call it: "When K PLUS is closed" and "When ttb touch is closed", both `Run Immediately`, `Notify When Run` off.
+2. Read `slip-last-<source>.txt` from iCloud Drive › Shortcuts (an ISO time). Missing → now − 10 min.
+3. `Find Photos`: album = the bank's album, Date Added is after that time, sort by Date Added (oldest first), limit 5. None → stop (no network call).
+4. For each photo: `Extract Text from Image` → `POST {service}/api/slip` with `Authorization: Bearer <SLIP_TOKEN>` and JSON `{ "source": "kplus", "text": "…", "photo_at": "<the photo's date, Format Date → ISO 8601>" }`.
+   - Response is not `{ "ok": true }` (offline, 4xx/5xx) → stop **without** moving the marker, so the next run retries.
+   - Otherwise write that photo's Date Added to `slip-last-<source>.txt`.
+5. No notification. The app reports what it added.
 
-### S1. Account + cross-device sync
+### Server (private repo `spend-tracker-prices`)
+- Table `slip_inbox` in `supabase/schema.sql`:
+  - `id bigint identity pk`, `created_at timestamptz default now()`
+  - `source text check (source in ('kplus','ttb'))`, `photo_at timestamptz`
+  - `text text not null` (≤ 4000 chars), `text_hash text not null unique`
+  - RLS on, no policies.
+- `POST /api/slip`, called by the Shortcut:
+  - `Bearer SLIP_TOKEN` (new env var). `guard()` hard-codes `PRICE_TOKEN` (`lib/guard.js:31`), so give it a token option (default `PRICE_TOKEN`) instead of copying it. Return 500 `misconfigured` if `SLIP_TOKEN` equals `PRICE_TOKEN` or `BRIEFING_TOKEN`. `PRICE_TOKEN`/`BRIEFING_TOKEN` get 401 here, and `SLIP_TOKEN` gets 401 on every other endpoint.
+  - No Origin header expected; a present, disallowed Origin gets 403. Body ≤ 16 KB.
+  - `text_hash` = SHA-256 of the whitespace-normalised text. A known hash → 200 `{ ok: true, duplicate: true }`; a new row → 200 `{ ok: true }`. More than 200 rows waiting → 429 `{ error: 'inbox_full' }`.
+  - After an insert, delete rows older than 14 days. The server never parses or logs the text.
+- `POST /api/slip-inbox`, called by the app (same `guard` as `/api/prices`: `PRICE_TOKEN` + allowed origin):
+  - `{ op: 'list' }` → `{ items: [{ id, created_at, source, photo_at, text }] }`, oldest first, max 50.
+  - `{ op: 'ack', ids: [≤ 50 ints] }` → deletes them → `{ deleted: n }`.
+- Errors, CORS, the 8 s Supabase timeout and `503 storage_down` follow `/api/backup`. Add tests (`tests/slip.test.mjs`), a `scripts/slip-check.sh` and a README section.
+- Privacy: amounts, receiver names and the bank's masked account numbers sit in plain text on Supabase until the app pulls them (normally within minutes, at most 14 days). This is the one place the server sees amounts. Agreed when the inbox was planned in rev 4; restated here for the owner.
 
-**Login — email OTP code, not magic link.** On iPhone, a Home Screen app and Safari have separate storage; a magic link opens Safari, so the session would never reach the app.
-- Settings → section `ซิงค์ข้อมูล`: email input → `ส่งรหัสเข้าสู่ระบบ` (`signInWithOtp({ email, options: { shouldCreateUser: true } })`) → 6-digit code input (`inputmode="numeric"`, `autocomplete="one-time-code"`) → `verifyOtp({ email, token, type: 'email' })`.
-- Configure the Supabase email template to include `{{ .Token }}`.
-- Logged in: show email, `ซิงค์ล่าสุด {เวลา}`, `ซิงค์ตอนนี้`, `ออกจากระบบ`.
+### App (2.10.0)
+New files, all classic scripts in the shared global scope:
+- `js/slip-core.js`: pure parse, dedupe and category guess. No DOM.
+- `js/slip-net.js`: pull/ack and scheduling.
+- `js/slip-ui.js`: review card, รายการ tag/filter, settings section.
 
-**Database — one row per record** (not one JSON document per user; whole-document upserts lose writes when two devices or the Shortcut write at the same time):
+Load order: `slip-core` and `slip-net` after `briefing-net`; `slip-ui` after `briefing-ui`. Each file gets a `<script … onerror>` tag and goes into `JS_FILES` in `sw.js`.
 
-```sql
-create table public.entries (
-  id text not null,
-  user_id uuid not null references auth.users on delete cascade default auth.uid(),
-  date date not null,
-  amount numeric(12,2) not null check (amount > 0),
-  category text not null,
-  note text not null default '',
-  slip_ref text,
-  needs_review boolean not null default false,
-  deleted boolean not null default false,
-  updated_at timestamptz not null,
-  primary key (user_id, id)
-);
-create unique index entries_user_slip on public.entries (user_id, slip_ref) where slip_ref is not null and not deleted;
+**Data (additive; `migrateState()` handles every field):**
+- `entry.slipRef`: string, 1–80 chars, otherwise deleted. `entry.needsReview`: `true`, otherwise deleted.
+- `state.slipSettings = { enabled: false, handled: [{ ref, at }], unreadable: [{ key, at, source, photoAt }] }`.
+  - `handled` = every slip added or dismissed, newest 500, so a dismissed slip never returns.
+  - `unreadable` = slips that couldn't be parsed, newest 20. The slip text itself is never stored.
+- Status in localStorage `spendTrackerSlip` `{ lastPullAt, lastError, lastAdded }`, never in state.
+- Uses the existing price-service URL + token (`spendTrackerPriceService`). No new secret in the app; `SLIP_TOKEN` lives only in the Shortcut.
 
-create table public.month_settings (
-  user_id uuid not null references auth.users on delete cascade default auth.uid(),
-  month text not null,              -- 'YYYY-MM'
-  data jsonb not null,              -- { income, fixedItems }
-  updated_at timestamptz not null,
-  primary key (user_id, month)
-);
+**Parser `parseSlipText(text, source)`** → `{ ok, amount, date, time, receiver, ref, confidence }`:
+- amount: the number after `จำนวน` / `จำนวนเงิน` / `Amount`, or before `บาท` / `THB`; `1,234.50` → 1234.5; must be > 0.
+- date: Thai short months `ม.ค.`…`ธ.ค.` and full names, BE years `69` / `2569` → 2026, English months too; time `HH:MM`.
+- ref: the token after `เลขที่รายการ` / `รหัสอ้างอิง` / `Ref` / `Transaction ID` (`[A-Za-z0-9]{8,}`). When there is no ref, the key is `h:{source}:{date}:{time}:{amount}`.
+- receiver: per-bank rule from the fixtures (the name block after the sender, `ไปยัง`, `ถึง`, `To`).
+- `ok` needs amount + date; otherwise the slip goes to `unreadable`.
+- Fixtures: the OCR text of at least 6 real slips, with names and account numbers masked. 3 from K PLUS (incl. a QR payment to a shop) and 3 from ttb touch (incl. a transfer to the owner's own account and one TTB card repayment). Stored in `tests/fixtures/slips/*.txt`; tests in `tests/slip.test.js`.
 
-create table public.budget_settings (
-  user_id uuid not null references auth.users on delete cascade default auth.uid(),
-  month text not null,
-  data jsonb not null,              -- { [category]: number }
-  updated_at timestamptz not null,
-  primary key (user_id, month)
-);
+**Pull (`slip-net.js`):**
+- Runs on open (after the first render), on `visibilitychange` → visible, and from `ดึงตอนนี้`. One in-flight promise at a time (like `priceInFlight`, `wealth-prices.js:8`), so open + visible can never add a slip twice. At most every 2 min; only when online, `enabled` and the price service is configured. 10 s timeout. Every failure is silent apart from the status.
+- For each item: parse.
+  - Key already in `handled`, or an entry already has that `slipRef` → skip.
+  - Otherwise add the entry `{ id, date: slip date, amount, category: guess, note: receiver || '', paymentMethod: 'cash' (only if it exists and is not archived), slipRef, needsReview: true, updatedAt }` and push the key to `handled`.
+  - Slip entries are never trip entries.
+- `saveData()` (`core.js:359`) swallows storage errors and returns nothing. Make it return `true`/`false` (existing callers ignore the value).
+- One `saveData()`, then `ack` every listed id (duplicates and unreadable included), and only if the write to localStorage succeeded.
+- Then `render()` and a toast `เพิ่มจากสลิป 2 รายการ` with the action `ตรวจ`, which scrolls to the review card.
+- Category guess: the newest non-trip entry without `needsReview` whose note equals the receiver (trimmed, case-insensitive), if its category still exists and is not archived. Otherwise `อื่นๆ` if it exists and is not archived (the owner can rename or archive it), else the first active category.
 
-create table public.categories (
-  user_id uuid not null references auth.users on delete cascade default auth.uid(),
-  name text not null,
-  slot int,
-  archived boolean not null default false,
-  sort_order int not null,
-  updated_at timestamptz not null,
-  primary key (user_id, name)
-);
-```
-Enable RLS on every table with a policy `using (auth.uid() = user_id) with check (auth.uid() = user_id)`.
+**Review UI:**
+- **วันนี้:** card `สลิปรอตรวจ` **below** the entry card (never above it: `#addEntryBtn` must stay above the tab bar at 375×812). Hidden when nothing waits. It shows in travel mode too.
+  - Header `สลิปรอตรวจ 2 รายการ`.
+  - Each row: receiver (or `ไม่มีชื่อผู้รับ`), muted metadata `11 พ.ย. 14:32 · K PLUS`, amount and category. Tapping the row opens the existing edit modal.
+  - Row actions (44px):
+    - `ถูกแล้ว` clears `needsReview`.
+    - `ไม่ใช่รายจ่าย` opens confirm `ลบรายการนี้ไหม?`, then deletes the entry; the key stays in `handled`.
+    - On every slip, when a `repay` card exists, also `โอนคืนบัตร` (the TTB card is repaid to someone else's account from either bank app): confirm `บันทึกเป็นโอนคืนบัตรไหม?`, then add a `cardPayments` row `{ methodId, date, amount }` and delete the entry.
+  - `ถูกทั้งหมด` when 2 or more wait.
+  - Unreadable slips (key `u:{server id}`): row `อ่านสลิปไม่ออก (K PLUS 14:32)` with `จดเอง` (focus the amount input, set the date) and `ปิด`.
+- **Edit modal:** `saveEdit()` (`edit-month.js:96`) edits the entry in place, so `slipRef` survives; add `delete e.needsReview` there.
+- **จดซ้ำ chips:** `repeatGroups()` (used by `trips.js:145`) skips `needsReview` entries.
+- **รายการ tab:** rows get a `รอตรวจ` tag (text, not colour only), and `#filterChips` gets a `รอตรวจ` chip.
+- **ตั้งค่า:** section `สลิปอัตโนมัติ` with:
+  - an on/off switch, disabled with a hint until `ราคาอัตโนมัติ` is set up;
+  - `ดึงล่าสุด 14:35`, or the last error in plain Thai;
+  - `ดึงตอนนี้`;
+  - a relative link to `docs/SHORTCUT_SETUP.md` (no `https://` in code).
+- The briefing and health maths treat slip entries like any other entry.
 
-**Sync algorithm (per table):**
-- Keep `lastSyncAt` in localStorage.
-- **Pull**: `select * where updated_at > lastSyncAt`. For each row, keep it if its `updated_at` is newer than the local copy (or no local copy).
-- **Push**: every local record with `updatedAt > lastSyncAt` → `upsert` by primary key, but only overwrite when the incoming `updated_at` is newer (use an RPC or `upsert` + a `before update` trigger that rejects older `updated_at`).
-- Deletes are tombstones (`deleted = true` + new `updated_at`); UI and maths ignore them. Purge tombstones older than 90 days.
-- Category rename = new category row + tombstone/archive of the old one + updated entries (each entry bumps `updated_at`).
-- Run on app open (logged in + online), 3 s after each local save (debounced), and on `ซิงค์ตอนนี้`.
-- First login on a device: push all local records, then pull — never wipe either side.
-- Toasts: `ซิงค์แล้ว` / `ยังไม่ได้ซิงค์ (ออฟไลน์) — จะลองใหม่อัตโนมัติ`.
+**Docs:** `docs/SHORTCUT_SETUP.md` (Thai; the repo is public, so placeholders only, never the real URL or token): set up both bank apps to save slips to Photos, build the shortcut step by step, add both automations, and paste `SLIP_TOKEN` and the service URL.
 
-Acceptance: phone offline adds entry A, Mac adds entry B, Shortcut adds entry C; phone comes online → all devices end with A, B, C. Delete on one device propagates. Two edits to the same entry → newer `updated_at` wins.
+### Owner actions
+1. In K PLUS and ttb touch, turn on saving slips to Photos, and note each album's exact name.
+2. Round 0 also checks, on the iPhone, which date filter `Find Photos` offers (Date Added, Creation Date, Date Taken) and that a slip saved by each bank app carries the save time. The marker uses that field.
+3. Run a throwaway shortcut (`Find Photos` → `Extract Text` → `Copy to Clipboard`) on 6 slips and paste the text into chat, names masked. This is Round 0 and drives the parser.
+4. In Vercel, add `SLIP_TOKEN` (32 random bytes) and redeploy. Run the new SQL in Supabase.
 
-### S2. Read transfer slips (อ่านสลิปโอนเงิน)
-Edge Function `parse-slip`:
-- Requires a valid user JWT.
-- Input `{ image: base64 JPEG }`. Client resizes to max 1600px long edge, JPEG ~0.8, via canvas.
-- Calls the Anthropic Messages API with the image; instruct it to return JSON only:
-  `{ "amount": number, "date": "YYYY-MM-DD", "time": "HH:MM"|null, "receiver": string|null, "bank": string|null, "ref": string|null, "confidence": "high"|"medium"|"low" }`.
-  Use a current vision-capable Claude model (check Anthropic docs for the current model ID; prefer a fast, low-cost tier). Thai slips use Buddhist-era years (2569) → convert to Gregorian (−543). Validate server-side; 422 on failure.
-- Rate limit 100 calls/user/day (`slip_usage` table, RLS).
-- Do not store images.
-
-Client:
-- `📷 สแกนสลิป` button in the entry form (logged in only; 44px; `aria-label="สแกนสลิปโอนเงิน"`) → `<input type="file" accept="image/*">` → status `กำลังอ่านสลิป...` (`aria-live`) → prefill amount, date, note (= receiver). User confirms with `เพิ่มรายการ`. Never auto-save from this button.
-- `confidence: low` → highlight amount + `ยอดเงินอาจอ่านไม่ถูก ตรวจสอบก่อนบันทึก`.
-- Error → `อ่านสลิปไม่สำเร็จ ลองถ่ายให้เห็นยอดเงินชัดขึ้น หรือกรอกเอง`.
-- Category suggestion: most recent non-deleted entry whose note equals the receiver → its category; else last-used.
-- Duplicate guard: entry stores `slipRef`; if it already exists → `openConfirm({ title: 'สลิปนี้บันทึกไปแล้ว', desc: '{date} · ฿{amount}', confirmLabel: 'บันทึกซ้ำ' })`.
-
-### S3. iOS Shortcut: share a slip → saved automatically
-- Table `api_tokens (id, user_id, token_hash text, scope text not null default 'slip' check (scope in ('slip','briefing')), label text, created_at, last_used_at, revoked boolean)` with RLS. Every Edge Function checks the scope it requires (`add-from-slip` → `slip`; v5 briefing read → `briefing`). Settings → `สร้างรหัสสำหรับ Shortcut` generates a random 32-byte token, shows it **once** with a copy button, stores only SHA-256. List tokens with `ยกเลิกรหัสนี้`.
-- Edge Function `add-from-slip`: `Authorization: Bearer <token>` → look up hash (reject revoked) → reuse S2 parsing → **add the parsed slip to a server inbox** (`slip_inbox`: amount, date, receiver, `slip_ref`, created_at; RLS). A known `slip_ref` → 409 `{ duplicate: true }`. Returns `{ amount, date }`. On open (online), the app pulls the inbox, adds each item as a `needsReview` entry (duplicate guard by `slipRef`), syncs it through W3, then deletes it from the inbox.
-- App: `needsReview` entries show a `รอตรวจ` badge; saving them in the edit modal clears the flag. Add a `รอตรวจ` filter chip to F5.
-- Write `SHORTCUT_SETUP.md` (Thai), step by step: Share Sheet input (Images) → Convert Image (JPEG) → Resize Image (1600) → Base64 Encode → Get Contents of URL (POST, JSON `{ "image": … }`, header `Authorization: Bearer <รหัส>`) → If duplicate → Show Notification `สลิปนี้บันทึกไปแล้ว`; else `บันทึก ฿{amount} แล้ว — เปิดแอปเพื่อตรวจหมวด`.
+### Rounds
+- **0.** Fixtures from the owner.
+- **1.** Server in `spend-tracker-prices`, by a Sonnet agent.
+- **2.** App 2.10.0: core + tests, net, UI, migration; same agent, two rounds.
+- **3.** `SHORTCUT_SETUP.md`, then the owner runs it end to end on the iPhone.
 
 ### v3b test checklist
-1. Logged out: identical to v3a, offline included.
-2. OTP login works inside the Home Screen app on iPhone and on desktop.
-3. The A/B/C multi-writer scenario passes; tombstones propagate; newer edit wins.
-4. RLS: a second account cannot read/write the first account's rows (all tables).
-5. `parse-slip` on ≥5 real slips from different Thai banks; BE→CE correct; low-confidence and error paths shown.
-6. Duplicate slip: in-app confirm; Shortcut gets 409.
-7. Revoked token → 401.
-8. No secrets in repo (`git grep -iE "sk-ant|sb_secret|service_role"` → nothing).
-9. RLS enabled on **every** table (including `slip_usage`, `api_tokens`); policies use `to authenticated` and `(select auth.uid())`; index on every `user_id` column.
+1. `node --test` passes. All 6 fixtures parse to the expected amount, date, time and ref; BE→CE is correct; a masked/garbled text → `ok: false`.
+2. Dedupe:
+   - Pulling the same inbox twice adds 0 the second time.
+   - A dismissed slip that reappears in the inbox is not re-added.
+   - Two photos of one slip (same ref, different text) add 1 entry.
+3. Ack only after a successful save: with `localStorage.setItem` throwing, nothing is acked and nothing is lost.
+4. Server:
+   - `SLIP_TOKEN` works only on `/api/slip`; `PRICE_TOKEN` only on `/api/slip-inbox`; wrong → 401.
+   - Duplicate text → `duplicate: true`. 201st waiting row → 429. Rows older than 14 days are purged.
+5. Migration: v1, 2.4, 2.8.1 backups import; entries without slip fields are unchanged; an invalid `slipRef`/`needsReview` is removed.
+6. วันนี้ at 375×812 with 3 waiting slips: `#addEntryBtn` stays above the tab bar (measure); no horizontal scroll; every action is ≥ 44px and labelled.
+7. Travel mode on: the review card still shows; slip entries are not trip entries.
+8. Offline or service down: no error banner, the app works, the status shows the reason, and the next pull retries.
+9. `grep -c "https://" index.html sw.js css/*.css js/*.js` = 0; the version test passes at 2.10.0.
+10. On the iPhone (owner): closing K PLUS without a transfer sends nothing; after a transfer, the entry appears within one open of the app; the marker file advances only on success.
 
 ---
 

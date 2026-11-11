@@ -46,7 +46,9 @@ function priceKey(assetType, symbol){ return assetType + ':' + String(symbol || 
 function effectivePrice(cache, key){
   const e = cache && cache[key];
   if(!e || !(e.price > 0)) return null;
-  return { price: e.price, currency: e.currency, at: e.at, source: e.source === 'manual' ? 'manual' : 'auto' };
+  const out = { price: e.price, currency: e.currency, at: e.at, source: e.source === 'manual' ? 'manual' : 'auto' };
+  if(out.source === 'auto' && e.prev > 0) out.prev = e.prev;   // previous close, native currency (2.9.0)
+  return out;
 }
 function setManualPrice(cache, key, price, currency, at){
   const prev = cache[key];
@@ -54,7 +56,7 @@ function setManualPrice(cache, key, price, currency, at){
   // Remember the auto price underneath so "use the automatic price" can restore it.
   if(prev){
     if(prev.source === 'manual'){ if(prev.auto) entry.auto = prev.auto; }
-    else entry.auto = { price: prev.price, currency: prev.currency, at: prev.at };
+    else{ entry.auto = { price: prev.price, currency: prev.currency, at: prev.at }; if(prev.prev > 0) entry.auto.prev = prev.prev; }
   }
   cache[key] = entry;
 }
@@ -64,6 +66,7 @@ function clearManualPrice(cache, key){
   if(!e || e.source !== 'manual') return 'none';
   if(e.auto && e.auto.price > 0){
     cache[key] = { price: e.auto.price, currency: e.auto.currency, at: e.auto.at, source: 'auto' };
+    if(e.auto.prev > 0) cache[key].prev = e.auto.prev;
     return 'restored';
   }
   delete cache[key];
@@ -71,18 +74,20 @@ function clearManualPrice(cache, key){
 }
 // Fetched prices: the newest wins. A manual price stays until an auto price with a strictly later time arrives
 // (an unparsable manual time counts as older); until then the fetch is filed underneath in `.auto`.
-function setAutoPrice(cache, key, price, currency, at){
+// `prev` (previous close in the price's currency, optional) is kept only when > 0; a fetch without it drops the old one.
+function setAutoPrice(cache, key, price, currency, at, prev){
   const e = cache[key];
+  const withPrev = o => { if(prev > 0) o.prev = prev; return o; };
   if(e && e.source === 'manual'){
     const tAuto = Date.parse(at), tManual = Date.parse(e.at);
     if(isFinite(tAuto) && (!isFinite(tManual) || tAuto > tManual)){
-      cache[key] = { price, currency, at, source: 'auto' };
+      cache[key] = withPrev({ price, currency, at, source: 'auto' });
       return true;
     }
-    e.auto = { price, currency, at };
+    e.auto = withPrev({ price, currency, at });
     return false;
   }
-  cache[key] = { price, currency, at, source: 'auto' };
+  cache[key] = withPrev({ price, currency, at, source: 'auto' });
   return true;
 }
 function setManualFx(fxCache, cur, thb, at){ fxCache[cur] = { thb, at, source: 'manual' }; }
@@ -111,6 +116,24 @@ function holdingValue(h, ctx){
   const value = ok ? round2(priceUnits * unitTHB) : 0;
   const cost = (costFx && h.cost >= 0) ? round2(h.cost * costFx.rate) : null;
   const hasPL = ok && cost !== null && cost > 0;
+  const stale = !!p && (isStale(p.at, ctx.today, STALE_PRICE_DAYS) || (!!fx && fx.at !== null && isStale(fx.at, ctx.today, STALE_FX_DAYS)));
+  // Daily change. 1) the fetched previous close (today's FX for both, so currency moves are not counted);
+  // 2) else the newest snapshot from the last 3 days before today that holds this key.
+  let dayTHB = null, dayPct = null;
+  if(ok && p.source === 'auto' && p.prev > 0 && !stale){
+    dayPct = p.price / p.prev - 1;
+    dayTHB = round2(value * (1 - p.prev / p.price));
+  }else if(ok && ctx.snapshots){
+    const ds = Object.keys(ctx.snapshots).filter(d => d < ctx.today && daysBetweenISO(d, ctx.today) <= 3).sort();
+    for(let i = ds.length - 1; i >= 0; i--){
+      const sh = (ctx.snapshots[ds[i]].holdings || []).find(x => x.key === key);
+      if(sh && sh.unitTHB > 0){
+        dayPct = unitTHB / sh.unitTHB - 1;
+        dayTHB = round2(priceUnits * (unitTHB - sh.unitTHB));
+        break;
+      }
+    }
+  }
   return {
     id: h.id, key, holding: h,
     value, unitTHB, priceUnits,
@@ -119,7 +142,7 @@ function holdingValue(h, ctx){
     cost: hasPL ? cost : null,
     pl: hasPL ? round2(value - cost) : null,
     plPct: hasPL ? (value - cost) / cost : null,
-    stale: !!p && (isStale(p.at, ctx.today, STALE_PRICE_DAYS) || (!!fx && fx.at !== null && isStale(fx.at, ctx.today, STALE_FX_DAYS)))
+    stale, dayTHB, dayPct
   };
 }
 
@@ -147,7 +170,12 @@ function accountValue(acc, w, ctx){
     const cost = round2(withPL.reduce((s, r) => s + r.cost, 0));
     const pl = round2(withPL.reduce((s, r) => s + r.pl, 0));
     const dated = rows.map(r => dayOfStamp(r.priceAt)).filter(Boolean).sort();
+    const withDay = rows.filter(r => r.dayTHB !== null);
+    const dayTHB = withDay.length ? round2(withDay.reduce((s, r) => s + r.dayTHB, 0)) : null;
+    const dayBase = withDay.reduce((s, r) => s + (r.value - r.dayTHB), 0);
     return Object.assign(base, {
+      dayTHB, dayPct: dayTHB !== null && dayBase > 0 ? dayTHB / dayBase : null,
+      dayMissing: withDay.length ? rows.filter(r => !r.missingPrice && r.dayTHB === null).length : 0,
       value, hasHoldings: true, holdingCount: hs.length, holdings: rows, cost, pl, plPct: cost > 0 ? pl / cost : null,
       asOf: dated[0] || null,                                   // the oldest price decides how fresh the account is
       stale: rows.some(r => r.stale), incomplete: rows.some(r => r.missingPrice || r.missingFx)
@@ -155,6 +183,7 @@ function accountValue(acc, w, ctx){
   }
   const b = latestBalance(w.balances, acc.id);
   return Object.assign(base, {
+    dayTHB: null, dayPct: null, dayMissing: 0,
     value: b ? b.value : 0, hasHoldings: false, holdingCount: 0, holdings: [], cost: null, pl: null, plPct: null,
     asOf: b ? b.date : null, stale: !!b && isStale(b.date, ctx.today, STALE_BALANCE_DAYS), incomplete: false
   });
@@ -196,7 +225,7 @@ function derivedDebts(input){
 /* ---------- The whole picture ---------- */
 // w: { accounts, balances, holdings, liabilities, debtOverrides, priceCache, fxCache }; derived: derivedDebts(); today: 'YYYY-MM-DD'.
 function wealthSummary(w, derived, today){
-  const ctx = { priceCache: w.priceCache || {}, fxCache: w.fxCache || {}, today };
+  const ctx = { priceCache: w.priceCache || {}, fxCache: w.fxCache || {}, snapshots: w.snapshots || null, today };
   const all = wLive(w.accounts).map(a => accountValue(a, w, ctx));
   const byOrder = (a, b) => (a.sortOrder - b.sortOrder) || (a.name < b.name ? -1 : 1);
   const live = all.filter(a => !a.archived);
@@ -314,6 +343,9 @@ function migrateWealth(parsed){
     c.diversified = typeof r.diversified === 'boolean' ? r.diversified : defaultDiversified(r.assetType);   // 2.8.0: funds/ETFs do not count as one-name concentration
     return c;
   });
+  // 2.9.0: a deleted account takes its live holdings and balances with it (they would otherwise keep being priced).
+  const deadAcc = new Set(parsed.accounts.filter(a => a.deleted).map(a => a.id));
+  [parsed.balances, parsed.holdings].forEach(list => list.forEach(r => { if(!r.deleted && deadAcc.has(r.accountId)){ r.deleted = true; r.updatedAt = nowISO(); } }));
   parsed.liabilities = fresh(parsed.liabilities, r => (typeof r.name === 'string' && r.name.trim() && isDay(r.date) && num(r.balance) && r.balance >= 0) ? { name: r.name.trim(), date: r.date, balance: r.balance } : null);
 
   const ovs = {};
@@ -324,7 +356,7 @@ function migrateWealth(parsed){
   parsed.debtOverrides = ovs;
 
   const prices = {};
-  const cleanAuto = a => (plainObj(a) && num(a.price) && a.price > 0 && typeof a.currency === 'string' && /^[A-Z]{3}$/.test(a.currency) && typeof a.at === 'string' && a.at) ? { price: a.price, currency: a.currency, at: a.at } : null;
+  const cleanAuto = a => (plainObj(a) && num(a.price) && a.price > 0 && typeof a.currency === 'string' && /^[A-Z]{3}$/.test(a.currency) && typeof a.at === 'string' && a.at) ? Object.assign({ price: a.price, currency: a.currency, at: a.at }, (num(a.prev) && a.prev > 0) ? { prev: a.prev } : {}) : null;
   if(plainObj(parsed.priceCache)) Object.keys(parsed.priceCache).forEach(k => {
     const e = parsed.priceCache[k];
     if(!/^(th_stock|foreign_stock|fund|gold|crypto):.+/.test(k) || !plainObj(e)) return;
@@ -356,9 +388,38 @@ function migrateWealth(parsed){
 }
 
 /* ---------- State-backed helpers ---------- */
+/* ---------- Deleting an account (2.9.0) ---------- */
+// Marks the account deleted (tombstone, like every wealth record) and either moves its live holdings to `opts.moveTo`
+// (another live invest account id) or tombstones them; its live balances are tombstoned. Snapshots are never touched.
+// Returns an undo record: deep copies of every record as it was before, for restoreWealthRecords().
+function deleteWealthAccount(w, accId, opts){
+  const acc = (w.accounts || []).find(a => a.id === accId && !a.deleted);
+  if(!acc) return null;
+  const moveTo = opts && opts.moveTo || null;
+  const target = moveTo ? (w.accounts || []).find(a => a.id === moveTo && !a.deleted && a.group === 'invest' && a.id !== accId) : null;
+  if(moveTo && !target) return null;
+  const now = nowISO();
+  const undo = { accounts: [], holdings: [], balances: [] };
+  const touch = (list, kind, r, fn) => { undo[kind].push(JSON.parse(JSON.stringify(r))); fn(r); r.updatedAt = now; };
+  touch(w.accounts, 'accounts', acc, r => { r.deleted = true; });
+  (w.holdings || []).filter(h => !h.deleted && h.accountId === accId).forEach(h =>
+    touch(w.holdings, 'holdings', h, r => { if(target) r.accountId = target.id; else r.deleted = true; }));
+  (w.balances || []).filter(b => !b.deleted && b.accountId === accId).forEach(b =>
+    touch(w.balances, 'balances', b, r => { r.deleted = true; }));
+  return undo;
+}
+// Puts the records saved by deleteWealthAccount() back exactly as they were (matched by id).
+function restoreWealthRecords(w, undo){
+  if(!undo) return;
+  ['accounts', 'holdings', 'balances'].forEach(kind => (undo[kind] || []).forEach(old => {
+    const i = (w[kind] || []).findIndex(r => r.id === old.id);
+    if(i >= 0) w[kind][i] = JSON.parse(JSON.stringify(old));
+  }));
+}
+
 function wealthData(){
   return { accounts: state.accounts, balances: state.balances, holdings: state.holdings, liabilities: state.liabilities,
-    debtOverrides: state.debtOverrides, priceCache: state.priceCache, fxCache: state.fxCache };
+    debtOverrides: state.debtOverrides, priceCache: state.priceCache, fxCache: state.fxCache, snapshots: state.snapshots };
 }
 function derivedDebtsNow(todayStr){
   const today = todayStr || todayISO();

@@ -307,3 +307,179 @@ test('price layer: newest wins between manual and auto; bad dates', () => {
   assert.equal(out[8], false); assert.equal(out[9], 'manual');
   assert.equal(out[10], 'restored'); assert.equal(out[11].price, 690); assert.equal(out[11].source, 'auto');
 });
+
+/* ---------- 2.9.0: daily change, delete account ---------- */
+const D_TODAY = '2026-11-01';
+function sumWith(run, w) {
+  return plain(run(`wealthSummary(${JSON.stringify(w)}, [], '${D_TODAY}')`));
+}
+const baseW = (extra) => Object.assign({
+  accounts: [acc('inv', 'พอร์ต', 'invest'), acc('inv2', 'พอร์ต 2', 'invest'), acc('bank', 'กสิกร', 'cash')],
+  balances: [bal('b1', 'bank', '2026-10-30', 1000)], liabilities: [], debtOverrides: {},
+  holdings: [], priceCache: {}, fxCache: { USD: { thb: 35, at: D_TODAY, source: 'auto' } }, snapshots: {}
+}, extra || {});
+
+test('prev: setAutoPrice stores it, drops it on a fetch without, keeps it on .auto under a manual price', () => {
+  const { run } = loadApp();
+  const r = plain(run(`(() => {
+    const k = 'th_stock:PTT', out = [];
+    const c = {}; setAutoPrice(c, k, 38, 'THB', '2026-11-01T09:00:00Z', 37);
+    out.push(JSON.stringify(c[k]));
+    setAutoPrice(c, k, 39, 'THB', '2026-11-01T10:00:00Z');
+    out.push('prev' in c[k]);
+    setAutoPrice(c, k, 39, 'THB', '2026-11-01T11:00:00Z', 0);
+    out.push('prev' in c[k]);
+    const m = {}; setManualPrice(m, k, 40, 'THB', '2026-11-01T10:00:00Z');
+    setAutoPrice(m, k, 38, 'THB', '2026-11-01T09:00:00Z', 37);
+    out.push(m[k].auto.prev, 'prev' in effectivePrice(m, k));
+    out.push(clearManualPrice(m, k), m[k].prev);
+    return out;
+  })()`));
+  assert.equal(r[0], '{"price":38,"currency":"THB","at":"2026-11-01T09:00:00Z","source":"auto","prev":37}');
+  assert.equal(r[1], false); assert.equal(r[2], false);
+  assert.equal(r[3], 37); assert.equal(r[4], false);
+  assert.equal(r[5], 'restored'); assert.equal(r[6], 37);
+});
+
+test('prev survives migrateWealth (top level and .auto) and applyPriceResponse passes it through; old caches unchanged', () => {
+  const { run } = loadApp();
+  const r = plain(run(`(() => {
+    const p = migrateWealth({ priceCache: {
+      'th_stock:A': { price: 10, currency: 'THB', at: '2026-11-01T09:00:00Z', source: 'auto', prev: 9.5 },
+      'th_stock:B': { price: 10, currency: 'THB', at: '2026-11-01T09:00:00Z', source: 'manual', auto: { price: 9, currency: 'THB', at: '2026-10-31T09:00:00Z', prev: 8 } },
+      'th_stock:C': { price: 10, currency: 'THB', at: '2026-11-01T09:00:00Z', source: 'auto' },
+      'th_stock:D': { price: 10, currency: 'THB', at: '2026-11-01T09:00:00Z', source: 'auto', prev: -1 } } });
+    const c = {}, f = {};
+    applyPriceResponse(c, f, { prices: { 'th_stock:X': { price: 5, currency: 'THB', thb: 5, at: '2026-11-01T09:00:00Z', prev: 4 }, 'th_stock:Y': { price: 5, currency: 'THB', thb: 5, at: '2026-11-01T09:00:00Z' } }, fx: {}, errors: {} });
+    return [p.priceCache, c];
+  })()`));
+  assert.equal(r[0]['th_stock:A'].prev, 9.5);
+  assert.equal(r[0]['th_stock:B'].auto.prev, 8);
+  assert.equal('prev' in r[0]['th_stock:C'], false);
+  assert.equal('prev' in r[0]['th_stock:D'], false);
+  assert.equal(r[1]['th_stock:X'].prev, 4);
+  assert.equal('prev' in r[1]['th_stock:Y'], false);
+});
+
+test('daily change from prev: price 110, prev 100, 10 units, USD 35 -> +10%, +3500', () => {
+  const { run } = loadApp();
+  const w = baseW({
+    holdings: [hold('h1', 'inv', 'foreign_stock', 'VOO', 10, 1000, 'USD')],
+    priceCache: { 'foreign_stock:VOO': { price: 110, currency: 'USD', at: D_TODAY + 'T09:00:00Z', source: 'auto', prev: 100 } }
+  });
+  const a = sumWith(run, w).invest.find(x => x.id === 'inv');
+  const h = a.holdings[0];
+  assert.ok(Math.abs(h.dayPct - 0.1) < 1e-12);
+  assert.equal(h.dayTHB, 3500);
+  assert.equal(a.dayTHB, 3500);
+  assert.ok(Math.abs(a.dayPct - 0.1) < 1e-12);
+  assert.equal(a.dayMissing, 0);
+});
+
+test('daily change: manual price ignores prev; stale price has none; snapshot fallback needs a snapshot within 3 days', () => {
+  const { run } = loadApp();
+  const hs = [hold('h1', 'inv', 'th_stock', 'PTT', 2, 100)];
+  // manual price with prev underneath: not used, no snapshot -> null
+  let w = baseW({ holdings: hs, priceCache: { 'th_stock:PTT': { price: 105, currency: 'THB', at: D_TODAY, source: 'manual', auto: { price: 104, currency: 'THB', at: D_TODAY, prev: 100 } } } });
+  let a = sumWith(run, w).invest.find(x => x.id === 'inv');
+  assert.equal(a.holdings[0].dayPct, null); assert.equal(a.dayTHB, null); assert.equal(a.dayPct, null); assert.equal(a.dayMissing, 0);
+  // snapshot from yesterday: unitTHB 100 -> 105, 2 units -> +10, +5%
+  w.snapshots = { '2026-10-31': { assets: 0, debts: 0, net: 0, holdings: [{ key: 'th_stock:PTT', units: 2, unitTHB: 100 }] } };
+  a = sumWith(run, w).invest.find(x => x.id === 'inv');
+  assert.equal(a.holdings[0].dayTHB, 10);
+  assert.ok(Math.abs(a.holdings[0].dayPct - 0.05) < 1e-12);
+  // 3 days old is allowed, 4 is not, today's own snapshot is ignored
+  w.snapshots = { '2026-10-29': w.snapshots['2026-10-31'] };
+  assert.equal(sumWith(run, w).invest.find(x => x.id === 'inv').holdings[0].dayTHB, 10);
+  w.snapshots = { '2026-10-28': w.snapshots['2026-10-29'] };
+  assert.equal(sumWith(run, w).invest.find(x => x.id === 'inv').holdings[0].dayTHB, null);
+  w.snapshots = { [D_TODAY]: { assets: 0, debts: 0, net: 0, holdings: [{ key: 'th_stock:PTT', units: 2, unitTHB: 100 }] } };
+  assert.equal(sumWith(run, w).invest.find(x => x.id === 'inv').holdings[0].dayTHB, null);
+  // stale auto price (10 days old) with prev: no change shown
+  w = baseW({ holdings: hs, priceCache: { 'th_stock:PTT': { price: 105, currency: 'THB', at: '2026-10-20T09:00:00Z', source: 'auto', prev: 100 } } });
+  assert.equal(sumWith(run, w).invest.find(x => x.id === 'inv').holdings[0].dayTHB, null);
+});
+
+test('accountValue aggregates daily change and counts priced holdings without it', () => {
+  const { run } = loadApp();
+  const w = baseW({
+    holdings: [hold('h1', 'inv', 'th_stock', 'AAA', 10, 100), hold('h2', 'inv', 'th_stock', 'BBB', 10, 100), hold('h3', 'inv', 'th_stock', 'CCC', 10, 100), hold('h4', 'inv', 'gold', 'GOLD', 1, 100, 'THB', { unit: 'baht' })],
+    priceCache: {
+      'th_stock:AAA': { price: 11, currency: 'THB', at: D_TODAY + 'T09:00:00Z', source: 'auto', prev: 10 },   // +10 of 100 -> value 110
+      'th_stock:BBB': { price: 18, currency: 'THB', at: D_TODAY + 'T09:00:00Z', source: 'auto', prev: 20 },   // -20 of 200 -> value 180
+      'th_stock:CCC': { price: 5, currency: 'THB', at: D_TODAY, source: 'manual' }                           // priced, no change
+      // gold has no price at all: not counted as missing prev
+    }
+  });
+  const a = sumWith(run, w).invest.find(x => x.id === 'inv');
+  assert.equal(a.dayTHB, -10);
+  assert.ok(Math.abs(a.dayPct - (-10 / (100 + 200))) < 1e-12);
+  assert.equal(a.dayMissing, 1);
+  const cash = sumWith(run, w).cash[0];
+  assert.equal(cash.dayTHB, null); assert.equal(cash.dayMissing, 0);
+});
+
+const delW = () => baseW({
+  balances: [bal('b1', 'bank', '2026-10-30', 1000), bal('b2', 'inv2', '2026-10-30', 50)],
+  holdings: [hold('h1', 'inv', 'th_stock', 'PTT', 10, 300), hold('h2', 'inv', 'th_stock', 'AOT', 5, 200), hold('h3', 'inv2', 'th_stock', 'PTT', 1, 30)],
+  snapshots: { '2026-10-31': { assets: 1, debts: 0, net: 1, holdings: [] } }
+});
+
+test('deleteWealthAccount: move keeps holdings under the target, tombstones the account and balances, undo restores exactly', () => {
+  const { run } = loadApp();
+  const r = plain(run(`(() => {
+    const w = ${JSON.stringify(delW())};
+    const before = JSON.stringify(w);
+    const undo = deleteWealthAccount(w, 'inv', { moveTo: 'inv2' });
+    const after = JSON.parse(JSON.stringify(w));
+    restoreWealthRecords(w, undo);
+    return { after, undo, same: JSON.stringify(w) === before };
+  })()`));
+  const A = r.after;
+  assert.equal(A.accounts.find(a => a.id === 'inv').deleted, true);
+  assert.notEqual(A.accounts.find(a => a.id === 'inv').updatedAt, T);
+  assert.deepEqual(A.holdings.filter(h => !h.deleted).map(h => [h.id, h.accountId]), [['h1', 'inv2'], ['h2', 'inv2'], ['h3', 'inv2']]);
+  assert.equal(A.holdings.find(h => h.id === 'h1').units, 10);
+  assert.notEqual(A.holdings.find(h => h.id === 'h1').updatedAt, T);
+  assert.equal(A.holdings.find(h => h.id === 'h3').updatedAt, T);   // untouched
+  assert.deepEqual(A.snapshots, delW().snapshots);
+  assert.equal(r.undo.accounts.length, 1); assert.equal(r.undo.holdings.length, 2);
+  assert.equal(r.same, true);
+});
+
+test('deleteWealthAccount: delete holdings too, balances tombstoned, bad target refused; migrate tombstones orphans', () => {
+  const { run } = loadApp();
+  const r = plain(run(`(() => {
+    const w = ${JSON.stringify(delW())};
+    const bad = deleteWealthAccount(w, 'inv', { moveTo: 'bank' });          // cash account is not a valid target
+    const bad2 = deleteWealthAccount(w, 'inv', { moveTo: 'inv' });
+    const undo = deleteWealthAccount(w, 'inv2', {});
+    const sum = wealthSummary(w, [], '${D_TODAY}');
+    const orphans = migrateWealth({ accounts: [{ id: 'x', name: 'X', group: 'invest', deleted: true, updatedAt: '${T}' }, { id: 'y', name: 'Y', group: 'invest', updatedAt: '${T}' }],
+      holdings: [{ id: 'hx', accountId: 'x', assetType: 'th_stock', symbol: 'AAA', units: 1, cost: 1, updatedAt: '${T}' }, { id: 'hy', accountId: 'y', assetType: 'th_stock', symbol: 'BBB', units: 1, cost: 1, updatedAt: '${T}' }],
+      balances: [{ id: 'bx', accountId: 'x', date: '2026-10-01', value: 5, updatedAt: '${T}' }] });
+    return { w, bad, bad2, undo, names: sum.invest.map(a => a.id), req: buildPriceRequest(w.holdings).items, orphans };
+  })()`));
+  assert.equal(r.bad, null); assert.equal(r.bad2, null);
+  assert.equal(r.w.accounts.find(a => a.id === 'inv2').deleted, true);
+  assert.equal(r.w.holdings.find(h => h.id === 'h3').deleted, true);
+  assert.equal(r.w.balances.find(b => b.id === 'b2').deleted, true);
+  assert.equal(r.w.balances.find(b => b.id === 'b1').deleted, false);
+  assert.equal(r.w.holdings.find(h => h.id === 'h1').deleted, false);
+  assert.deepEqual(r.names, ['inv']);
+  assert.deepEqual(r.req.map(i => i.symbol).sort(), ['AOT', 'PTT']);
+  assert.equal(r.orphans.holdings.find(h => h.id === 'hx').deleted, true);
+  assert.equal(r.orphans.holdings.find(h => h.id === 'hy').deleted, false);
+  assert.equal(r.orphans.balances.find(b => b.id === 'bx').deleted, true);
+});
+
+test('migrateWealth leaves an old backup (no prev, no deleted accounts) untouched', () => {
+  const { run } = loadApp();
+  const { w } = scenario();
+  const src = Object.assign({}, w, { snapshots: {} });
+  const out = plain(run(`migrateWealth(${JSON.stringify(src)})`));
+  assert.deepEqual(out.holdings, src.holdings);
+  assert.deepEqual(out.balances, src.balances);
+  assert.deepEqual(out.accounts, src.accounts);
+  assert.deepEqual(out.priceCache, src.priceCache);
+});

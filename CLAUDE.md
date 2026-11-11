@@ -72,7 +72,7 @@ Files: `index.html` (markup only), `css/app.css`, and classic scripts in `js/` l
 
 ## Roadmap status
 
-Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0, file split + tests 2.4.1, phase 4 card bills 2.5.0, wealth tab W1+W2 2.6.0, encrypted online backup W3 2.7.0, v5 round 1 (health card, triggers T1–T9, briefing payload upload) 2.8.0. The owner is back from the China trip (2026-10-30), so feature work is open again. Next, in order: v5 round 2 (goals + T10, feedback buttons + 90-day summary), v3b slip reading + iOS Shortcut. `ROADMAP.md` (rev 4) is the owner's long-form spec; this section wins where they differ.
+Done: v2 (rev 2), v3a (custom categories, installments, due dates, stacked trend, search), 4-tab layout, theme, natural copy, PWA 2.2.0, payment methods 2.3.0 (เงินสด, บัตรเครดิต TTB, บัตรเครดิต KBANK), trips & travel mode 2.4.0, file split + tests 2.4.1, phase 4 card bills 2.5.0, wealth tab W1+W2 2.6.0, encrypted online backup W3 2.7.0, v5 round 1 (health card, triggers T1–T9, briefing payload upload) 2.8.0. Wealth account delete/move + daily change 2.9.0. The owner is back from the China trip (2026-10-30), so feature work is open again. Next, in order: v5 round 2 (goals + T10, feedback buttons + 90-day summary), v3b slip reading + iOS Shortcut. `ROADMAP.md` (rev 4) is the owner's long-form spec; this section wins where they differ.
 
 North Star (ROADMAP rev 3+): the owner's existing morning briefing (kept private, outside this repo) should also answer "กระทบเราอย่างไร / ควรทำอะไร" from a compact summary of the owner's finances. Numbers and triggers are computed by code; the LLM only explains. `ไม่มีอะไรต้องทำวันนี้` is the normal answer. Every figure carries `as_of` and `source`; never scrape bank or broker sites.
 
@@ -106,6 +106,11 @@ Wealth tracking (5th tab `ทรัพย์สิน`, piggy-bank icon), as agr
     - The derived key is remembered on the device in localStorage `spendTrackerCloudBackup` (never in state or the export). A restore first copies the current state to `spendTrackerBeforeRestore`.
     - Auto-backup runs 20 s after a save, at most every 10 min, only when online, configured and the state is not empty (never overwrite with a fresh state after ล้างข้อมูล).
     - The export button uses the iOS share sheet (Files / iCloud Drive) when available, else downloads.
+  - 2.9.0 (owner decisions 2026-11-11):
+    - Accounts can be deleted, not only hidden. A delete tombstones the account and its balances. Its holdings are either moved to another invest account or tombstoned (the owner chooses in the dialog). Snapshots are never rewritten, and `เลิกทำ` restores the records. `migrateWealth` tombstones live holdings/balances of a deleted account.
+    - Account actions (แก้ชื่อ / ซ่อน / ลบ) live in a `⋯` sheet next to the account title. The UI keeps the term `บัญชี`.
+    - A holding can move to another invest account from its sheet. Same-symbol holdings stay separate rows.
+    - Daily change is measured against the previous close. `/api/prices` returns an optional `prev` per quote (Yahoo: last daily close before the quote's exchange day, never `chartPreviousClose`; crypto: 24 h). `priceCache` keeps `prev`. Without a prev, the app compares with a snapshot from the last 3 days. The label is `จากราคาปิดก่อนหน้า`, never `วันนี้`.
   - W4 (push alerts) was dropped by the owner on 2026-11-02: no push notifications. Net-worth snapshots stay on the phone (taken on open) because the server can't read encrypted data.
   - A share-sheet backup export to iCloud Drive comes before W3 and can slot in any time.
 

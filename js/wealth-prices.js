@@ -69,7 +69,7 @@ function applyPriceResponse(priceCache, fxCache, resp){
   Object.keys(prices).forEach(k => {
     const p = prices[k];
     if(!/^(th_stock|foreign_stock|fund|gold|crypto):.+/.test(k) || !p || !(p.price > 0) || typeof p.currency !== 'string' || !/^[A-Z]{3}$/.test(p.currency) || typeof p.at !== 'string' || !p.at) return;
-    setAutoPrice(priceCache, k, p.price, p.currency, p.at);
+    setAutoPrice(priceCache, k, p.price, p.currency, p.at, p.prev);
     updated++;
   });
   const fx = resp && typeof resp.fx === 'object' && resp.fx ? resp.fx : {};
