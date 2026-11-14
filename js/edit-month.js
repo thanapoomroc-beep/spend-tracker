@@ -118,6 +118,11 @@ async function saveEdit(){
     ['tripId','currency','originalAmount','splitCount','rate','amountOverridden'].forEach(k => delete e[k]);
   }
   if(editPayment && findPay(editPayment)) e.paymentMethod = editPayment; else delete e.paymentMethod;
+  if(e.needsReview || e.aiGuess){
+    // Saving a slip entry settles it: the owner has checked the category, so the receiver rule follows (not for trip entries).
+    if(e.slipPayee && !e.tripId) learnSlipRule(state, e, 'expense', { category: e.category });
+    delete e.needsReview; delete e.aiGuess;
+  }
   e.updatedAt = nowISO();
   await saveData();
   const d = parseISODate(dateVal);
@@ -197,6 +202,7 @@ function renderToday(){
   renderRepeat(!!trip);
   if(trip) renderTripHero(trip, normalDailyAllowance(fig, now)); else renderHero(income, remaining, variable, monthEntries);
   renderDueCard(!!trip);
+  renderSlipCard();
   renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries, !!trip);
   // Until income is set the hero CTA is the only primary button (normal mode only).
   const secondary = !trip && !(income > 0);

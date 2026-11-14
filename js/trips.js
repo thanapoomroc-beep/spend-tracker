@@ -126,7 +126,7 @@ function repeatGroups(){
   const today = todayISO();
   const map = new Map();
   state.entries.forEach(e=>{
-    if(e.tripId || e.date < cutoff || e.date > today) return;
+    if(e.tripId || e.needsReview || e.date < cutoff || e.date > today) return;
     const c = findCat(e.category);
     if(!c || c.archived) return;
     const note = String(e.note || '').trim();

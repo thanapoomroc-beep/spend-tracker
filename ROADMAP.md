@@ -206,7 +206,7 @@ Acceptance: on 28 Oct, Spotify dueDay 2 → `อีก 5 วัน · Spotify`; 
 3. `Find Photos`: album = the bank's album, **Date Created** is after that time, sort by Date Created (oldest first), limit 5. `Find Photos` offers Date Created, Time Taken and Date Taken (checked by the owner 2026-11-11; there is no Date Added). Date Taken comes from EXIF, which a saved slip may lack, so the marker uses Date Created. Round 0 (2026-11-14): a saved K PLUS slip's Date Created equals its transfer time, and `is after` compares the time, not only the date (filter 13 Nov 20:00 → the 21:45 slip came first). None → stop (no network call).
 4. For each photo: `Extract Text from Image` → `POST {service}/api/slip` with `Authorization: Bearer <SLIP_TOKEN>` and JSON `{ "source": "kplus", "text": "…", "photo_at": "<the photo's date, Format Date → ISO 8601>" }`.
    - Response is not `{ "ok": true }` (offline, 4xx/5xx) → stop **without** moving the marker, so the next run retries.
-   - Otherwise write that photo's Date Created to `slip-last-<source>.txt`.
+   - Otherwise write that photo's Date Created **+ 1 s** to `slip-last-<source>.txt` as ISO 8601 with time (read back with `Get Dates from Input`; a custom `yyyy` pattern writes the Buddhist year 2569 on a Thai-calendar iPhone, found 2026-11-14). The +1 s matters: the formatted marker drops sub-seconds, so without it `is after` would pick the same photo again on every run.
 5. No notification. The app reports what it added.
 
 ### Server (private repo `spend-tracker-prices`)
@@ -292,6 +292,18 @@ Load order: `slip-core` and `slip-net` after `briefing-net`; `slip-ui` after `br
   - Any failure (offline, 4xx/5xx, timeout) leaves the entries as they are, silently.
   - AI is never asked about a receiver that has a rule, and never asked twice about the same entry.
 - Category guess: the newest non-trip entry without `needsReview` whose note equals the receiver (trimmed, case-insensitive), if its category still exists and is not archived. Otherwise `อื่นๆ` if it exists and is not archived (the owner can rename or archive it), else the first active category.
+
+**Scrutinize fixes (2026-11-14, against 2.9.0 code; owner decisions same day):**
+- Own-account transfers are skipped silently (owner decision): into `handled`, counted only in the settings status.
+- Waiting slips show as the วันนี้ card + the pull toast only; no tab badge (owner decision).
+- Card placement: `#slipCard` goes between `#entryCard` and `#dueCard` (`index.html:61–106`).
+- `saveEdit()` (`edit-month.js:96`) can turn the entry into a trip entry: then clear `needsReview`/`aiGuess` but learn no rule (trip categories are a separate list).
+- `เลิกทำ` on the pull toast removes the entries and `cardPayments` rows that pull added; their keys stay in `handled`, so they never come back.
+- `/api/slip-inbox` lists 50 at a time: a pull loops list → save → ack up to 4 times.
+- `migrateSlip(parsed)` lives in `slip-core.js` and is called from `migrateState()` after `migrateWealthSettings()` (same pattern as `migrateWealth`, which lives in `wealth-core.js`).
+- AI status: `/api/slip-guess` answering `ai_unavailable` stores `aiUnavailable: true` in `spendTrackerSlip`; the AI switch then shows `AI ยังไม่พร้อมที่เซิร์ฟเวอร์` (the server has no key yet). Any later success clears it.
+- New ids use `genId()`; `ไม่ใช่รายจ่าย` reuses the confirm from `askDeleteEntry()` (`entry-form.js:268`) but must also learn the `ignore` rule.
+- Toast actions use `flashToast(msg, ok, { label, onClick })` (`core.js:335`).
 
 **Review UI:**
 - **วันนี้:** card `สลิปรอตรวจ` **below** the entry card (never above it: `#addEntryBtn` must stay above the tab bar at 375×812). Hidden when nothing waits. It shows in travel mode too.

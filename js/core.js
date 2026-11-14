@@ -31,6 +31,7 @@ const SCHEMA_VERSION = 3;
 const WEALTH_SETTINGS_DEFAULTS = { emergencyMonthsTarget:6, savingsRateTarget:0.2, maxSingleHoldingPct:20, bigMovePct:7, bigMoveMinWeightPct:5, drawdownPct:5, spendPaceTolerancePct:15, fxExposureWatchPct:50, briefingShareAmounts:false, briefingEnabled:false, goals:[] };
 const WEALTH_SETTINGS_LIMITS = { emergencyMonthsTarget:[1,36], savingsRateTarget:[0.01,0.9], maxSingleHoldingPct:[5,100], bigMovePct:[1,50], bigMoveMinWeightPct:[1,100], drawdownPct:[1,50], spendPaceTolerancePct:[1,100], fxExposureWatchPct:[1,100] };
 function defaultWealthSettings(){ return { ...WEALTH_SETTINGS_DEFAULTS, goals: [] }; }
+function defaultSlipSettings(){ return { enabled:false, handled:[], unreadable:[], receivers:{}, aiGuess:true }; }   // slip inbox (2.10.0, see slip-core.js)
 
 function nowISO(){ return new Date().toISOString(); }
 function genId(){ return Date.now() + '-' + Math.random().toString(36).slice(2,7); }
@@ -96,7 +97,8 @@ function seedPayments(stamp){
 function freshState(){
   return { schemaVersion: SCHEMA_VERSION, monthlySettings: {}, budgetSettings: {}, budgetUpdatedAt: {}, categories: seedCategories(nowISO()), paymentMethods: seedPayments(nowISO()), cardPayments: [], entries: [], trips: [], activeTripId: null,
     accounts: [], balances: [], holdings: [], liabilities: [], debtOverrides: {}, priceCache: {}, fxCache: {}, snapshots: {},   // wealth (wealth-core.js)
-    wealthSettings: defaultWealthSettings() };   // thresholds + briefing switches (health-core.js)
+    wealthSettings: defaultWealthSettings(),   // thresholds + briefing switches (health-core.js)
+    slipSettings: defaultSlipSettings() };   // slip inbox rules and handled keys (slip-core.js)
 }
 
 function cleanBudgets(b){
@@ -236,6 +238,7 @@ function migrateState(parsed){
   parsed.entries.forEach(e=>{ if(e.paymentMethod !== undefined && (typeof e.paymentMethod !== 'string' || !e.paymentMethod)) delete e.paymentMethod; });
   migrateWealth(parsed);   // wealth fields (2.6.0): accounts, balances, holdings, liabilities, debtOverrides, priceCache, fxCache, snapshots
   migrateWealthSettings(parsed);   // thresholds + briefing switches (2.8.0)
+  migrateSlip(parsed);   // slip inbox (2.10.0): slipSettings, entry.slipRef / slipPayee / needsReview / aiGuess
   parsed.schemaVersion = SCHEMA_VERSION;
   return parsed;
 }
@@ -362,9 +365,11 @@ async function saveData(){
     flashSaveIndicator(true);
     if(typeof onCloudSaved === 'function'){ try{ onCloudSaved(); }catch(e){} }   // backup-cloud.js: mark dirty, schedule the online backup
     if(typeof onBriefingSaved === 'function'){ try{ onBriefingSaved(); }catch(e){} }   // briefing-net.js: schedule the briefing upload
+    return true;
   }catch(e){
     console.error('Storage error:', e);
     flashSaveIndicator(false);
+    return false;
   }
 }
 

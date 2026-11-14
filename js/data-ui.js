@@ -108,6 +108,7 @@ function setupUi(){
   setupWealthUi();
   setupCloudBackupUi();
   setupBriefingUi();
+  setupSlipUi();
   const kbBtn = document.getElementById('kbSaveBtn');
   // Keep the input focused (and the keyboard up) until the click lands.
   ['pointerdown','mousedown'].forEach(t => kbBtn.addEventListener(t, ev => ev.preventDefault()));

@@ -104,15 +104,16 @@ function sortEntries(arr){
 }
 
 /* ---------- Search & filter (F5) ---------- */
-let filterText = '', filterCats = new Set(), searchAll = false;
+let filterText = '', filterCats = new Set(), searchAll = false, filterReview = false;
 let filterTimer = null;
-function filterActive(){ return !!filterText.trim() || filterCats.size > 0 || searchAll; }
-function pruneFilters(){ [...filterCats].forEach(n => { if(!findCat(n)) filterCats.delete(n); }); }
+function filterActive(){ return !!filterText.trim() || filterCats.size > 0 || searchAll || filterReview; }
+function pruneFilters(){ [...filterCats].forEach(n => { if(!findCat(n)) filterCats.delete(n); }); if(filterReview && !state.entries.some(e => e.needsReview)) filterReview = false; }
 function refreshEntryList(){ renderEntriesTab(sortEntries(entriesForMonth(currentMonth))); }   // never trip entries
 function updateFilterSummary(){
   const parts = [];
   if(searchAll) parts.push('ทุกเดือน');
   if(filterCats.size) parts.push(filterCats.size + ' หมวด');
+  if(filterReview) parts.push('รอตรวจ');
   document.getElementById('filterSummary').textContent = parts.length ? '(' + parts.join(', ') + ')' : '';
   const b = document.getElementById('searchAllBtn');
   b.setAttribute('aria-pressed', searchAll ? 'true' : 'false');
@@ -129,7 +130,7 @@ function renderFilterChips(){
     box.appendChild(b);
     return b;
   };
-  const all = mk('ทั้งหมด', null, filterCats.size === 0, ()=>{ filterCats.clear(); syncFilterChips(); refreshEntryList(); });
+  const all = mk('ทั้งหมด', null, filterCats.size === 0 && !filterReview, ()=>{ filterCats.clear(); filterReview = false; syncFilterChips(); refreshEntryList(); });
   all.dataset.all = '1';
   state.categories.forEach(c=>{
     const b = mk(c.name + (c.archived ? ' (ซ่อน)' : ''), categoryColor(c.name), filterCats.has(c.name), ()=>{
@@ -138,12 +139,16 @@ function renderFilterChips(){
     });
     b.dataset.cat = c.name;
   });
+  if(state.entries.some(e => e.needsReview)){
+    const r = mk('รอตรวจ', null, filterReview, ()=>{ filterReview = !filterReview; syncFilterChips(); refreshEntryList(); });
+    r.dataset.review = '1';
+  }
   updateFilterSummary();
 }
 // Update pressed state in place so focus is never lost while toggling.
 function syncFilterChips(){
   document.querySelectorAll('#filterChips .fchip').forEach(b=>{
-    const on = b.dataset.all ? filterCats.size === 0 : filterCats.has(b.dataset.cat);
+    const on = b.dataset.all ? (filterCats.size === 0 && !filterReview) : b.dataset.review ? filterReview : filterCats.has(b.dataset.cat);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
   updateFilterSummary();
@@ -184,7 +189,7 @@ function entryRowEl(e, listId, noDelete, noBadge){
   const row = document.createElement('div');
   row.className = 'entry-row';
   row.dataset.id = e.id;
-  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
+  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}${e.needsReview ? '<span class="review-badge">รอตรวจ</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
   row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, listId));
   const delBtn = row.querySelector('.del');
   if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
@@ -198,7 +203,7 @@ function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
     source = searchAll ? sortEntries(state.entries.filter(e => !e.tripId)) : monthEntries;
     const q = filterText.trim().toLowerCase();
     source = source.filter(e =>
-      (!filterCats.size || filterCats.has(e.category)) &&
+      (!filterCats.size || filterCats.has(e.category)) && (!filterReview || e.needsReview) &&
       (!q || String(e.note || '').toLowerCase().includes(q) || String(e.category).toLowerCase().includes(q) || payName(e.paymentMethod).toLowerCase().includes(q)));
   }
   const shown = limit ? source.slice(0, limit) : source;

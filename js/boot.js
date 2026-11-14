@@ -10,6 +10,7 @@ async function init(){
   render();
   wealthTouchSnapshot();
   maybeAutoRefreshPrices();
+  slipOnOpen();
   // Always open on วันนี้ unless the URL carries a valid tab hash.
   applyTab(TABS.includes(location.hash.replace(/^#/, '')) ? tabFromHash() : 'today', { keepScroll:true });
   if(/^#trip\//.test(location.hash)) syncFromHash();   // direct load of a trip page (falls back to วันนี้ if the trip is gone)

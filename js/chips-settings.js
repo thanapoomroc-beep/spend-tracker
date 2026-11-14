@@ -371,6 +371,7 @@ function renameCategory(oldName, inp){
         const b = state.budgetSettings[m];
         if(Object.prototype.hasOwnProperty.call(b, oldName)){ b[newName] = b[oldName]; delete b[oldName]; state.budgetUpdatedAt[m] = stamp; }
       });
+      renameSlipCategory(state, oldName, newName);
       if(selectedCategory === oldName){ selectedCategory = newName; try{ localStorage.setItem(LAST_CAT_KEY, newName); }catch(e){} }
       if(filterCats.has(oldName)){ filterCats.delete(oldName); filterCats.add(newName); }
       if(openPickerFor === oldName) openPickerFor = newName;
