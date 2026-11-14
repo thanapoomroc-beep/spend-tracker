@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.10.0">
+<meta name="app-version" content="2.10.1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
 <script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
-<link rel="stylesheet" href="css/app.css?v=2.10.0">
+<link rel="stylesheet" href="css/app.css?v=2.10.1">
 </head>
 <body>
 
@@ -217,31 +217,72 @@
     <div class="month-nav" data-month-nav></div>
 
     <div class="card set-banner">
-      <div class="set-banner-title" id="settingsMonthLabel"></div>
+      <div class="set-banner-title" id="settingsMonthLabel" role="heading" aria-level="2"></div>
       <div class="set-note">ใช้ตั้งแต่เดือนนี้ไปเรื่อยๆ จนกว่าจะแก้ใหม่</div>
     </div>
 
-    <div class="card">
-      <h2>รายได้</h2>
+    <div class="card set-sec" id="incomeCard">
+      <h3 class="set-h" id="incomeSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-income">
+          <span class="ttl">รายได้</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-income" hidden>
       <label for="setIncome">รายได้ต่อเดือน</label>
       <input type="number" id="setIncome" min="0" step="1" inputmode="numeric" onchange="updateIncome()">
+      </div>
     </div>
 
-    <div class="card">
-      <h2>ผ่อน / ลงทุน</h2>
+    <div class="card set-sec" id="financingCard">
+      <h3 class="set-h" id="financingSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-financing">
+          <span class="ttl">ผ่อน / ลงทุน</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-financing" hidden>
       <div id="financingList"></div>
       <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('financing')">+ เพิ่มรายการผ่อน/ลงทุน</button>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>ค่าสมาชิกรายเดือน</h2>
+    <div class="card set-sec" id="subscriptionCard">
+      <h3 class="set-h" id="subscriptionSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-subscription">
+          <span class="ttl">ค่าสมาชิกรายเดือน</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-subscription" hidden>
       <div id="subscriptionList"></div>
       <button type="button" class="secondary add-fixed-btn" onclick="addFixedItem('subscription')">+ เพิ่มค่าสมาชิก</button>
       <div class="year-note" id="subYearly"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2 id="categorySettings">หมวด</h2>
+    <div class="card set-sec" id="budgetSettingsCard">
+      <h3 class="set-h" id="budgetSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-budget">
+          <span class="ttl">งบแต่ละหมวด (ต่อเดือน)</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-budget" hidden>
+      <div id="budgetSettingsList"></div>
+      </div>
+    </div>
+
+    <h2 class="set-group">ทั่วไป</h2>
+
+    <div class="card set-sec" id="categoryCard">
+      <h3 class="set-h" id="categorySettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-category">
+          <span class="ttl">หมวด</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-category" hidden>
       <div class="budget-hint">มีสีได้ 6 หมวด หมวดที่เกินจะเป็นสีเทา และไปรวมกับ "อื่นๆ" ในกราฟ</div>
       <div id="categoryList"></div>
       <div id="archivedWrap" style="display:none;"><div class="cat-sub">หมวดที่ซ่อนไว้ (ยังเห็นในประวัติและกราฟ)</div><div id="archivedList"></div></div>
@@ -253,10 +294,17 @@
         <button type="button" class="secondary" id="addCatBtn">+ เพิ่มหมวด</button>
       </div>
       <div class="cat-msg" id="catMsg" role="alert"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2 id="paymentSettings">ช่องทางจ่าย</h2>
+    <div class="card set-sec" id="paymentCard">
+      <h3 class="set-h" id="paymentSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-payment">
+          <span class="ttl">ช่องทางจ่าย</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-payment" hidden>
       <div id="payList"></div>
       <div id="payArchWrap" style="display:none;"><div class="cat-sub">ช่องทางที่ซ่อนไว้ (ยังเห็นในรายการเก่า)</div><div id="payArchList"></div></div>
       <div class="cat-add">
@@ -267,21 +315,49 @@
         <button type="button" class="secondary" id="addPayBtn">+ เพิ่มช่องทาง</button>
       </div>
       <div class="cat-msg" id="payMsg" role="alert"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2 id="budgetSettings">งบแต่ละหมวด (ต่อเดือน)</h2>
-      <div id="budgetSettingsList"></div>
-    </div>
-
-    <div class="card" id="tripsCard">
-      <h2 id="tripsSettings">ทริปทั้งหมด</h2>
+    <div class="card set-sec" id="tripsCard">
+      <h3 class="set-h" id="tripsSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-trips">
+          <span class="ttl">ทริปทั้งหมด</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-trips" hidden>
       <div id="tripsSettingsList"></div>
       <button type="button" class="secondary add-fixed-btn" id="tripsNewBtn">+ สร้างทริปใหม่</button>
+      </div>
     </div>
 
-    <div class="card" id="priceServiceCard">
-      <h2 id="priceSettings">ราคาอัตโนมัติ</h2>
+    <div class="card set-sec" id="exportCard">
+      <h3 class="set-h" id="exportSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-export">
+          <span class="ttl">สำรองข้อมูล</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-export" hidden>
+      <div class="set-note" id="exportHint">บันทึกลงแอปไฟล์หรือ iCloud Drive ได้</div>
+      <div class="row2">
+        <button class="secondary" onclick="exportData()">ส่งออกไฟล์สำรอง</button>
+        <button class="secondary" onclick="document.getElementById('importFile').click()">นำเข้าจากไฟล์สำรอง</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)" aria-label="เลือกไฟล์สำรองข้อมูล">
+      </div>
+    </div>
+
+    <h2 class="set-group">ออนไลน์</h2>
+
+    <div class="card set-sec" id="priceServiceCard">
+      <h3 class="set-h" id="priceSettings">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-price">
+          <span class="ttl">ราคาอัตโนมัติ</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-price" hidden>
       <div class="set-note">ใช้ดึงราคาหุ้น กองทุน ทอง และคริปโตในหน้าทรัพย์สิน ที่อยู่และรหัสเก็บในเครื่องนี้เท่านั้น ไม่อยู่ในไฟล์สำรอง</div>
       <label for="priceUrl">ที่อยู่บริการราคา</label>
       <input type="url" id="priceUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="priceMsg">
@@ -293,36 +369,55 @@
         <button type="button" class="secondary" id="priceTestBtn">ทดสอบ</button>
       </div>
       <button type="button" class="link-danger" id="priceClearBtn" style="margin-top:8px;">ล้าง</button>
-    </div>
-
-    <div class="card" id="slipSettingsCard">
-      <h2 id="slipSettingsTitle">สลิปอัตโนมัติ</h2>
-      <div id="slipSettingsBody"></div>
-    </div>
-
-    <div class="card" id="cloudBackupCard">
-      <h2 id="cloudBackupTitle">สำรองออนไลน์</h2>
-      <div id="cloudBackupBody"></div>
-    </div>
-
-    <div class="card" id="briefingCard">
-      <h2 id="briefingTitle">ส่งสรุปให้ briefing</h2>
-      <div id="briefingBody"></div>
-    </div>
-
-    <div class="card" id="thresholdsCard">
-      <h2 id="thresholdsTitle">เกณฑ์เตือน</h2>
-      <div id="thresholdsBody"></div>
-    </div>
-
-    <div class="card">
-      <h2>สำรองข้อมูล</h2>
-      <div class="set-note" id="exportHint">บันทึกลงแอปไฟล์หรือ iCloud Drive ได้</div>
-      <div class="row2">
-        <button class="secondary" onclick="exportData()">ส่งออกไฟล์สำรอง</button>
-        <button class="secondary" onclick="document.getElementById('importFile').click()">นำเข้าจากไฟล์สำรอง</button>
       </div>
-      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)" aria-label="เลือกไฟล์สำรองข้อมูล">
+    </div>
+
+    <div class="card set-sec" id="slipSettingsCard">
+      <h3 class="set-h" id="slipSettingsTitle">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-slip">
+          <span class="ttl">สลิปอัตโนมัติ</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-slip" hidden>
+      <div id="slipSettingsBody"></div>
+      </div>
+    </div>
+
+    <div class="card set-sec" id="cloudBackupCard">
+      <h3 class="set-h" id="cloudBackupTitle">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-cloud">
+          <span class="ttl">สำรองออนไลน์</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-cloud" hidden>
+      <div id="cloudBackupBody"></div>
+      </div>
+    </div>
+
+    <div class="card set-sec" id="briefingCard">
+      <h3 class="set-h" id="briefingTitle">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-briefing">
+          <span class="ttl">ส่งสรุปให้ briefing</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-briefing" hidden>
+      <div id="briefingBody"></div>
+      </div>
+    </div>
+
+    <div class="card set-sec" id="thresholdsCard">
+      <h3 class="set-h" id="thresholdsTitle">
+        <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-thresholds">
+          <span class="ttl">เกณฑ์เตือน</span>
+          <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </h3>
+      <div class="set-body" id="sec-thresholds" hidden>
+      <div id="thresholdsBody"></div>
+      </div>
     </div>
 
     <div class="footer-note">ข้อมูลเก็บในเครื่องนี้เท่านั้น อย่าลืมสำรองไว้เป็นระยะ<br>เวอร์ชัน <span id="appVersion"></span></div>
@@ -507,28 +602,29 @@
 
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
-<script src="js/core.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-core.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-prices.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/health-core.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-cloud.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-net.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-core.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-net.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/format.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/chips-settings.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entry-form.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/edit-month.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/trips.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entries-hero.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/overview-charts.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards-ui.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-ui.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-ui.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-ui.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-ui.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/data-ui.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/boot.js?v=2.10.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-prices.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/health-core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-cloud.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-net.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-net.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/format.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/chips-settings.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entry-form.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/edit-month.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/trips.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entries-hero.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/overview-charts.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/settings-sections.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/data-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/boot.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
 </body>
 </html>

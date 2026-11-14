@@ -83,7 +83,8 @@ async function setCardDay(id, key, inp, errEl){
 }
 // "ตั้งวันตัดรอบ" on ภาพรวม: jump to that card's setting.
 function goToCardSettings(id){
-  goTab('settings');
+  goTab('settings', { keepScroll:true });
+  openSettingsSection('paymentSettings');
   const inp = document.querySelector(`.pay-block[data-id="${CSS.escape(id)}"] .pay-stmt-day`);
   if(inp){ inp.scrollIntoView({ block:'center' }); inp.focus(); }
 }

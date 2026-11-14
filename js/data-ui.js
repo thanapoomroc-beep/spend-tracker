@@ -85,6 +85,7 @@ function clearAllData(){
 }
 
 function setupUi(){
+  initSettingsSections();
   document.getElementById('entryDate').addEventListener('input', updateDateSummary);
   document.getElementById('entryNote').addEventListener('input', updateDateSummary);
   document.querySelectorAll('[data-month-nav]').forEach(el => { el.innerHTML = MONTH_NAV_HTML; });

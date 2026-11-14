@@ -151,7 +151,8 @@ function priceSrcText(r){
   return parts.join(' ');
 }
 function goToPriceSettings(){
-  goTab('settings');
+  goTab('settings', { keepScroll:true });
+  openSettingsSection('priceSettings');
   const inp = $w('priceUrl');
   if(inp){ inp.scrollIntoView({ block: 'center' }); inp.focus(); }
 }

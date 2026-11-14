@@ -164,12 +164,17 @@
   .more .row2{margin-top:6px;}
   #addEntryBtn{min-height:52px; font-size:16px;}
 
-  /* Collapsible cards */
-  details.card{padding:0;}
-  details.card>summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; min-height:56px; padding:10px 16px; border-radius:var(--radius); font-size:15px; font-weight:600;}
-  details.card>summary .ttl{flex:1; min-width:0;}
-  details.card>summary .muted{display:block; font-size:12px; font-weight:400; color:var(--muted);}
-  details.card>.body{padding:2px 16px 16px;}
+  /* Settings sections (accordion) */
+  .set-sec{padding:0; margin-bottom:8px;}
+  .set-h{margin:0; font-size:15px; font-weight:600;}
+  .set-toggle{display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; min-height:48px; padding:0 16px; background:transparent; border:0; border-radius:var(--radius); color:var(--text); font:inherit; font-size:15px; font-weight:600; text-align:left; cursor:pointer;}
+  .set-toggle .ttl{flex:1; min-width:0;}
+  button.set-toggle:hover{background:var(--panel2);}
+  button.set-toggle:active{transform:none;}
+  .set-toggle[aria-expanded="true"] .chev{transform:rotate(180deg);}
+  .set-toggle:focus-visible{outline:2px solid var(--text); outline-offset:-2px;}
+  .set-body{padding:2px 16px 16px;}
+  .set-group{margin:20px 4px 8px; font-size:13px; font-weight:600; color:var(--muted);}
   details[open]>summary .chev{transform:rotate(180deg);}
   .chev{transition:transform .2s var(--ease); color:var(--muted); flex:0 0 auto;}
 

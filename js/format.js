@@ -94,6 +94,7 @@ function openSettings(focusIncome){
   goTab('settings', { keepScroll:true });
   const el = document.getElementById('setIncome');
   if(focusIncome){
+    openSettingsSection('incomeSettings');
     el.scrollIntoView({ block:'center' });
     el.focus({ preventScroll:true });
   }else{
@@ -124,6 +125,7 @@ function openBudgetOverview(){
 }
 function openBudgetSettings(){
   goTab('settings', { keepScroll:true });
+  openSettingsSection('budgetSettings');
   document.getElementById('budgetSettings').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block:'start' });
 }
 
