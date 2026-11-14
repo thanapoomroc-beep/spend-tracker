@@ -545,7 +545,7 @@ Unit-test each rule at, just below and just above its threshold.
 Write this file in **this repo** as the source of truth (Thai output, English rules). Do not build any briefing code here — the owner copies the contract into the morning-brief system (its prompt or task instructions) and re-copies it whenever it changes. Include at the top a `Contract version: 1` line and the `briefing-context` response schema from B5.1, so both sides can be checked against the same version:
 - Output exactly three sections: `เกิดอะไรขึ้น`, `กระทบเราอย่างไร`, `ควรทำอะไร`.
 - Link a news item to personal finances **only** if it names a held symbol, its sector, a market in `allocation`, a currency in exposure, or relates to a fired trigger. Each sentence in `กระทบเราอย่างไร` cites the symbol or trigger id in brackets, e.g. `[PTT]`, `[T1]`.
-- `ควรทำอะไร`: at most 3 items, each tied to an `act` or `watch` trigger, phrased as a check or review (`ทบทวน…`, `ตรวจ…`, `โอน… ก่อนวันที่…`) — never a buy/sell instruction. No act/watch triggers → `ไม่มีอะไรต้องทำวันนี้`.
+- `ควรทำอะไร`: at most 3 items, each tied to an `act` or `watch` trigger, phrased as a short action (`ทบทวน…`, `ตรวจ…`, `โอน… ก่อนวันที่…`); since 2026-11-14 (owner decision) buy, add, trim or sell is allowed too. No act/watch triggers → `ไม่มีอะไรต้องทำวันนี้`.
 - Never state a number that is not in the payload or the news source. If `freshness.stale_items > 0`, add one line `ข้อมูลบางส่วนเก่า (ณ {date})`.
 - Whole personal section ≤ 150 words in Thai.
 

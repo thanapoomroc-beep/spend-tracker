@@ -102,6 +102,7 @@ Field notes:
 | T7 | Stale prices or FX, or a manual figure older than 45 days | `info` |
 | T8 | `fx_exposure_pct` over `fxExposureWatchPct` and the baht moved at least 2% in 7 days | `info` |
 | T9 | `savings_rate_3m` below `savingsRateTarget` | `watch` |
+| T11 | A held stock's price moved into a different zone than in the weekly research (run at most 14 days old). Fires once per new zone, computed by the morning run. Extra fields `zone`, `zone_at_research`, `run_date`. `watch` for `high_mos`, `attractive` or `speculative`, otherwise `info` (added 2026-11-14, still version 1) | `watch` / `info` |
 
 T10 (goals) is not in version 1.
 
@@ -118,7 +119,7 @@ Rules:
 - **Link news to the owner only when it is real.** A news item may be tied to the owner's finances only if it names a held `symbol`, that symbol's sector (only a sector the company is actually in), a market present in `allocation`, a currency in `fx_at_upload` / the holdings' `currency`, or a fired trigger. Otherwise write nothing about the owner for that item. Do not guess sectors for symbols you cannot place.
 - **Cover every holding.** Look for news on every symbol in `holdings` (index funds and ETFs by their index or asset class). For a holding with `change_1d_pct` at or beyond ±3, find and give the reason, or say none was found.
 - **Cite every bullet.** Each news bullet ends with the symbol, market, currency or trigger id in square brackets, for example `[PTT]`, `[US]`, `[USD]` or `[T1]`. A bullet without a citation must not be written. With no qualifying news, write one line `วันนี้ไม่มีข่าวเฉพาะของหุ้นที่ถือ`.
-- **At most 3 actions.** Each item in `ควรทำอะไร` is tied to a trigger with severity `act` or `watch` and cites it (`[T6]`). Phrase it as a check or a review: `ทบทวน…`, `ตรวจ…`, `โอน… ก่อนวันที่…`. Never tell the owner to buy or sell, and never name a price to trade at.
+- **At most 3 actions.** Each item in `ควรทำอะไร` is tied to a trigger with severity `act` or `watch` and cites it (`[T6]`). Phrase it as a short action, for example `ทบทวน…`, `ตรวจ…`, `โอน… ก่อนวันที่…`. Since 2026-11-14 (owner decision) an action may also say to buy, add, trim or sell.
 - **Nothing to do is a normal answer.** With no `act` or `watch` trigger, write exactly `ไม่มีอะไรต้องทำวันนี้` under `ควรทำอะไร`. Do not invent a task to fill the section.
 - **Never invent numbers.** State a figure only if it is in the payload or in the news source. Do not compute new percentages, projections or baht amounts. Without `amounts`, never mention a baht amount for the owner's money.
 - **Stale data.** If `stale` is `true`, say once that the personal data is old, with `personal_as_of` as the date. If `freshness.stale_items > 0`, add one line `ข้อมูลบางส่วนเก่า (ณ {date})` where `{date}` is `personal_as_of`.
