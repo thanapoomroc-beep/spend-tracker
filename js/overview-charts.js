@@ -140,6 +140,27 @@ function chartAvailable(canvasId){
   return ok;
 }
 
+// Rows for the compare table: cumulative spend per day, the same day range the chart draws.
+// cur is cut at `upto` days (null after), prev runs the whole previous month. Null cells render as '-'.
+function compareTableRows(cur, prev, upto){
+  const curCum = cumulative(cur, upto);
+  const prevCum = cumulative(prev, prev.length);
+  const n = Math.max(cur.length, prev.length);
+  const rows = [];
+  for(let i = 0; i < n; i++){
+    rows.push({ day: i + 1, cur: i < curCum.length ? curCum[i] : null, prev: i < prevCum.length ? prevCum[i] : null });
+  }
+  return rows;
+}
+function renderCompareTable(cur, prev, upto, curDate, prevDate){
+  const tbl = document.getElementById('compareTable');
+  if(!tbl) return;
+  const cell = v => v === null || v === undefined ? '-' : fmt(v);
+  let html = `<thead><tr><th scope="col">วันที่</th><th scope="col">${escapeHtml(d2label(curDate))}</th><th scope="col">${escapeHtml(d2label(prevDate))}</th></tr></thead><tbody>`;
+  compareTableRows(cur, prev, upto).forEach(r => { html += `<tr><td>${r.day}</td><td>${cell(r.cur)}</td><td>${cell(r.prev)}</td></tr>`; });
+  tbl.innerHTML = html + '</tbody>';
+}
+
 function renderCompareChart(){
   const note = document.getElementById('compareNote');
   const cur = dailyTotals(currentMonth);
@@ -160,6 +181,7 @@ function renderCompareChart(){
       : `${when} ใช้<span class="${diff > 0 ? 'more' : 'less'}">${diff > 0 ? 'มากกว่า' : 'น้อยกว่า'}เดือนก่อน ${fmt(Math.abs(diff))}</span>`;
   }
 
+  renderCompareTable(cur, prev, upto, currentMonth, prevDate);
   if(!chartAvailable('compareChart')) return;
   const n = Math.max(cur.length, prev.length);
   const labels = Array.from({length:n}, (_,i)=> i+1);
@@ -259,14 +281,18 @@ function renderPieChart(monthEntries, fixedItems){
     li.appendChild(b);
     legend.appendChild(li);
   });
-  if(!chartAvailable('pieChart')) return;
-  const ctx = document.getElementById('pieChart').getContext('2d');
-  if(pieChart){ pieChart.destroy(); pieChart = null; }
-  if(!ps.slices.length){
-    ctx.clearRect(0,0,9999,9999);
+  const noPie = !ps.slices.length;
+  document.getElementById('pieEmpty').hidden = !noPie;
+  document.getElementById('pieWrap').hidden = noPie;
+  legend.hidden = noPie;
+  if(noPie){
+    if(pieChart){ pieChart.destroy(); pieChart = null; }
     document.getElementById('pieCenter').style.display = 'none';
     return;
   }
+  if(!chartAvailable('pieChart')) return;
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if(pieChart){ pieChart.destroy(); pieChart = null; }
   const { labels, values:data, colors, total } = ps;
   document.getElementById('pieTotal').textContent = fmt(total);
   document.getElementById('pieCenter').style.display = '';

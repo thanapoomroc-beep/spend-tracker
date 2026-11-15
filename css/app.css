@@ -72,6 +72,7 @@
   }
   input[type="date"]{-webkit-appearance:none; appearance:none; display:block; min-width:0; width:100%; text-align:left;}
   input[type=number]{-moz-appearance:textfield;}
+  input::placeholder{color:var(--muted); opacity:1;}
   input:focus,select:focus{outline:2px solid var(--accent); outline-offset:-1px;}
   button{
     background:var(--accent); color:var(--on-accent); border:none; border-radius:var(--r-s);
@@ -166,6 +167,18 @@
   .sum.has-trip .sum-row>div:nth-child(odd){border-left:none; padding-left:0;}
   .sum.has-trip .sum-row>div:nth-child(even){padding-left:12px;}
   .sum-row .strip-btn{text-align:left;}
+  .sum-empty[hidden]{display:none;}
+  .sum-empty-t{font-size:var(--fs-15); font-weight:600; color:var(--text);}
+  .sum-empty-s{font-size:var(--fs-13); color:var(--muted); margin-top:2px; line-height:1.4;}
+  .sum.is-empty #sumLabel,.sum.is-empty #statRemaining,.sum.is-empty .compare-note{display:none;}
+  .sum.is-empty .sum-row>div:not(#stripTripCell){display:none;}
+  .sum.is-empty .sum-row{grid-template-columns:minmax(0,1fr); margin-top:12px;}
+  .sum.is-empty .sum-row:not(.has-trip-row){border-top:none; padding-top:0;}
+  .sum.is-empty:not(.has-trip) .sum-row{display:none;}
+  .sum.is-empty.has-trip .sum-row{display:grid; border-top:1px solid var(--border); padding-top:12px;}
+  .sum.is-empty.has-trip .sum-row>div{padding-left:0; border-left:none;}
+  .pie-empty{font-size:var(--fs-14); color:var(--muted); padding:8px 0 4px;}
+  .pie-empty[hidden]{display:none;}
   button.row-btn{display:block; width:100%; text-align:left; background:none; color:var(--text); border:none; border-radius:var(--r-s); font-weight:inherit; font-size:inherit; padding:8px 6px; margin:0 -6px; width:calc(100% + 12px); min-height:44px;}
   button.row-btn:hover{background:var(--panel2);}
   button.row-btn:active{transform:none; background:var(--panel2);}
@@ -308,7 +321,7 @@
     aspect-ratio:1; border-radius:var(--r-xs); background:var(--panel2); display:flex; flex-direction:column;
     align-items:center; justify-content:center; line-height:1.15; min-width:0; overflow:hidden;
   }
-  .heat-cell .d{font-size:var(--fs-12); opacity:.85;}
+  .heat-cell .d{font-size:var(--fs-12);}
   .heat-cell .a{font-size:var(--fs-12); font-weight:700;}
   .heat-cell.today{outline:2px solid var(--text); outline-offset:-2px;}
   .heat-legend{display:flex; align-items:center; gap:6px; justify-content:flex-end; font-size:var(--fs-12); color:var(--muted); margin-top:10px;}
@@ -591,7 +604,7 @@
   /* Slip inbox (2.10.0) */
   .slip-head{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;}
   .slip-head h2{margin:0;}
-  #slipTitle:focus,#entryList:focus{outline:none;}
+  #slipTitle:focus:not(:focus-visible),#entryList:focus:not(:focus-visible){outline:none;}
   .slip-all{margin-right:-8px;}
   .slip-list{list-style:none; margin:0; padding:0;}
   .slip-item{padding:2px 0 10px; border-bottom:1px solid var(--border);}

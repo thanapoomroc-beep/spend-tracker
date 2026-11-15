@@ -335,12 +335,18 @@ function getEffectiveBudgets(mKey){
 }
 
 let saveIndicatorTimer = null;
-function flashToast(msg, ok, action){
+function flashToast(msg, ok, action, srExtra){
   const el = document.getElementById('saveIndicator');
   el.textContent = '';
   const span = document.createElement('span');
   span.textContent = msg;
   el.appendChild(span);
+  if(srExtra){
+    const sr = document.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = ' ' + srExtra;
+    el.appendChild(sr);
+  }
   el.classList.toggle('has-action', !!action);
   if(action){
     const b = document.createElement('button');

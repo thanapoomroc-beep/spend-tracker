@@ -1,7 +1,6 @@
 /* ---------- Wealth tab (ทรัพย์สิน): screens. The maths lives in wealth-core.js ---------- */
-const WEALTH_HIDE_KEY = 'spendTrackerHideWealth';
-let wealthHidden = false;
-try{ wealthHidden = localStorage.getItem(WEALTH_HIDE_KEY) === '1'; }catch(e){}
+// Amounts start hidden every time the tab is entered (2.14.0). The old localStorage key 'spendTrackerHideWealth' is no longer read or written.
+let wealthHidden = true;
 let wealthView = null;         // account id of the holdings page, null = the main page
 let wealthChart = null;
 let wSheetRestore = null;      // element (or selector) that gets focus back when the sheet closes
@@ -93,7 +92,9 @@ function wealthCommitQuiet(){
   if(sum.hasData) upsertSnapshot(state.snapshots, today, buildSnapshot(sum));
   wealthSaveQuiet();
 }
-function showWealthTab(){
+// fromOtherTab is false when goTab is re-run while already on the tab, which must not re-hide.
+function showWealthTab(fromOtherTab){
+  if(fromOtherTab !== false) wealthHidden = true;
   wealthTouchSnapshot();
   renderWealth();
   maybeAutoRefreshPrices();
@@ -911,7 +912,6 @@ function openPriceSheet(accId, opener){
 /* ---------- Events ---------- */
 function setWealthHidden(on){
   wealthHidden = !!on;
-  try{ localStorage.setItem(WEALTH_HIDE_KEY, wealthHidden ? '1' : '0'); }catch(e){}
   renderWealth();
 }
 function wealthClick(ev){
@@ -939,6 +939,10 @@ function wealthClick(ev){
 function setupWealthUi(){
   $w('wealthEyeBtn').addEventListener('click', () => setWealthHidden(!wealthHidden));
   $w('panel-wealth').addEventListener('click', wealthClick);
+  // Coming back from the background while on the tab hides the amounts again.
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden && activeTab === 'wealth'){ wealthHidden = true; renderWealth(); }
+  });
   setupPriceSettings();
 }
 function anyOverlayOpen(){

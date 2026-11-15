@@ -225,7 +225,8 @@ async function undoEntry(entry){
 function heroFeedback(amount, msg, undo, before){
   const hero = document.getElementById('heroCard');
   const value = document.getElementById('heroValue');
-  flashToast(msg, true, undo);
+  const shown = value.style.display !== 'none' && heroShown.label && typeof heroShown.num === 'number';
+  flashToast(msg, true, undo, shown ? heroShown.label + ' ' + fmt(heroShown.num) : '');
   if(value.style.display === 'none') return;
   const delta = document.getElementById('heroDelta');
   delta.textContent = (heroShown.dir === 'up' ? '+' : '−') + fmt(amount);

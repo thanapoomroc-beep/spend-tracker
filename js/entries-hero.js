@@ -54,6 +54,9 @@ function renderMonthViews(){
   const monthEntries = sortEntries(fig.entries);
   const { fixed, variable, remaining } = fig;
 
+  const emptyMonth = isEmptyMonthFigures(fig);
+  document.getElementById('stripGroup').classList.toggle('is-empty', emptyMonth);
+  document.getElementById('sumEmpty').hidden = !emptyMonth;
   document.getElementById('sumLabel').textContent = isNow ? 'คงเหลือเดือนนี้' : 'คงเหลือ ' + viewedMonthWord();
   document.getElementById('statIncome').textContent = fmt(fig.income);
   document.getElementById('statFixed').textContent = fmt(fixed);

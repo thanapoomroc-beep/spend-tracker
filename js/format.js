@@ -149,6 +149,7 @@ function tabFromHash(){
 function applyTab(name, opts){
   opts = opts || {};
   if(activeTab) scrollPos[activeTab] = window.scrollY;
+  const prevTab = activeTab;
   activeTab = name;
   TABS.forEach(t=>{
     const panel = document.getElementById('panel-' + t);
@@ -162,7 +163,7 @@ function applyTab(name, opts){
     resizeCharts();
     requestAnimationFrame(resizeCharts);
   }
-  if(name === 'wealth') showWealthTab();
+  if(name === 'wealth') showWealthTab(prevTab !== 'wealth');
   if(name === 'settings' && typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
 }
 function resizeCharts(){

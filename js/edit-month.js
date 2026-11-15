@@ -176,6 +176,11 @@ function monthFigures(d){
   return { eff, entries, tripEntries, income, fixed, variable, tripTotal, tripFromIncome, remaining: income - fixed - variable - tripFromIncome };
 }
 
+// A month with no income and no non-trip entries: ภาพรวม shows an empty line instead of ฿0 figures.
+function isEmptyMonthFigures(fig){
+  return !!fig && !(fig.income > 0) && fig.entries.length === 0;
+}
+
 function fixedTotal(mKey){
   return getEffectiveSettings(mKey).fixedItems.reduce((s,i)=> s + (i.amount||0), 0);
 }
