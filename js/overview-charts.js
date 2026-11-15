@@ -2,6 +2,7 @@
 // The one place that decides which entries feed the method breakdown (a later phase can exclude trip entries here).
 function paymentStatsEntries(monthEntries){ return monthEntries.filter(e => !e.tripId); }
 function renderPayBreakdown(entries, els){
+  const tappable = !els;   // the trip page reuses this list without the jump into รายการ
   els = els || { card: document.getElementById('payCard'), body: document.getElementById('payBody'), total: document.getElementById('payTotal') };
   const card = els.card, body = els.body;
   body.innerHTML = '';
@@ -15,7 +16,15 @@ function renderPayBreakdown(entries, els){
   els.total.textContent = 'รวม ' + fmt(total);
   rows.forEach(r=>{
     const li = document.createElement('li');
-    li.innerHTML = `<div class="pb-head"><span class="nm">${r.id ? payIconSvg(findPay(r.id)) : ''}${escapeHtml(r.name)}</span><span class="amt">${fmt(r.sum)}</span><span class="pct">${Math.round(r.sum / total * 100)}%</span></div><div class="pb-bar" aria-hidden="true"><span style="width:${max > 0 ? r.sum / max * 100 : 0}%"></span></div>`;
+    const inner = (chev) => `<div class="pb-head${tappable ? ' has-chev' : ''}"><span class="nm">${r.id ? payIconSvg(findPay(r.id)) : ''}${escapeHtml(r.name)}</span><span class="amt">${fmt(r.sum)}</span><span class="pct">${Math.round(r.sum / total * 100)}%</span>${chev ? CHEV_SVG : tappable ? '<span></span>' : ''}</div><div class="pb-bar" aria-hidden="true"><span style="width:${max > 0 ? r.sum / max * 100 : 0}%"></span></div>`;
+    if(r.id && tappable){
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'row-btn';
+      b.setAttribute('aria-label', `ดูรายการช่องทาง ${r.name} ${fmt(r.sum)}`);
+      b.innerHTML = inner(true);
+      b.addEventListener('click', ()=> openEntriesFiltered({ pay: r.id }));
+      li.appendChild(b);
+    }else{ li.innerHTML = inner(false); if(tappable) li.className = 'plain-row'; }
     body.appendChild(li);
   });
 }
@@ -88,6 +97,7 @@ function renderInstallCard(fixedItems){
   body.innerHTML = '';
   const items = fixedItems.filter(i => { const inf = installmentInfo(i, mKey); return inf && inf.status === 'active'; });
   card.style.display = items.length ? '' : 'none';
+  updateDueMoneyCard();
   items.forEach(it=>{
     const inf = installmentInfo(it, mKey);
     const nm = escapeHtml(it.name || 'รายการ');
@@ -169,8 +179,8 @@ function renderCompareChart(){
         tooltip: { callbacks: { title: it => 'วันที่ ' + it[0].label, label: it => ` ${it.dataset.label}: ${fmt(it.parsed.y)}` } }
       },
       scales: {
-        x: { ticks:{color:'#9A9CA3', maxTicksLimit:8}, grid:{color:'#2E3035'} },
-        y: { beginAtZero:true, ticks:{color:'#9A9CA3'}, grid:{color:'#2E3035'} }
+        x: { ticks:{color:'#9A9CA3', maxTicksLimit:8}, grid:{color:CHART_GRID} },
+        y: { beginAtZero:true, ticks:{color:'#9A9CA3'}, grid:{color:CHART_GRID} }
       }
     }
   });
@@ -209,59 +219,55 @@ function renderHeatmap(){
   el.innerHTML = html;
 }
 
-function renderPieChart(monthEntries, fixedItems){
-  if(!chartAvailable('pieChart')) return;
-  const labels = [];
-  const data = [];
-  const colors = [];
-
-  const financingTotal = (fixedItems||[]).filter(i => i.group === 'financing').reduce((s,i)=> s + (i.amount||0), 0);
-  const subscriptionTotal = (fixedItems||[]).filter(i => i.group !== 'financing').reduce((s,i)=> s + (i.amount||0), 0);
-  const fixedSum = financingTotal + subscriptionTotal;
-
-  // One neutral slice for all fixed items; the tooltip lists the breakdown.
-  if(fixedSum > 0){
-    labels.push('รายการประจำ');
-    data.push(fixedSum);
-    colors.push(FIXED_COLOR);
-  }
-
-  // Coloured categories in fixed slot order; every category without a slot is grouped as `อื่นๆ`.
-  const byCat = {}, otherParts = {};
-  monthEntries.forEach(e=>{
+// Pure slice maths for the doughnut: variable (non-trip) spend by category. Colour follows the category, never its rank.
+// Categories without a colour slot are grouped as `อื่นๆ`; `cats` lists every category name inside each slice.
+function pieSlices(monthEntries){
+  const byCat = {}, catsIn = {};
+  (monthEntries || []).forEach(e=>{
+    if(e.tripId) return;
     const g = chartGroup(e.category);
     byCat[g] = (byCat[g]||0) + e.amount;
-    if(g === 'อื่นๆ') otherParts[e.category] = (otherParts[e.category]||0) + e.amount;
+    (catsIn[g] = catsIn[g] || new Set()).add(e.category);
   });
+  const slices = [];
   colouredCatsBySlot().forEach(c=>{
-    if(byCat[c.name]){
-      labels.push(c.name);
-      data.push(byCat[c.name]);
-      colors.push(categoryColor(c.name));
-    }
+    if(byCat[c.name]) slices.push({ label:c.name, value:byCat[c.name], color:categoryColor(c.name), cats:[...catsIn[c.name]] });
   });
-  if(byCat['อื่นๆ']){
-    labels.push('อื่นๆ');
-    data.push(byCat['อื่นๆ']);
-    colors.push(NEUTRAL_COLOR);
-  }
+  if(byCat['อื่นๆ']) slices.push({ label:'อื่นๆ', value:byCat['อื่นๆ'], color:NEUTRAL_COLOR, cats:[...catsIn['อื่นๆ']] });
+  return { slices, labels:slices.map(x => x.label), values:slices.map(x => x.value), colors:slices.map(x => x.color), total:slices.reduce((s,x)=> s + x.value, 0) };
+}
 
-  const ctx = document.getElementById('pieChart').getContext('2d');
+function renderPieChart(monthEntries, fixedItems){
+  const fixedSum = (fixedItems||[]).reduce((s,i)=> s + (i.amount||0), 0);
+  const foot = document.getElementById('pieFoot');
+  foot.hidden = !(fixedSum > 0);
+  foot.textContent = fixedSum > 0 ? 'ไม่รวมรายการประจำ ' + fmt(fixedSum) : '';
+  const ps = pieSlices(monthEntries);
+  const note = document.getElementById('pieNote');
+  note.textContent = ps.total > 0 ? 'รวม ' + fmt(ps.total) : '';
   const legend = document.getElementById('pieLegend');
   legend.innerHTML = '';
+  // Legend rows are buttons (category → รายการ); they work even when Chart.js is missing.
+  ps.slices.forEach(sl=>{
+    const li = document.createElement('li');
+    li.className = 'pl';
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'row-btn';
+    b.setAttribute('aria-label', `ดูรายการหมวด ${sl.label}`);
+    b.innerHTML = `<span class="dot" style="background:${sl.color}" aria-hidden="true"></span><span class="nm">${escapeHtml(sl.label)}</span><span class="amt">${fmt(sl.value)}</span><span class="pct">${Math.round(sl.value / ps.total * 100)}%</span>${CHEV_SVG}`;
+    b.addEventListener('click', ()=> openEntriesFiltered({ cats: sl.cats }));
+    li.appendChild(b);
+    legend.appendChild(li);
+  });
+  if(!chartAvailable('pieChart')) return;
+  const ctx = document.getElementById('pieChart').getContext('2d');
   if(pieChart){ pieChart.destroy(); pieChart = null; }
-  if(labels.length === 0){
+  if(!ps.slices.length){
     ctx.clearRect(0,0,9999,9999);
     document.getElementById('pieCenter').style.display = 'none';
     return;
   }
-  const total = data.reduce((a,b)=> a + b, 0);
-  // Direct labels: the legend list carries name, amount and share, so identity is never colour-alone.
-  labels.forEach((l,i)=>{
-    const li = document.createElement('li');
-    li.innerHTML = `<span class="dot" style="background:${colors[i]}" aria-hidden="true"></span><span class="nm">${escapeHtml(l)}</span><span class="amt">${fmt(data[i])}</span><span class="pct">${Math.round(data[i] / total * 100)}%</span>`;
-    legend.appendChild(li);
-  });
+  const { labels, values:data, colors, total } = ps;
   document.getElementById('pieTotal').textContent = fmt(total);
   document.getElementById('pieCenter').style.display = '';
   pieChart = new Chart(ctx, {
@@ -273,13 +279,16 @@ function renderPieChart(monthEntries, fixedItems){
         legend: { display:false },
         tooltip: Object.assign(chartTooltip(), { callbacks: {
           label: it => ` ${it.label}: ${fmt(it.parsed)} (${Math.round(it.parsed / total * 100)}%)`,
-          afterLabel: it => it.label === 'รายการประจำ' ? [`ผ่อน/ลงทุน ${fmt(financingTotal)}, ค่าสมาชิก ${fmt(subscriptionTotal)}`]
-            : (it.label === 'อื่นๆ' && Object.keys(otherParts).some(n => n !== 'อื่นๆ')) ? Object.keys(otherParts).map(n => `${n} ${fmt(otherParts[n])}`) : []
+          afterLabel: it => {
+            const sl = ps.slices[it.dataIndex];
+            return sl && sl.label === 'อื่นๆ' && sl.cats.some(n => n !== 'อื่นๆ') ? sl.cats.map(n => `${n} ${fmt(otherSum(monthEntries, n))}`) : [];
+          }
         } })
       }
     }
   });
 }
+function otherSum(monthEntries, cat){ return monthEntries.filter(e => !e.tripId && e.category === cat).reduce((s,e)=> s + e.amount, 0); }
 
 // Shared chart look: recessive grid, muted ticks, tooltip on the elevated surface.
 const CHART_TEXT = '#F2F2F4', CHART_MUTED = '#9A9CA3', CHART_GRID = '#222327', CHART_PANEL = '#18191C';
@@ -435,3 +444,11 @@ function renderTrendChart(){
   });
 }
 
+
+/* ---------- เงินที่ต้องจ่าย: one card for credit cards + installments ---------- */
+function updateDueMoneyCard(){
+  const card = document.getElementById('dueMoneyCard');
+  if(!card) return;
+  const shown = ['cardsCard', 'installCard'].some(id => document.getElementById(id).style.display !== 'none');
+  card.style.display = shown ? '' : 'none';
+}

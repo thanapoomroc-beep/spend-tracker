@@ -54,11 +54,13 @@ function renderMonthViews(){
   const monthEntries = sortEntries(fig.entries);
   const { fixed, variable, remaining } = fig;
 
+  document.getElementById('sumLabel').textContent = isNow ? 'คงเหลือเดือนนี้' : 'คงเหลือ ' + viewedMonthWord();
+  document.getElementById('statIncome').textContent = fmt(fig.income);
   document.getElementById('statFixed').textContent = fmt(fixed);
   document.getElementById('statVariable').textContent = fmt(variable);
   const remEl = document.getElementById('statRemaining');
   remEl.textContent = fmt(remaining);
-  remEl.className = 'v' + (remaining < 0 ? ' neg' : '');
+  remEl.className = 'sum-big' + (remaining < 0 ? ' neg' : '');
   // ทริป cell: only when the month has trip entries (the grid adapts from 3 to 4 columns)
   const tripCell = document.getElementById('stripTripCell');
   const hasTrip = fig.tripEntries.length > 0;
@@ -104,16 +106,17 @@ function sortEntries(arr){
 }
 
 /* ---------- Search & filter (F5) ---------- */
-let filterText = '', filterCats = new Set(), searchAll = false, filterReview = false;
+let filterText = '', filterCats = new Set(), searchAll = false, filterReview = false, filterPay = null;
 let filterTimer = null;
-function filterActive(){ return !!filterText.trim() || filterCats.size > 0 || searchAll || filterReview; }
-function pruneFilters(){ [...filterCats].forEach(n => { if(!findCat(n)) filterCats.delete(n); }); if(filterReview && !state.entries.some(e => e.needsReview)) filterReview = false; }
+function filterActive(){ return !!filterText.trim() || filterCats.size > 0 || searchAll || filterReview || !!filterPay; }
+function pruneFilters(){ [...filterCats].forEach(n => { if(!findCat(n)) filterCats.delete(n); }); if(filterPay && !findPay(filterPay)) filterPay = null; if(filterReview && !state.entries.some(e => e.needsReview)) filterReview = false; }
 function refreshEntryList(){ renderEntriesTab(sortEntries(entriesForMonth(currentMonth))); }   // never trip entries
 function updateFilterSummary(){
   const parts = [];
   if(searchAll) parts.push('ทุกเดือน');
   if(filterCats.size) parts.push(filterCats.size + ' หมวด');
   if(filterReview) parts.push('รอตรวจ');
+  if(filterPay) parts.push(payName(filterPay));
   document.getElementById('filterSummary').textContent = parts.length ? '(' + parts.join(', ') + ')' : '';
   const b = document.getElementById('searchAllBtn');
   b.setAttribute('aria-pressed', searchAll ? 'true' : 'false');
@@ -130,7 +133,7 @@ function renderFilterChips(){
     box.appendChild(b);
     return b;
   };
-  const all = mk('ทั้งหมด', null, filterCats.size === 0 && !filterReview, ()=>{ filterCats.clear(); filterReview = false; syncFilterChips(); refreshEntryList(); });
+  const all = mk('ทั้งหมด', null, filterCats.size === 0 && !filterReview && !filterPay, ()=>{ filterCats.clear(); filterReview = false; filterPay = null; renderFilterChips(); const a2 = document.querySelector('#filterChips [data-all]'); if(a2) a2.focus(); refreshEntryList(); });
   all.dataset.all = '1';
   state.categories.forEach(c=>{
     const b = mk(c.name + (c.archived ? ' (ซ่อน)' : ''), categoryColor(c.name), filterCats.has(c.name), ()=>{
@@ -139,6 +142,11 @@ function renderFilterChips(){
     });
     b.dataset.cat = c.name;
   });
+  if(filterPay){
+    const pb = mk(payName(filterPay), null, true, ()=>{ filterPay = null; renderFilterChips(); refreshEntryList(); });
+    pb.dataset.pay = '1';
+    pb.setAttribute('aria-label', 'ช่องทางจ่าย ' + payName(filterPay) + ' กดเพื่อเอาออก');
+  }
   if(state.entries.some(e => e.needsReview)){
     const r = mk('รอตรวจ', null, filterReview, ()=>{ filterReview = !filterReview; syncFilterChips(); refreshEntryList(); });
     r.dataset.review = '1';
@@ -148,7 +156,7 @@ function renderFilterChips(){
 // Update pressed state in place so focus is never lost while toggling.
 function syncFilterChips(){
   document.querySelectorAll('#filterChips .fchip').forEach(b=>{
-    const on = b.dataset.all ? (filterCats.size === 0 && !filterReview) : b.dataset.review ? filterReview : filterCats.has(b.dataset.cat);
+    const on = b.dataset.all ? (filterCats.size === 0 && !filterReview && !filterPay) : b.dataset.pay ? !!filterPay : b.dataset.review ? filterReview : filterCats.has(b.dataset.cat);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
   updateFilterSummary();
@@ -195,16 +203,35 @@ function entryRowEl(e, listId, noDelete, noBadge){
   if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
   return row;
 }
+// Search/filter predicate (F5); reads the in-memory filter state.
+function entryPassesFilters(e){
+  const q = filterText.trim().toLowerCase();
+  return (!filterCats.size || filterCats.has(e.category)) && (!filterReview || e.needsReview) && (!filterPay || e.paymentMethod === filterPay) &&
+    (!q || String(e.note || '').toLowerCase().includes(q) || String(e.category).toLowerCase().includes(q) || payName(e.paymentMethod).toLowerCase().includes(q));
+}
+// Jump from ภาพรวม into รายการ with one category set and/or one payment method. Other filters reset; the month stays.
+function openEntriesFiltered(f){
+  f = f || {};
+  clearTimeout(filterTimer);
+  filterText = ''; searchAll = false; filterReview = false;
+  filterCats = new Set(Array.isArray(f.cats) ? f.cats.filter(n => findCat(n)) : []);
+  filterPay = f.pay && findPay(f.pay) ? f.pay : null;
+  const si = document.getElementById('entrySearch'); if(si) si.value = '';
+  const det = document.getElementById('filterDetails'); if(det) det.open = true;
+  renderFilterChips();
+  refreshEntryList();
+  scrollPos.entries = 0;
+  goTab('entries');
+  const list = document.getElementById('entryList');
+  if(list && list.focus){ try{ list.focus({ preventScroll:true }); }catch(e){ list.focus(); } }
+}
 function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
   list.innerHTML = '';
   const active = !!useFilters && filterActive();
   let source = monthEntries;
   if(active){
     source = searchAll ? sortEntries(state.entries.filter(e => !e.tripId)) : monthEntries;
-    const q = filterText.trim().toLowerCase();
-    source = source.filter(e =>
-      (!filterCats.size || filterCats.has(e.category)) && (!filterReview || e.needsReview) &&
-      (!q || String(e.note || '').toLowerCase().includes(q) || String(e.category).toLowerCase().includes(q) || payName(e.paymentMethod).toLowerCase().includes(q)));
+    source = source.filter(entryPassesFilters);
   }
   const shown = limit ? source.slice(0, limit) : source;
   const today = todayISO();
@@ -328,12 +355,15 @@ function renderBudgetCard(budgets, monthEntries){
     const budget = budgets[cat], spent = spentBy[cat] || 0, ratio = spent / budget;
     const barCls = ratio > 1 ? 'neg' : (ratio >= 0.8 ? 'warn' : '');
     const over = spent > budget;
-    const row = document.createElement('div');
-    row.className = 'budget-row';
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'budget-row row-btn';
+    row.setAttribute('aria-label', `ดูรายการหมวด ${cat} ใช้ ${fmt(spent)} จากงบ ${fmt(budget)}`);
     row.innerHTML = `
-      <div class="budget-head"><span class="name"><span class="dot" style="background:${categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}</span><span class="nums">${fmt(spent)} / ${fmt(budget)}</span></div>
-      <div class="bar" role="progressbar" aria-label="งบ ${escapeHtml(cat)}" aria-valuemin="0" aria-valuemax="${budget}" aria-valuenow="${Math.min(Math.round(spent), budget)}"><span class="${barCls}" style="width:${Math.min(ratio,1)*100}%"></span></div>
-      <div class="budget-foot${over ? ' neg' : ''}">${over ? 'เกิน ' + fmt(spent - budget) : 'เหลือ ' + fmt(budget - spent)}</div>`;
+      <span class="budget-head"><span class="name"><span class="dot" style="background:${categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}</span><span class="nums">${fmt(spent)} / ${fmt(budget)}${CHEV_SVG}</span></span>
+      <span class="bar" aria-hidden="true"><span class="${barCls}" style="width:${Math.min(ratio,1)*100}%"></span></span>
+      <span class="budget-foot${over ? ' neg' : ''}">${over ? 'เกิน ' + fmt(spent - budget) : 'เหลือ ' + fmt(budget - spent)}</span>`;
+    row.addEventListener('click', ()=> openEntriesFiltered({ cats:[cat] }));
     body.appendChild(row);
   });
 }

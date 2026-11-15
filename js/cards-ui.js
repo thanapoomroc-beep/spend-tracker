@@ -106,6 +106,7 @@ function renderCardsCard(){
   const today = todayISO();
   const rows = !isNow ? [] : state.paymentMethods.filter(isCardMethod).map(m => ({ m, s: cardStatusOf(m, today) })).filter(x => !x.m.archived || cardBalance(x.s) !== 0);
   card.style.display = rows.length ? '' : 'none';
+  updateDueMoneyCard();
   rows.forEach(({ m, s }) => body.appendChild(buildCardBlock(m, s)));
   if(rows.length){ const n = document.createElement('div'); n.className = 'cc-meta'; n.textContent = 'ยอดบัตรคิดจากรายการที่จดไว้ อาจต่างจากบิลจริง'; body.appendChild(n); }
 }
