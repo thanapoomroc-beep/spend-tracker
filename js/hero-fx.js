@@ -1,5 +1,5 @@
-// The วันนี้ hero's sand grain: a still image (img/hero-grain.webp, one frame of the taste kit's
-// grain-gradient shader, seed 6) on #heroFx. 2.11.2 replaced the live WebGL shader, which flickered
+// The วันนี้ hero's warm light: a still image (img/hero-light.webp, one frame of the taste kit's
+// film-light-leak effect, seed 5, under a soft centre scrim) on #heroFx. 2.11.2 replaced the live WebGL shader, which flickered
 // on iPhone. #heroFx is a child of #heroCard because render rewrites the card's className.
 function heroFxWanted(){
   if(document.body.classList.contains('travel')) return false;

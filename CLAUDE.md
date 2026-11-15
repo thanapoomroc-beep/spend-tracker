@@ -55,7 +55,7 @@ Don't add: small bug fixes, single copy tweaks, in-progress task details, or any
 - Identity (UI round 2, owner decisions 2026-11-15):
   - Font: **Anuphan** (OFL), self-hosted in `fonts/`, with the system stack as fallback.
   - Corners: **sharp** (one small radius scale app-wide; dots stay round).
-  - One sand grain ground on the วันนี้ hero only, hidden in travel mode (ice cyan owns the hero). Since 2.11.2 it is a still image `img/hero-grain.webp` (one frame of the taste kit's grain-gradient, seed 6), because the live WebGL shader flickered on the owner's iPhone even with still grain. Don't bring back a live shader without testing on the iPhone first.
+  - One warm-light ground on the วันนี้ hero only, hidden in travel mode (ice cyan owns the hero). It is a still image, `img/hero-light.webp`, the owner's pick on 2026-11-16: a frame of the taste kit's film-light-leak, seed 5, rendered at a full 3× DPR. It sits under a soft centre scrim, with no mask ring. The live WebGL shader flickered on the owner's iPhone (2.11.x), and the 2.11.2 grain still looked bad: it was rendered at the kit's 1.75 DPR cap and had an oval mask. Render future stills with `config.maxDpr=3`. Don't bring back a live shader without testing on the iPhone first.
   - Payment methods use one line-icon set (lucide). There are no bank logos, because no licensed source has KBANK, ttb or K PLUS marks; never draw look-alikes.
   - No trip cover photos.
 - Charts: recessive grid, one y-axis, 2px gaps, legends in text colours, doughnut total as an HTML overlay (iOS canvas text alignment is unreliable).
