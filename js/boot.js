@@ -9,7 +9,6 @@ async function init(){
   initForm();
   render();
   refreshChartsAfterFonts();
-  heroFxStart();
   heroEnter();
   wealthTouchSnapshot();
   maybeAutoRefreshPrices();

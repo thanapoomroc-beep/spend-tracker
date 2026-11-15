@@ -16,9 +16,9 @@ test('payIconSvg: wallet for plain methods, credit card for repay and statement'
   assert.ok(wallet.includes('aria-hidden="true"') && wallet.includes('stroke-width="1.75"'));
 });
 
-test('hero-fx.js loads without side effects and heroFxSync is safe without a controller', () => {
+test('hero-fx.js loads without side effects and heroFxSync is safe', () => {
   const { run } = loadApp();
-  assert.equal(run(`typeof heroFxStart`), 'function');
+  assert.equal(run(`typeof heroFxSync`), 'function');
+  assert.equal(run(`typeof heroFxStart`), 'undefined');
   assert.doesNotThrow(() => run(`heroFxSync()`));
-  assert.equal(run(`heroFxCtl`), null);
 });

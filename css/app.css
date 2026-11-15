@@ -101,7 +101,7 @@
 
   /* Hero */
   .hero{text-align:center; padding:22px 20px 18px; transition:border-color .3s; position:relative; overflow:hidden; isolation:isolate;}
-  .hero-fx{position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none; -webkit-mask-image:radial-gradient(ellipse 80% 76% at 50% 54%,transparent 50%,#000 80%); mask-image:radial-gradient(ellipse 80% 76% at 50% 54%,transparent 50%,#000 80%);}
+  .hero-fx{position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none; background:url("../img/hero-grain.webp") center/cover no-repeat; -webkit-mask-image:radial-gradient(ellipse 80% 76% at 50% 54%,transparent 50%,#000 80%); mask-image:radial-gradient(ellipse 80% 76% at 50% 54%,transparent 50%,#000 80%);}
   .hero-fx[hidden]{display:none;}
   .hero>:not(.hero-fx){position:relative; z-index:1;}
   .hero>.hero-info{position:absolute;}
