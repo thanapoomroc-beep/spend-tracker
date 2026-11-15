@@ -25,6 +25,7 @@ function cbSize(bytes){ return Math.max(1, Math.round((Number(bytes) || 0) / 102
 function renderCloudCard(){
   const el = $w('cloudBackupBody');
   if(!el) return;
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
   const cfg = cloudLoadConfig(), on = !!(cfg && cfg.enabled), priced = !!loadPriceConfig();
   let h;
   if(on){

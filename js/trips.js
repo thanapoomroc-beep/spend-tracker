@@ -535,6 +535,7 @@ function exportTripCsv(){
 function renderTripsSettings(){
   const box = document.getElementById('tripsSettingsList');
   if(!box) return;
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
   box.innerHTML = '';
   const trips = sortedTrips();
   if(!trips.length){ box.innerHTML = '<div class="empty" style="padding:6px 0;">ยังไม่มีทริป</div>'; return; }

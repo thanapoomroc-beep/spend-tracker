@@ -4,7 +4,7 @@ function exportData(){
   if(cbCanShareFiles()){
     try{
       const file = new File([json], name, {type:'application/json'});
-      navigator.share({files:[file]}).catch(err=>{
+      navigator.share({files:[file]}).then(noteExportDone, err=>{
         if(err && err.name === 'AbortError') return;   // the owner closed the sheet
         downloadBackupFile(json, name);
       });
@@ -23,6 +23,7 @@ function downloadBackupFile(json, name){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  noteExportDone();
 }
 
 async function importData(event){

@@ -163,6 +163,7 @@ function applyTab(name, opts){
     requestAnimationFrame(resizeCharts);
   }
   if(name === 'wealth') showWealthTab();
+  if(name === 'settings' && typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
 }
 function resizeCharts(){
   [compareChart, pieChart, trendChart].forEach(c=>{ if(c){ try{ c.resize(); }catch(e){} } });

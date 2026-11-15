@@ -218,6 +218,9 @@ function wealthHeroHtml(sum, series, today){
   if(mc){
     const part = n => `<span class="${wDir(n)}">${wm(wSigned(n))}</span>`;
     change = `<div>เดือนนี้ ${part(mc.change)}</div><div class="w-change-sub"><span class="nb">ตลาด ${part(mc.market)}</span><span class="nb">เงินเข้า-ออก ${part(mc.flows)}</span></div>`;
+  }else{
+    const gap = monthChangeGap(state.snapshots, today);
+    if(gap) change = `<div>${gap === 'first' ? 'เดือนแรก ยังไม่มีเดือนก่อนให้เทียบ' : 'เดือนก่อนไม่มีตัวเลขให้เทียบ'}</div>`;
   }
   let chart;
   if(series.length >= 2){

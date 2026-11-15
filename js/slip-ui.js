@@ -163,6 +163,7 @@ function slStatusHtml(st, on){
 function renderSlipSettings(){
   const el = $w('slipSettingsBody');
   if(!el) return;
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
   const ss = state.slipSettings, on = slipIsOn(), priced = !!loadPriceConfig(), st = slipLoadStatus();
   const rn = Object.keys(ss.receivers).length;
   const swOn = (labId, label, isOn, act, disabled) => bpSwitchHtml(labId, label, isOn, act, isOn ? 'เปิด' : 'ปิด').replace('<button ', disabled ? '<button disabled ' : '<button ');

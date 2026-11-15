@@ -55,6 +55,7 @@ function thShown(f, v){ return hRound(v * f.scale, 4); }
 function renderThresholds(){
   const el = $w('thresholdsBody');
   if(!el) return;
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
   const ws = state.wealthSettings;
   el.innerHTML = '<div class="set-note">ใช้ตัดสินว่าอะไรควรเตือน ทั้งในหน้าทรัพย์สินและในสรุปที่ส่งให้ briefing</div><div class="th-grid">' +
     TH_FIELDS.map(f => {
@@ -78,6 +79,7 @@ async function thChange(inp){
   if(state.wealthSettings[f.key] === v) return;
   state.wealthSettings[f.key] = v;
   await saveData();
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
 }
 function thAskReset(opener){
   openConfirm({
@@ -98,6 +100,7 @@ function bpWhen(iso){ return typeof cbWhen === 'function' ? cbWhen(iso) : iso; }
 function renderBriefingCard(){
   const el = $w('briefingBody');
   if(!el) return;
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
   const on = briefingIsOn(), priced = !!loadPriceConfig(), share = state.wealthSettings.briefingShareAmounts === true, st = briefingLoadStatus();
   let h = '<div class="set-note">ส่งสรุปสุขภาพการเงินให้ briefing เช้าอ่าน เป็นเปอร์เซ็นต์และชื่อหุ้น ไม่มีชื่อบัญชีและโน้ต</div>';
   if(!priced && !on){

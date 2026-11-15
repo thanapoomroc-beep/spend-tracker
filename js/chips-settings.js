@@ -155,6 +155,7 @@ function renderSettingsForm(){
   renderCategorySettings();
   renderPaySettings();
   renderBudgetSettings(getEffectiveBudgets(mKey));
+  if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
 }
 
 function renderFixedGroupList(containerId, items, emptyText){

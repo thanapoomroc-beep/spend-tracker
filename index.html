@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.12.1">
+<meta name="app-version" content="2.13.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -15,7 +15,7 @@
 <!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
 <script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
 <link rel="preload" href="fonts/anuphan-thai-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=2.12.1">
+<link rel="stylesheet" href="css/app.css?v=2.13.0">
 </head>
 <body>
 
@@ -215,7 +215,6 @@
     </div>
   </section>
 
-  <!-- 4. ตั้งค่า -->
   <section class="tab-panel" id="panel-wealth" data-tab="wealth" aria-labelledby="h-wealth" hidden>
     <header class="top"><h1 id="h-wealth">ทรัพย์สิน</h1><button type="button" class="secondary icon-btn" id="wealthEyeBtn" aria-pressed="false" aria-label="ซ่อนตัวเลข"></button></header>
     <div id="wealthMain"></div>
@@ -227,14 +226,14 @@
     <div class="month-nav" data-month-nav></div>
 
     <div class="card set-banner">
-      <div class="set-banner-title" id="settingsMonthLabel" role="heading" aria-level="2"></div>
+      <h2 class="set-banner-title" id="settingsMonthLabel"></h2>
       <div class="set-note">ใช้ตั้งแต่เดือนนี้ไปเรื่อยๆ จนกว่าจะแก้ใหม่</div>
     </div>
 
     <div class="card set-sec" id="incomeCard">
       <h3 class="set-h" id="incomeSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-income">
-          <span class="ttl">รายได้</span>
+          <span class="set-tt"><span class="ttl">รายได้</span><span class="set-sum" id="sum-income"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -247,7 +246,7 @@
     <div class="card set-sec" id="financingCard">
       <h3 class="set-h" id="financingSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-financing">
-          <span class="ttl">ผ่อน / ลงทุน</span>
+          <span class="set-tt"><span class="ttl">ผ่อน / ลงทุน</span><span class="set-sum" id="sum-financing"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -260,7 +259,7 @@
     <div class="card set-sec" id="subscriptionCard">
       <h3 class="set-h" id="subscriptionSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-subscription">
-          <span class="ttl">ค่าสมาชิกรายเดือน</span>
+          <span class="set-tt"><span class="ttl">ค่าสมาชิกรายเดือน</span><span class="set-sum" id="sum-subscription"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -274,7 +273,7 @@
     <div class="card set-sec" id="budgetSettingsCard">
       <h3 class="set-h" id="budgetSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-budget">
-          <span class="ttl">งบแต่ละหมวด (ต่อเดือน)</span>
+          <span class="set-tt"><span class="ttl">งบแต่ละหมวด (ต่อเดือน)</span><span class="set-sum" id="sum-budget"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -288,7 +287,7 @@
     <div class="card set-sec" id="categoryCard">
       <h3 class="set-h" id="categorySettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-category">
-          <span class="ttl">หมวด</span>
+          <span class="set-tt"><span class="ttl">หมวด</span><span class="set-sum" id="sum-category"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -310,7 +309,7 @@
     <div class="card set-sec" id="paymentCard">
       <h3 class="set-h" id="paymentSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-payment">
-          <span class="ttl">ช่องทางจ่าย</span>
+          <span class="set-tt"><span class="ttl">ช่องทางจ่าย</span><span class="set-sum" id="sum-payment"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -331,7 +330,7 @@
     <div class="card set-sec" id="tripsCard">
       <h3 class="set-h" id="tripsSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-trips">
-          <span class="ttl">ทริปทั้งหมด</span>
+          <span class="set-tt"><span class="ttl">ทริปทั้งหมด</span><span class="set-sum" id="sum-trips"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -344,7 +343,7 @@
     <div class="card set-sec" id="exportCard">
       <h3 class="set-h" id="exportSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-export">
-          <span class="ttl">สำรองข้อมูล</span>
+          <span class="set-tt"><span class="ttl">สำรองข้อมูล</span><span class="set-sum" id="sum-export"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -363,7 +362,7 @@
     <div class="card set-sec" id="priceServiceCard">
       <h3 class="set-h" id="priceSettings">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-price">
-          <span class="ttl">ราคาอัตโนมัติ</span>
+          <span class="set-tt"><span class="ttl">ราคาอัตโนมัติ</span><span class="set-sum" id="sum-price"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -385,7 +384,7 @@
     <div class="card set-sec" id="slipSettingsCard">
       <h3 class="set-h" id="slipSettingsTitle">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-slip">
-          <span class="ttl">สลิปอัตโนมัติ</span>
+          <span class="set-tt"><span class="ttl">สลิปอัตโนมัติ</span><span class="set-sum" id="sum-slip"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -397,7 +396,7 @@
     <div class="card set-sec" id="cloudBackupCard">
       <h3 class="set-h" id="cloudBackupTitle">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-cloud">
-          <span class="ttl">สำรองออนไลน์</span>
+          <span class="set-tt"><span class="ttl">สำรองออนไลน์</span><span class="set-sum" id="sum-cloud"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -409,7 +408,7 @@
     <div class="card set-sec" id="briefingCard">
       <h3 class="set-h" id="briefingTitle">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-briefing">
-          <span class="ttl">ส่งสรุปให้ briefing</span>
+          <span class="set-tt"><span class="ttl">ส่งสรุปให้ briefing</span><span class="set-sum" id="sum-briefing"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -421,7 +420,7 @@
     <div class="card set-sec" id="thresholdsCard">
       <h3 class="set-h" id="thresholdsTitle">
         <button type="button" class="set-toggle" aria-expanded="false" aria-controls="sec-thresholds">
-          <span class="ttl">เกณฑ์เตือน</span>
+          <span class="set-tt"><span class="ttl">เกณฑ์เตือน</span><span class="set-sum" id="sum-thresholds"></span></span>
           <svg class="chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </h3>
@@ -612,31 +611,32 @@
 
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
-<script src="js/core.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-core.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-prices.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/health-core.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-cloud.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-net.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-core.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-net.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/format.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/pay-icons.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/chips-settings.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entry-form.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/edit-month.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/trips.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entries-hero.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/overview-charts.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards-ui.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-ui.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-ui.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-ui.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-ui.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/settings-sections.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/data-ui.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/hero-fx.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/boot.js?v=2.12.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/core.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-core.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-prices.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/health-core.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-cloud.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-net.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-core.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-net.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/format.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/pay-icons.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/chips-settings.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entry-form.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/edit-month.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/trips.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entries-hero.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/overview-charts.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards-ui.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-ui.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-ui.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-ui.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-ui.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/settings-sections.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/settings-summary.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/data-ui.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/hero-fx.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/boot.js?v=2.13.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
 </body>
 </html>

@@ -213,7 +213,12 @@
   .set-sec{padding:0; margin-bottom:8px;}
   .set-h{margin:0; font-size:var(--fs-15); font-weight:600;}
   .set-toggle{display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; min-height:48px; padding:0 16px; background:transparent; border:0; border-radius:var(--r); color:var(--text); font:inherit; font-size:var(--fs-15); font-weight:600; text-align:left; cursor:pointer;}
-  .set-toggle .ttl{flex:1; min-width:0;}
+  .set-toggle .ttl{display:block;}
+  .set-tt{flex:1; min-width:0; display:flex; flex-direction:column; padding:6px 0;}
+  .set-sum{font-size:var(--fs-13); font-weight:400; color:var(--muted); line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .set-sum:empty{display:none;}
+  .set-sum.warn{color:var(--amber);}
+  .set-sum svg{vertical-align:-2px; margin-right:4px;}
   button.set-toggle:hover{background:var(--panel2);}
   button.set-toggle:active{transform:none;}
   .set-toggle[aria-expanded="true"] .chev{transform:rotate(180deg);}
@@ -272,7 +277,7 @@
   .set-note{font-size:var(--fs-13); color:var(--muted); margin-bottom:12px;}
   .danger-zone{margin-top:20px; padding-top:16px; border-top:1px solid var(--border);}
   .set-banner{border-color:rgba(232,211,168,.45);}
-  .set-banner-title{font-size:var(--fs-18); font-weight:700; margin-bottom:4px; line-height:1.4;}
+  .card h2.set-banner-title{display:block; font-size:var(--fs-18); font-weight:700; margin:0 0 4px; line-height:1.4;}
   .set-banner .set-note{margin-bottom:0;}
 
   /* Charts, heatmap, compare */

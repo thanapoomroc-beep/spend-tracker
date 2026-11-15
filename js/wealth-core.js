@@ -296,6 +296,15 @@ function monthChange(snapshots, today, nowSnap){
   const change = round2(to.net - from.net);
   return { from: prevDays[prevDays.length - 1], change, market, flows: round2(change - market) };
 }
+// Why monthChange has nothing to show: 'first' = the earliest snapshot is in the current month, 'gap' = older snapshots exist but none last month.
+// null when monthChange would succeed or there are no snapshots.
+function monthChangeGap(snapshots, today){
+  const days = Object.keys(snapshots).filter(d => d <= today).sort();
+  if(!days.length) return null;
+  const month = today.slice(0, 7);
+  if(days.some(d => d.slice(0, 7) === addMonths(month, -1))) return null;
+  return days[0].slice(0, 7) === month ? 'first' : 'gap';
+}
 // Last snapshot of each month, the most recent n months that have one. change = net minus the previous point's net.
 function monthSeries(snapshots, n){
   const lastOf = new Map();
