@@ -4,7 +4,8 @@
 let heroFxCtl = null;
 let heroFxState = 'idle';   // idle | loading | ready | failed
 const HERO_FX_PALETTE = { bg:'#18191C', surface:'#222327', ink:'#F2F2F4', muted:'#9A9CA3', accent:'#E8D3A8', accentInk:'#0E0F11' };
-const HERO_FX_PARAMS = { calm:0, tint:1, contrast:1, softness:0.3, scatter:1, grain:0.8, warp:0.8, speed:0.7 };
+// grainMotion 0: still grain (moving film grain read as flicker on iPhone, 2.11.1); slow drift only.
+const HERO_FX_PARAMS = { calm:0, tint:1, contrast:1, softness:0.3, scatter:1, grain:0.8, warp:0.8, speed:0.35, grainMotion:0 };
 function heroFxWanted(){
   if(document.body.classList.contains('travel')) return false;
   const wrap = document.getElementById('heroValueWrap');
