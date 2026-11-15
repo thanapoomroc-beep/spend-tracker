@@ -52,7 +52,7 @@ Don't add: small bug fixes, single copy tweaks, in-progress task details, or any
 - **Ice cyan `#5CE1E6` is reserved for travel mode** (banner, ทริป toggle, trip hero tint, trip chart segment with diagonal hatch). Don't use it elsewhere.
 - Category colours: 6 validated slots `#d95926 #3987e5 #199e70 #c98500 #d55181 #9085e9`; neutrals `อื่นๆ #C3C6CC`, `รายการประจำ #80838A`. Never generate new hues; colour follows the category, not its rank.
 - Charts: recessive grid, one y-axis, 2px gaps, legends in text colours, doughnut total as an HTML overlay (iOS canvas text alignment is unreliable).
-- App icon (2.10.3, the owner's own design): gold credit card with a rising line and ฿ over a tilted gold card, sparkles, on warm near-black. `icon.svg` is the source, but its ฿ is a `<text>` in Sora, so the PNGs (`icon-gold-180/192/512.png`, opaque) are resized from the owner's 1024 render, not rendered from the svg. A new icon needs new file names (2.10.4): iOS Add to Home Screen otherwise picks up the old PNG from the SW / HTTP cache.
+- App icon (2.10.3, the owner's own design): gold credit card with a rising line and ฿ over a tilted gold card, sparkles, on warm near-black. `icon.svg` is the source, but its ฿ is a `<text>` in Sora, so the PNGs (`icon-gold-180/192/512.png`, opaque) are resized from the owner's 1024 render, not rendered from the svg. A new icon needs new file names (2.10.4): iOS Add to Home Screen otherwise picks up the old PNG from the SW / HTTP cache. Keep the old names (`icon-180/192/512.png`) as copies of the current icon, because an old cached page still points at them and a 404 there gives a letter tile.
 
 ## Thai copy rules
 
