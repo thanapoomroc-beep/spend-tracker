@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.10.4">
+<meta name="app-version" content="2.11.0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -14,17 +14,18 @@
 <link rel="apple-touch-icon" href="icon-gold-180.png">
 <!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
 <script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
-<link rel="stylesheet" href="css/app.css?v=2.10.4">
+<link rel="preload" href="fonts/anuphan-thai-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=2.11.0">
 </head>
 <body>
 
 <div id="loadingOverlay" class="modal-overlay">
   <div class="spinner"></div>
-  <div style="color:var(--muted); font-size:13px;">กำลังโหลด...</div>
+  <div style="color:var(--muted); font-size:var(--fs-13);">กำลังโหลด...</div>
 </div>
 
 <!-- Shown by a script tag's onerror when a js file fails to load; boot.js hides #loadingOverlay, so this is a separate layer. -->
-<div id="loadFail" class="modal-overlay" role="alert" style="display:none; background:var(--bg); padding:24px; text-align:center; color:var(--text); font-size:16px;">โหลดแอปไม่ครบ ลองเปิดใหม่อีกครั้งตอนมีเน็ต</div>
+<div id="loadFail" class="modal-overlay" role="alert" style="display:none; background:var(--bg); padding:24px; text-align:center; color:var(--text); font-size:var(--fs-16);">โหลดแอปไม่ครบ ลองเปิดใหม่อีกครั้งตอนมีเน็ต</div>
 
 <div class="wrap" id="mainWrap" style="display:none;">
 
@@ -47,6 +48,7 @@
     </div>
 
     <div class="card hero" id="heroCard">
+      <div class="hero-fx" id="heroFx" aria-hidden="true"></div>
       <button type="button" class="hero-info" id="heroInfo" onclick="openInfo()" aria-haspopup="dialog" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>คิดยังไง</button>
       <div class="hero-label" id="heroLabel"></div>
       <div class="hero-valuewrap" id="heroValueWrap"><div class="hero-value" id="heroValue"></div><span class="hero-delta" id="heroDelta" aria-hidden="true"></span></div>
@@ -602,29 +604,31 @@
 
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
-<script src="js/core.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-core.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-prices.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/health-core.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-cloud.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-net.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-core.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-net.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/format.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/chips-settings.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entry-form.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/edit-month.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/trips.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entries-hero.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/overview-charts.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards-ui.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-ui.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-ui.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-ui.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-ui.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/settings-sections.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/data-ui.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/boot.js?v=2.10.4" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/core.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-core.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-prices.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/health-core.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-cloud.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-net.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-core.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-net.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/format.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/pay-icons.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/chips-settings.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entry-form.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/edit-month.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/trips.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entries-hero.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/overview-charts.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards-ui.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-ui.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-ui.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-ui.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-ui.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/settings-sections.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/data-ui.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/hero-fx.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/boot.js?v=2.11.0" onerror="document.getElementById('loadFail').style.display='flex'"></script>
 </body>
 </html>

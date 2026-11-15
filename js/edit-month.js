@@ -201,6 +201,7 @@ function renderToday(){
   renderTripBanner(trip);
   renderRepeat(!!trip);
   if(trip) renderTripHero(trip, normalDailyAllowance(fig, now)); else renderHero(income, remaining, variable, monthEntries);
+  heroFxSync();
   renderDueCard(!!trip);
   renderSlipCard();
   renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries, !!trip);

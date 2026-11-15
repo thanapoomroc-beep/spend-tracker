@@ -8,6 +8,9 @@ async function init(){
   setChartFont();
   initForm();
   render();
+  refreshChartsAfterFonts();
+  heroFxStart();
+  heroEnter();
   wealthTouchSnapshot();
   maybeAutoRefreshPrices();
   slipOnOpen();

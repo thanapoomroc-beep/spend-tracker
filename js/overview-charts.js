@@ -15,7 +15,7 @@ function renderPayBreakdown(entries, els){
   els.total.textContent = 'รวม ' + fmt(total);
   rows.forEach(r=>{
     const li = document.createElement('li');
-    li.innerHTML = `<div class="pb-head"><span class="nm">${escapeHtml(r.name)}</span><span class="amt">${fmt(r.sum)}</span><span class="pct">${Math.round(r.sum / total * 100)}%</span></div><div class="pb-bar" aria-hidden="true"><span style="width:${max > 0 ? r.sum / max * 100 : 0}%"></span></div>`;
+    li.innerHTML = `<div class="pb-head"><span class="nm">${r.id ? payIconSvg(findPay(r.id)) : ''}${escapeHtml(r.name)}</span><span class="amt">${fmt(r.sum)}</span><span class="pct">${Math.round(r.sum / total * 100)}%</span></div><div class="pb-bar" aria-hidden="true"><span style="width:${max > 0 ? r.sum / max * 100 : 0}%"></span></div>`;
     body.appendChild(li);
   });
 }
@@ -165,7 +165,7 @@ function renderCompareChart(){
       responsive: true, maintainAspectRatio: false,
       interaction: { mode:'index', intersect:false },
       plugins: {
-        legend: { labels: { color:'#F2F2F4', font:{size:11} } },
+        legend: { labels: { color:'#F2F2F4', font:{size:12} } },
         tooltip: { callbacks: { title: it => 'วันที่ ' + it[0].label, label: it => ` ${it.dataset.label}: ${fmt(it.parsed.y)}` } }
       },
       scales: {
@@ -266,7 +266,7 @@ function renderPieChart(monthEntries, fixedItems){
   document.getElementById('pieCenter').style.display = '';
   pieChart = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: CHART_PANEL, borderWidth: 3, borderRadius: 6, hoverOffset: 6 }] },
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: CHART_PANEL, borderWidth: 3, borderRadius: 2, hoverOffset: 6 }] },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '74%', layout:{ padding:8 },
       plugins: {
@@ -285,7 +285,7 @@ function renderPieChart(monthEntries, fixedItems){
 const CHART_TEXT = '#F2F2F4', CHART_MUTED = '#9A9CA3', CHART_GRID = '#222327', CHART_PANEL = '#18191C';
 function chartTooltip(){
   return {
-    backgroundColor:'#222327', borderColor:'#2E3035', borderWidth:1, padding:10, cornerRadius:10,
+    backgroundColor:'#222327', borderColor:'#2E3035', borderWidth:1, padding:10, cornerRadius:4,
     titleColor:CHART_TEXT, bodyColor:CHART_TEXT, footerColor:CHART_TEXT, footerFont:{ weight:'bold' },
     boxPadding:4, usePointStyle:true
   };
@@ -294,6 +294,16 @@ function setChartFont(){
   if(typeof Chart === 'undefined') return;
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
   Chart.defaults.color = CHART_MUTED;
+}
+// The web font may arrive after the first chart render: refresh the default and draw again once.
+function refreshChartsAfterFonts(){
+  try{
+    if(!(document.fonts && document.fonts.ready)) return;
+    document.fonts.ready.then(()=>{
+      setChartFont();
+      if(compareChart || pieChart || trendChart || (typeof wealthChart !== 'undefined' && wealthChart)) render();
+    }).catch(()=>{});
+  }catch(e){}
 }
 
 /* ---------- Trend (F4): stacked bars + income line ---------- */
@@ -369,7 +379,7 @@ function renderTrendChart(){
     type:'bar', label:b.label, data:b.data, stack:'spend', order:1, solidColor:b.color, swatch: b.trip ? patFull : null,
     backgroundColor: c => b.trip ? (c.dataIndex === last ? patFull : patDim) : dim(b.color, c.dataIndex), borderColor:CHART_PANEL, borderWidth:2, borderSkipped:false,
     maxBarThickness:28, categoryPercentage:.62, barPercentage:1,
-    borderRadius: c => topIdx[c.dataIndex] === c.datasetIndex ? { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } : 0
+    borderRadius: c => topIdx[c.dataIndex] === c.datasetIndex ? { topLeft:2, topRight:2, bottomLeft:0, bottomRight:0 } : 0
   }));
   // Income is baht too: same y-axis as the bars (never a second axis).
   datasets.push({

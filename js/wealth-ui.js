@@ -322,10 +322,10 @@ function buildWealthChart(series){
       },
       scales: {
         x: { border: { display: false }, grid: { display: false },
-          ticks: { color: c => c.index === last ? CHART_TEXT : CHART_MUTED, maxRotation: 0, autoSkip: false, font: c => ({ size: 11, weight: c.index === last ? '700' : '400' }) } },
+          ticks: { color: c => c.index === last ? CHART_TEXT : CHART_MUTED, maxRotation: 0, autoSkip: false, font: c => ({ size: 12, weight: c.index === last ? '700' : '400' }) } },
         y: { border: { display: false }, grace: '8%',
           grid: { color: c => c.tick && c.tick.value === 0 ? CHART_MUTED : CHART_GRID, lineWidth: 1, drawTicks: false },
-          ticks: { display: !wealthHidden, color: CHART_MUTED, maxTicksLimit: 4, padding: 6, font: { size: 11 }, callback: v => wCompact(v) } }
+          ticks: { display: !wealthHidden, color: CHART_MUTED, maxTicksLimit: 4, padding: 6, font: { size: 12 }, callback: v => wCompact(v) } }
       }
     }
   });
@@ -608,7 +608,7 @@ function openDebtSheet(id, opener){
     (ov ? `<div class="w-delta" style="margin:0 0 10px;">ตอนนี้ใช้ยอดจริง ${wm(wMoney(d.balance))} ${wEsc(wAgeText(d.asOf))}</div>` : '') +
     '<div class="field-hint">ยอดจากแอปคิดจากรายการที่จดไว้ ถ้ายอดจริงต่างไป เช่น ปิดบางส่วนหรือมีดอกเบี้ย ใส่ยอดจริงทับได้</div>' +
     `<label for="ws-real" class="w-lab">ยอดจริงจากธนาคาร (ไม่ใส่ก็ได้)</label>
-    <input id="ws-real" class="w-big" style="font-size:22px; min-height:52px;" inputmode="decimal" autocomplete="off" placeholder="${wealthHidden ? '••••' : wEsc(wNum(d.derivedBalance))}" aria-describedby="ws-err">
+    <input id="ws-real" class="w-big" style="font-size:var(--fs-22); min-height:52px;" inputmode="decimal" autocomplete="off" placeholder="${wealthHidden ? '••••' : wEsc(wNum(d.derivedBalance))}" aria-describedby="ws-err">
     <div class="field-error" id="ws-err" role="alert"></div>
     <div class="modal-actions"><button type="button" class="secondary" id="ws-useapp">ใช้ยอดจากแอป</button><button type="button" id="ws-saveReal">บันทึกยอดจริง</button></div>`;
   openWSheet(html, { focus: '#ws-real', restore: opener });

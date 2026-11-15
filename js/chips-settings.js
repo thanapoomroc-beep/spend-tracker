@@ -101,7 +101,8 @@ function buildPay(container, selected, onSelect, extra){
     b.setAttribute('role','radio');
     b.setAttribute('aria-checked', on ? 'true' : 'false');
     b.tabIndex = (on || (!hasSel && i === 0)) ? 0 : -1;
-    b.textContent = m.name;
+    b.insertAdjacentHTML('beforeend', payIconSvg(m));
+    const bt = document.createElement('span'); bt.className = 'po-t'; bt.textContent = m.name; b.appendChild(bt);
     b.addEventListener('click', ()=> onSelect(on ? '' : m.id));
     b.addEventListener('keydown', ev=>{
       const step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1 : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
@@ -443,7 +444,7 @@ function renderPaySettings(){
     row.className = 'pay-row';
     row.setAttribute('role','group');
     row.setAttribute('aria-label','ช่องทาง ' + m.name);
-    row.innerHTML = `<input type="text" class="pay-name" value="${nm}" maxlength="24" aria-label="ชื่อช่องทาง" autocomplete="off">` +
+    row.innerHTML = payIconSvg(m) + `<input type="text" class="pay-name" value="${nm}" maxlength="24" aria-label="ชื่อช่องทาง" autocomplete="off">` +
       (used ? `<button type="button" class="secondary pay-act hide" aria-label="ซ่อนช่องทาง ${nm}" title="ซ่อนช่องทางนี้">ซ่อน</button>`
             : `<button type="button" class="del-fixed pay-act" aria-label="ลบช่องทาง ${nm}" title="ลบช่องทาง">${ICON_X}</button>`);
     const inp = row.querySelector('.pay-name');
