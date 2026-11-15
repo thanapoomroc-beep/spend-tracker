@@ -639,6 +639,7 @@
   .w-net{font-size:44px; font-weight:700; line-height:1.2; letter-spacing:-.01em; overflow-wrap:anywhere;}
   .w-change{font-size:14px; color:var(--muted); min-height:20px;}
   .w-change .pos{color:var(--green); font-weight:600;} .w-change .neg{color:var(--red-text); font-weight:600;}
+  .w-change-sub{display:flex; flex-wrap:wrap; justify-content:center; gap:2px 14px; font-size:12.5px; margin-top:2px;}
   .w-change .nb,.w-change .pos,.w-change .neg{white-space:nowrap;}
   .w-pricebar{margin:0 0 12px; text-align:center;}
   .w-pricebar button.secondary{width:100%; min-height:48px;}

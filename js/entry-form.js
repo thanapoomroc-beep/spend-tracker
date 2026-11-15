@@ -265,19 +265,25 @@ function describeEntry(e){
   return s;
 }
 
-function askDeleteEntry(id, afterDelete){
-  const e = state.entries.find(x => x.id === id);
-  if(!e) return;
-  openConfirm({
-    title: 'ลบรายการนี้ไหม?',
-    desc: describeEntry(e),
-    confirmLabel: 'ลบ',
-    onConfirm: async ()=>{
-      state.entries = state.entries.filter(x => x.id !== id);
-      await saveData();
-      if(afterDelete) afterDelete();
-      render();
-    }
-  });
+async function askDeleteEntry(id, afterDelete){
+  const idx = state.entries.findIndex(x => x.id === id);
+  if(idx < 0) return;
+  const e = state.entries[idx];
+  state.entries.splice(idx, 1);
+  await saveData();
+  if(afterDelete) afterDelete();
+  render();
+  // The toast comes after saveData, whose own 'บันทึกแล้ว' toast would replace it.
+  flashToast('ลบแล้ว', true, { label: 'เลิกทำ', onClick: ()=> undoDelete(e, idx) });
+  // The row's × or the sheet's delete button is gone now, so focus the undo button.
+  const t = document.querySelector('#saveIndicator .toast-action') || document.getElementById('entryList');
+  if(t && t.focus) t.focus();
+}
+async function undoDelete(e, idx){
+  if(state.entries.some(x => x.id === e.id)) return;
+  state.entries.splice(Math.min(idx, state.entries.length), 0, e);
+  await saveData();
+  render();
+  flashToast('เลิกทำแล้ว', true);
 }
 

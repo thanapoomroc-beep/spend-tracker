@@ -67,7 +67,7 @@ async function cbBackupNow(){
 function cbAskOff(){
   openConfirm({
     title: 'ปิดสำรองออนไลน์ไหม?',
-    desc: 'รหัสจะถูกลบออกจากเครื่องนี้ ข้อมูลที่สำรองไว้ยังอยู่ และกู้ได้ด้วยรหัสเดิม',
+    desc: 'ลบรหัสออกจากเครื่องนี้ ข้อมูลที่สำรองไว้ยังอยู่ และกู้ได้ด้วยรหัสเดิม',
     confirmLabel: 'ปิด',
     onConfirm: () => {
       clearTimeout(cloudTimer); cloudTimer = null;
@@ -207,13 +207,14 @@ function cbConfirm(item, text, keyInfo){
   if(!parsed || (!parsed.settings && !parsed.monthlySettings) || !Array.isArray(parsed.entries)) return cbErrorView('ข้อมูลชุดนี้ใช้กู้ไม่ได้', null);
   openConfirm({
     title: `กู้ข้อมูลจากวันที่ ${cbDateTime(item.at)} ไหม?`,
-    desc: 'ข้อมูลที่มีตอนนี้จะถูกแทนด้วยข้อมูลที่สำรองไว้',
+    desc: 'ข้อมูลชุดนี้จะแทนข้อมูลที่มีตอนนี้ทั้งหมด',
     confirmLabel: 'กู้ข้อมูล',
     onConfirm: () => cbRestore(parsed, item, keyInfo)
   });
 }
 // Keeps a copy of the current data in localStorage['spendTrackerBeforeRestore'], then replaces the state exactly like importData.
 async function cbRestore(parsed, item, keyInfo){
+  const prev = state;
   if(!cloudStateIsEmpty(state)){
     try{ localStorage.setItem(BEFORE_RESTORE_KEY, JSON.stringify(state)); }
     catch(e){ flashToast('เก็บข้อมูลเดิมไว้ไม่ได้ ส่งออกไฟล์สำรองก่อนนะ', false); return; }
@@ -228,7 +229,7 @@ async function cbRestore(parsed, item, keyInfo){
   await saveData();
   initForm();
   render();
-  flashToast('กู้ข้อมูลแล้ว', true);
+  flashToast('กู้ข้อมูลแล้ว', true, { label: 'เลิกทำ', onClick: ()=> restoreState(prev, 'เลิกทำแล้ว') });
   renderCloudCard(); renderThresholds(); renderBriefingCard();
   if(keyInfo && !cloudLoadConfig()){
     openConfirm({

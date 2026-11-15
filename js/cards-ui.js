@@ -107,6 +107,7 @@ function renderCardsCard(){
   const rows = !isNow ? [] : state.paymentMethods.filter(isCardMethod).map(m => ({ m, s: cardStatusOf(m, today) })).filter(x => !x.m.archived || cardBalance(x.s) !== 0);
   card.style.display = rows.length ? '' : 'none';
   rows.forEach(({ m, s }) => body.appendChild(buildCardBlock(m, s)));
+  if(rows.length){ const n = document.createElement('div'); n.className = 'cc-meta'; n.textContent = 'ยอดบัตรคิดจากรายการที่จดไว้ อาจต่างจากบิลจริง'; body.appendChild(n); }
 }
 function buildCardBlock(m, s){
   const nm = escapeHtml(m.name);
@@ -128,7 +129,7 @@ function buildCardBlock(m, s){
   }else{
     if(s.unpaid > 0){
       const flag = s.daysToDue < 0 ? `<span class="cc-flag neg">เลยกำหนด ${s.overdueDays} วัน</span>` : s.daysToDue <= 3 ? `<span class="cc-flag warn">${dueWhenText(s.daysToDue)}</span>` : '';
-      main = `<span class="cc-amt">ต้องจ่าย ประมาณ ${fmt(s.unpaid)}</span><span class="cc-due">ภายใน ${fmtThaiDate(s.dueDate)}</span>${flag}`;
+      main = `<span class="cc-amt">ต้องจ่าย ประมาณ ${fmt(s.unpaid)}</span>${s.daysToDue < 0 ? '' : `<span class="cc-due">ภายใน ${fmtThaiDate(s.dueDate)}</span>`}${flag}`;
     }else{
       main = `<span class="cc-amt">ไม่มียอดค้าง</span>`;
     }

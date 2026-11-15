@@ -45,9 +45,10 @@ async function importData(event){
     }
     openConfirm({
       title: 'นำเข้าไฟล์นี้ไหม?',
-      desc: 'ข้อมูลที่มีตอนนี้จะถูกแทนด้วยข้อมูลในไฟล์',
+      desc: 'ข้อมูลในไฟล์จะแทนข้อมูลที่มีตอนนี้ทั้งหมด',
       confirmLabel: 'นำเข้า',
       onConfirm: async ()=>{
+        const prev = state;
         try{
           state = migrateState(parsed);
         }catch(err){
@@ -58,19 +59,36 @@ async function importData(event){
         initForm();
         render();
         renderThresholds(); renderBriefingCard();
-        flashToast('นำเข้าแล้ว', true);
+        flashToast('นำเข้าแล้ว', true, { label: 'เลิกทำ', onClick: ()=> restoreState(prev, 'เลิกทำแล้ว') });
       }
     });
   };
   reader.readAsText(file);
 }
 
+// Puts back a previous state object (undo for import, cloud restore and clear-all).
+async function restoreState(prev, msg){
+  state = prev;
+  await saveData();
+  initForm();
+  render();
+  renderThresholds(); renderBriefingCard();
+  if(typeof renderCloudCard === 'function') renderCloudCard();
+  flashToast(msg, true);
+}
+
 function clearAllData(){
+  const c = cloudLoadConfig();
+  let desc;
+  if(c && c.enabled && c.lastOkAt && !c.dirty) desc = `กู้คืนได้จากสำรองออนไลน์ ล่าสุด ${cbWhen(c.lastOkAt)}`;
+  else if(c && c.enabled) desc = 'ที่แก้ล่าสุดยังไม่ได้สำรองออนไลน์ ส่งออกไฟล์ก่อนดีกว่า';
+  else desc = 'ล้างแล้วเอากลับมาไม่ได้ ส่งออกไฟล์สำรองก่อนดีกว่า';
   openConfirm({
     title: 'ล้างข้อมูลทั้งหมดไหม?',
-    desc: 'ล้างแล้วเอากลับมาไม่ได้ ควรสำรองข้อมูลไว้ก่อน',
+    desc,
     confirmLabel: 'ล้างข้อมูล',
     onConfirm: ()=>{
+      const prev = state;
       try{
         localStorage.removeItem(STORAGE_KEY);
       }catch(e){
@@ -80,6 +98,7 @@ function clearAllData(){
       initForm();
       render();
       renderThresholds(); renderBriefingCard();
+      flashToast('ล้างข้อมูลแล้ว', true, { label: 'เลิกทำ', onClick: ()=> restoreState(prev, 'เลิกทำแล้ว') });
     }
   });
 }

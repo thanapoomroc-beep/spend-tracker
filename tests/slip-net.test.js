@@ -141,7 +141,7 @@ test('401: status error, no state change, no save', async () => {
   assert.equal(r.ok, false);
   assert.equal(JSON.stringify(s.st()), before);
   assert.ok(!s.log.includes('save'));
-  assert.equal(JSON.parse(s.app.store.get('spendTrackerSlip')).lastError, 'token ไม่ถูกต้อง');
+  assert.equal(JSON.parse(s.app.store.get('spendTrackerSlip')).lastError, 'รหัสบริการไม่ถูก');
 });
 
 test('503 storage_down and a network failure map to plain Thai', async () => {

@@ -24,7 +24,7 @@ function slipSaveStatus(patch){
 function slipReasonText(reason){
   switch(reason){
     case 'offline': return 'ไม่มีเน็ต';
-    case 'unauthorized': return 'token ไม่ถูกต้อง';
+    case 'unauthorized': return 'รหัสบริการไม่ถูก';
     case 'storage_down': return 'เซิร์ฟเวอร์ใช้งานไม่ได้ชั่วคราว';
     case 'timeout': return 'เซิร์ฟเวอร์ตอบช้าเกินไป';
     case 'save_failed': return 'บันทึกในเครื่องไม่ได้';

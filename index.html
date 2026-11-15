@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.10.1">
+<meta name="app-version" content="2.10.2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตัวติดตามค่าใช้จ่าย</title>
 <meta name="theme-color" content="#0E0F11">
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <!-- Chart.js 4.5.0, self-hosted (unmodified official build): no third-party network needed -->
 <script src="vendor/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi"></script>
-<link rel="stylesheet" href="css/app.css?v=2.10.1">
+<link rel="stylesheet" href="css/app.css?v=2.10.2">
 </head>
 <body>
 
@@ -134,7 +134,7 @@
         <div class="fchips" id="filterChips" role="group" aria-label="กรองตามหมวด"></div>
       </details>
       <div class="result-line" id="resultLine" role="status" aria-live="polite"></div>
-      <div id="entryList"></div>
+      <div id="entryList" tabindex="-1"></div>
       <div class="empty" id="emptyMsg" style="display:none;"><span id="emptyMsgTxt">ยังไม่มีรายการเดือนนี้</span><button type="button" class="secondary" onclick="focusAmount()">จดรายการแรก</button></div>
       <div class="trip-note" id="tripNote"></div>
     </div>
@@ -593,7 +593,7 @@
     <div class="modal-title" id="infoTitle">ตัวเลขนี้คิดยังไง</div>
     <div class="modal-desc">ยอดต่อวันคือ (รายได้ − รายการประจำ − ที่ใช้ไปเดือนนี้) ÷ วันที่เหลือรวมวันนี้</div>
     <div class="modal-desc">ยอดนี้เท่าเดิมทั้งวัน มีแค่ที่ใช้วันนี้เท่านั้นที่ลดตัวเลข "ใช้ได้อีก"</div>
-    <div class="modal-desc">ค่าผ่อนและค่าสมาชิกถูกหักไว้ให้แล้ว</div>
+    <div class="modal-desc">หักค่าผ่อนและค่าสมาชิกไว้ให้แล้ว</div>
     <div class="modal-actions"><button type="button" id="infoOkBtn" onclick="closeInfo()">เข้าใจแล้ว</button></div>
   </div>
 </div>
@@ -602,29 +602,29 @@
 
 <div id="saveIndicator" class="save-indicator" role="status" aria-live="polite">กำลังบันทึก...</div>
 
-<script src="js/core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-prices.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/health-core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-cloud.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-net.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-core.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-net.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/format.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/chips-settings.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entry-form.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/edit-month.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/trips.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/entries-hero.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/overview-charts.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/cards-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/wealth-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/backup-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/briefing-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/slip-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/settings-sections.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/data-ui.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
-<script src="js/boot.js?v=2.10.1" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/core.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-core.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-prices.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/health-core.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-cloud.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-net.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-core.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-net.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/format.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/chips-settings.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entry-form.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/edit-month.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/trips.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/entries-hero.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/overview-charts.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/cards-ui.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/wealth-ui.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/backup-ui.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/briefing-ui.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/slip-ui.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/settings-sections.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/data-ui.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
+<script src="js/boot.js?v=2.10.2" onerror="document.getElementById('loadFail').style.display='flex'"></script>
 </body>
 </html>

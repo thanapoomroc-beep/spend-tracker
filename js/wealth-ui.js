@@ -217,7 +217,7 @@ function wealthHeroHtml(sum, series, today){
   let change = '';
   if(mc){
     const part = n => `<span class="${wDir(n)}">${wm(wSigned(n))}</span>`;
-    change = `เดือนนี้ ${part(mc.change)} <span class="nb">(ตลาด ${wm(wSigned(mc.market))} ·</span> <span class="nb">เงินเข้า-ออก ${wm(wSigned(mc.flows))})</span>`;
+    change = `<div>เดือนนี้ ${part(mc.change)}</div><div class="w-change-sub"><span class="nb">ตลาด ${part(mc.market)}</span><span class="nb">เงินเข้า-ออก ${part(mc.flows)}</span></div>`;
   }
   let chart;
   if(series.length >= 2){
@@ -248,7 +248,7 @@ function wealthDebtSub(d){
   if(d.overridden) return 'ยอดจริง ' + wAgeText(d.asOf);
   if(d.kind === 'inst') return `งวดที่ ${d.meta.termNo} จาก ${d.meta.total}`;
   if(d.kind === 'repay') return 'ตั้งแต่โอนคืนครั้งล่าสุด';
-  if(d.kind === 'statement') return 'ยังไม่ได้จ่าย';
+  if(d.kind === 'statement') return d.meta && d.meta.configured ? 'ประมาณ รวมรอบที่ยังไม่ตัด' : 'ประมาณ ยังไม่ได้จ่าย';
   return wAgeText(d.asOf);
 }
 function wealthDebtRow(d){
