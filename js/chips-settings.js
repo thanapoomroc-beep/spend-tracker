@@ -38,7 +38,7 @@ function buildChips(container, selected, onSelect, extra, trip){
 function renderChips(){
   const trip = formMode() === 'trip';
   buildChips(document.getElementById('categoryChips'), trip ? selectedTripCategory : selectedCategory, selectCategory, null, trip);
-  updateKbBarLabel();
+  updateSaveLabel();
 }
 function selectCategory(cat){
   clearAmountError();
@@ -119,7 +119,7 @@ function buildPay(container, selected, onSelect, extra){
 function renderPayControl(){
   ensureSelectedPayment();
   buildPay(document.getElementById('payControl'), selectedPayment, selectPayment);
-  updateKbBarLabel();
+  updateSaveLabel();
 }
 function selectPayment(id){
   selectedPayment = id;

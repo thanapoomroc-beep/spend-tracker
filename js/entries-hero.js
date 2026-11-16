@@ -11,35 +11,6 @@ function closeInfo(){
   infoOpener = null;
 }
 
-/* ---------- Keyboard save bar ---------- */
-function kbBarLabelText(){
-  const a = parseFloat(document.getElementById('entryAmount').value);
-  ensureSelectedCategory();
-  ensureSelectedPayment();
-  const pm = shortPayName(selectedPayment);
-  const cat = formCategory();
-  return (a > 0 ? `จด ${fmtCur(a, formCurrency())} ${cat}` : `จด ${cat}`) + (pm ? ' ' + pm : '');
-}
-function updateKbBarLabel(){
-  const b = document.getElementById('kbSaveBtn');
-  if(b) b.textContent = kbBarLabelText();
-}
-// Pin the bar to the bottom of the visual viewport (the part of the page above the iOS keyboard).
-function positionKbBar(){
-  const bar = document.getElementById('kbBar');
-  const vv = window.visualViewport;
-  const off = vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
-  bar.style.bottom = off + 'px';
-  bar.classList.toggle('vv', off > 0);
-  document.documentElement.style.setProperty('--kb-off', off + 'px');
-}
-const KB_BAR_FIELDS = ['entryAmount', 'entryNote', 'entryDate'];
-function syncKbBar(){
-  const on = KB_BAR_FIELDS.includes((document.activeElement || {}).id);
-  document.body.classList.toggle('kb-save', on);
-  if(on){ updateKbBarLabel(); positionKbBar(); }
-}
-
 // Month-scoped tabs (รายการ, ภาพรวม, ตั้งค่า) all follow currentMonth.
 function renderMonthViews(){
   const label = monthLabelStr(currentMonth);
@@ -226,7 +197,7 @@ function openEntriesFiltered(f){
   const list = document.getElementById('entryList');
   if(list && list.focus){ try{ list.focus({ preventScroll:true }); }catch(e){ list.focus(); } }
 }
-function renderEntryList(list, monthEntries, limit, useFilters){
+function renderEntryList(list, monthEntries, limit, useFilters, noHead){
   list.innerHTML = '';
   const active = !!useFilters && filterActive();
   let source = monthEntries;
@@ -240,7 +211,7 @@ function renderEntryList(list, monthEntries, limit, useFilters){
   const yesterday = isoOf(y);
   let lastDate = null;
   shown.forEach(e=>{
-    if(e.date !== lastDate){
+    if(!noHead && e.date !== lastDate){
       lastDate = e.date;
       const total = source.filter(x => x.date === e.date).reduce((s,x)=> s + x.amount, 0);
       const label = (e.date === today ? 'วันนี้ ' : e.date === yesterday ? 'เมื่อวาน ' : '') + (active && searchAll ? fmtThaiDateYear(e.date) : fmtThaiDate(e.date));
@@ -249,10 +220,20 @@ function renderEntryList(list, monthEntries, limit, useFilters){
       head.innerHTML = `<span>${escapeHtml(label)}</span><span>${fmt(total)}</span>`;
       list.appendChild(head);
     }
-    const row = entryRowEl(e, list.id, false);
+    const row = entryRowEl(e, list.id, !!noHead && !!activeTrip());   // the วันนี้ card in travel mode lists trip entries only: no badge
     list.appendChild(row);
   });
   return { active, source, shown };
+}
+
+// Status row under the hero number: a dot and a word (colour is never the only signal).
+const HERO_STATUS = { pos:'ตามแผน', warn:'เกินวันนี้', neg:'เกินรายได้' };
+function setHeroStatus(cls, words){
+  const w = Object.assign({}, HERO_STATUS, words || {});
+  const dot = document.getElementById('heroStatusDot'), word = document.getElementById('heroStatusWord');
+  document.getElementById('heroStatus').dataset.state = cls || '';
+  word.textContent = cls ? w[cls] || '' : '';
+  dot.style.display = word.textContent ? '' : 'none';
 }
 
 function renderHero(income, remaining, variable, monthEntries){
@@ -270,6 +251,8 @@ function renderHero(income, remaining, variable, monthEntries){
   meter.style.display = 'none'; cta.style.display = 'none'; info.style.display = 'none';
   sub2.innerHTML = ''; sub.innerHTML = ''; sub3.innerHTML = '';
   value.style.display = ''; wrap.style.display = '';
+  document.getElementById('heroStatus').style.display = '';
+  setHeroStatus('');
   card.className = 'card hero';
   heroShown = { label:'', num:null };
 
@@ -277,6 +260,7 @@ function renderHero(income, remaining, variable, monthEntries){
   if(!(income > 0)){
     label.textContent = 'ตั้งรายได้ก่อน จะได้รู้ว่าวันนี้ใช้ได้เท่าไหร่';
     value.style.display = 'none'; wrap.style.display = 'none';
+    document.getElementById('heroStatus').style.display = 'none';
     cta.style.display = '';
     return;
   }
@@ -330,6 +314,7 @@ function renderHero(income, remaining, variable, monthEntries){
   heroShown = { label: label.textContent, num };
   value.className = 'hero-value ' + cls;
   card.className = 'card hero has-info ' + cls;
+  setHeroStatus(cls);
   sub.innerHTML = html;
   sub2.innerHTML = html2;
   sub3.innerHTML = html3;

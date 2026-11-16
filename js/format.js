@@ -106,15 +106,15 @@ function goToday(){
   currentMonth = new Date(); currentMonth.setDate(1);
   render();
 }
+// Opens the entry sheet on วันนี้ (empty states, the slip fallback).
 function focusAmount(){
+  const opener = document.activeElement;
   goTab('today', { keepScroll:true });
-  const el = document.getElementById('entryAmount');
-  el.scrollIntoView({ block:'center' });
-  el.focus({ preventScroll:true });
+  openEntrySheet(opener);
 }
 // The "ดูทั้งหมด" button on วันนี้ and the budget alert both look at the current calendar month.
 function showAllEntriesTab(){
-  if(activeTrip()){ openTripPage(activeTrip().id, document.getElementById('recentAllBtn')); return; }
+  if(activeTrip()){ openTripPage(activeTrip().id, document.getElementById('todayAllBtn')); return; }
   currentMonth = new Date(); currentMonth.setDate(1);
   render();
   goTab('entries');
@@ -150,6 +150,7 @@ function applyTab(name, opts){
   opts = opts || {};
   if(activeTab) scrollPos[activeTab] = window.scrollY;
   const prevTab = activeTab;
+  if(entrySheetOpen()) closeEntrySheet();
   activeTab = name;
   TABS.forEach(t=>{
     const panel = document.getElementById('panel-' + t);
@@ -165,6 +166,7 @@ function applyTab(name, opts){
   }
   if(name === 'wealth') showWealthTab(prevTab !== 'wealth');
   if(name === 'settings' && typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
+  syncFab();
 }
 function resizeCharts(){
   [compareChart, pieChart, trendChart].forEach(c=>{ if(c){ try{ c.resize(); }catch(e){} } });

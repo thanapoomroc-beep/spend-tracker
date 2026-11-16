@@ -113,31 +113,22 @@ function setupUi(){
   window.addEventListener('hashchange', syncFromHash);
   try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
   // The bottom bar would float above the iOS keyboard: hide it while a field has focus.
-  const isField = el => !!el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=file]):not([type=range]), select, textarea');
+  const isField = el => !!el && el.matches && el.matches('input:not([readonly]):not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=file]):not([type=range]), select, textarea');
   let kbTimer = null;
   document.addEventListener('focusin', ev=>{
     clearTimeout(kbTimer);
     document.body.classList.toggle('kb-open', isField(ev.target));
-    syncKbBar();
   });
   document.addEventListener('focusout', ()=>{
     clearTimeout(kbTimer);
-    kbTimer = setTimeout(()=>{ if(!isField(document.activeElement)) document.body.classList.remove('kb-open'); syncKbBar(); }, 150);
+    kbTimer = setTimeout(()=>{ if(!isField(document.activeElement)) document.body.classList.remove('kb-open'); }, 150);
   });
-  document.getElementById('entryAmount').addEventListener('input', ()=>{ updateConv(); updateKbBarLabel(); });
+  setupEntrySheet();
   setupTripUi();
   setupWealthUi();
   setupCloudBackupUi();
   setupBriefingUi();
   setupSlipUi();
-  const kbBtn = document.getElementById('kbSaveBtn');
-  // Keep the input focused (and the keyboard up) until the click lands.
-  ['pointerdown','mousedown'].forEach(t => kbBtn.addEventListener(t, ev => ev.preventDefault()));
-  kbBtn.addEventListener('click', addEntry);
-  if(window.visualViewport){
-    visualViewport.addEventListener('resize', positionKbBar);
-    visualViewport.addEventListener('scroll', positionKbBar);
-  }
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) renderToday(); });
   try{ if(localStorage.getItem(TREND_KEY) === '12') trendRange = 12; }catch(e){}
   document.getElementById('trend6').setAttribute('aria-pressed', trendRange === 6 ? 'true' : 'false');

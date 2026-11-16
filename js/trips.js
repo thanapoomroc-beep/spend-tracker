@@ -44,7 +44,7 @@ function tripHeroModel(t, today){
   const list = tripEntriesOf(t.id);
   const spent = list.reduce((s,e)=> s + e.amount, 0);
   const todaySpent = list.filter(e => e.date === today).reduce((s,e)=> s + e.amount, 0);
-  let label = '', cls = '', num = 0, dir = 'down', html = '';
+  let label = '', cls = '', num = 0, dir = 'down', html = '', daily = 0, todayLeft = 0;
   if(!(t.budget > 0)){
     label = 'ใช้ไปแล้ว'; num = spent; dir = 'up';
   }else if(today < t.startDate){
@@ -61,14 +61,14 @@ function tripHeroModel(t, today){
       html = `ใช้ไปแล้ว ${fmt(spent)} จากงบ ${fmt(t.budget)}`;
     }else{
       // Stable for the whole day: today's spending is added back before dividing.
-      const daily = (t.budget - spent + todaySpent) / daysLeft;
-      const todayLeft = daily - todaySpent;
+      daily = (t.budget - spent + todaySpent) / daysLeft;
+      todayLeft = daily - todaySpent;
       if(todayLeft >= 0){ label = 'วันนี้ใช้ได้อีก'; num = todayLeft; cls = 'pos'; }
       else{ label = 'วันนี้ใช้เกินแล้ว'; num = Math.abs(todayLeft); cls = 'warn'; }
       html = `ใช้ได้วันละ ${fmt(daily)} อีก ${daysLeft} วัน`;
     }
   }
-  return { label, num, cls, dir, html };
+  return { label, num, cls, dir, html, daily, todayLeft };
 }
 // Reuses the normal hero's DOM and ids, so the count-up and delta in heroFeedback keep working.
 function renderTripHero(t, normalDaily){
@@ -80,9 +80,9 @@ function renderTripHero(t, normalDaily){
   const sub = document.getElementById('heroSub');
   const sub2 = document.getElementById('heroSub2');
   const sub3 = document.getElementById('heroSub3');
-  document.getElementById('heroMeter').style.display = 'none';
   document.getElementById('heroCta').style.display = 'none';
   document.getElementById('heroInfo').style.display = 'none';
+  document.getElementById('heroStatus').style.display = '';
   sub.innerHTML = ''; sub2.innerHTML = ''; sub3.innerHTML = '';
   value.style.display = ''; wrap.style.display = '';
   const m = tripHeroModel(t, todayISO());
@@ -92,8 +92,21 @@ function renderTripHero(t, normalDaily){
   heroShown = { label: label.textContent, num, dir };
   value.className = 'hero-value ' + cls;
   card.className = 'card hero trip-hero';
+  setHeroStatus(cls, { neg:'เกินงบทริป' });
+  // meter: what is left of today's allowance, like the normal hero
+  const meter = document.getElementById('heroMeter');
+  meter.style.display = 'none';
+  if(m.daily > 0){
+    meter.style.display = '';
+    const left = Math.max(m.todayLeft, 0);
+    meter.setAttribute('aria-valuemax', String(Math.round(m.daily)));
+    meter.setAttribute('aria-valuenow', String(Math.min(Math.round(left), Math.round(m.daily))));
+    const fill = document.getElementById('heroMeterFill');
+    fill.style.width = (m.todayLeft < 0 ? 100 : Math.min(left / m.daily, 1) * 100) + '%';
+    fill.className = m.todayLeft >= 0 ? '' : 'warn';
+  }
   sub.innerHTML = html;
-  sub2.textContent = normalDaily === null ? '' : `เดือนนี้ใช้ได้วันละ ${fmt(normalDaily)}`;
+  sub2.textContent = normalDaily === null ? '' : `นอกทริป เดือนนี้ใช้ได้วันละ ${fmt(normalDaily)}`;
 }
 
 /* ---------- Header: date + streak ---------- */
@@ -363,8 +376,10 @@ function openTripPage(id, opener, fromHash){
   tripPageOpener = opener && opener.focus ? opener : null;
   tripPageDirect = !!fromHash && !history.length ? true : !!fromHash;
   tripPageId = id;
+  if(entrySheetOpen()) closeEntrySheet();
   TABS.forEach(n => { document.getElementById('panel-' + n).hidden = true; });
   document.getElementById('tripPage').hidden = false;
+  syncFab();
   renderTripPage();
   window.scrollTo(0, 0);
   if(!fromHash && location.hash !== '#trip/' + id) location.hash = 'trip/' + id;
@@ -376,6 +391,7 @@ function closeTripPage(opts){
   tripPageId = null;
   document.getElementById('tripPage').hidden = true;
   document.getElementById('panel-' + activeTab).hidden = false;
+  syncFab();
   if(!(opts && opts.restore === false)){
     window.scrollTo(0, scrollPos[activeTab] || 0);
     const o = tripPageOpener;

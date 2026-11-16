@@ -56,7 +56,7 @@ function slAfterChange(idx){
   const f = t ? (t.querySelector('.entry-main') || t.querySelector('button')) : document.getElementById('slipTitle');
   const card = document.getElementById('slipCard');
   if(f && card && card.style.display !== 'none') f.focus();
-  else { const a = document.getElementById('entryAmount'); if(a) a.focus({ preventScroll: true }); }
+  else { const a = document.getElementById('addFab'); if(a && a.offsetParent !== null) a.focus({ preventScroll: true }); }
 }
 function slRowIndex(sel){
   return [...document.querySelectorAll('#slipList .slip-item')].findIndex(r => r.matches(sel));
@@ -121,9 +121,7 @@ function slManual(key){
     document.getElementById('entryDate').value = isoOf(d);
     updateDateSummary();
   }
-  const a = document.getElementById('entryAmount');
-  a.scrollIntoView({ block: 'center' });
-  a.focus();
+  openEntrySheet(document.activeElement);
 }
 async function slDismissUnread(key){
   const idx = slRowIndex(`[data-key="${CSS.escape(key)}"]`);

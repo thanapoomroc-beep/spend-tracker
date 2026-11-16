@@ -145,6 +145,7 @@ document.addEventListener('keydown', ev=>{
   if(document.getElementById('infoModalOverlay').style.display !== 'none') closeInfo();
   else if(document.getElementById('confirmModalOverlay').style.display !== 'none') closeConfirm();
   else if(document.getElementById('cardPayOverlay').style.display !== 'none') closeCardPay();
+  else if(entrySheetOpen()) closeEntrySheet();
   else if(document.getElementById('tripModalOverlay').style.display !== 'none') closeTripModal();
   else if(document.getElementById('tripSheetOverlay').style.display !== 'none') closeTripSheet();
   else if(document.getElementById('editModalOverlay').style.display !== 'none') closeEdit();
@@ -192,6 +193,11 @@ function render(){
   if(activeTab === 'wealth') renderWealth();
 }
 
+// Entries logged on one day: normal ones, or those of one trip when tripId is given. Pure.
+function todayEntries(entries, today, tripId){
+  return entries.filter(e => e.date === today && (tripId ? e.tripId === tripId : !e.tripId));
+}
+
 // วันนี้ is always the current calendar month and never reads currentMonth.
 function renderToday(){
   const now = new Date();
@@ -210,18 +216,17 @@ function renderToday(){
   renderDueCard(!!trip);
   renderSlipCard();
   renderBudgetAlert(getEffectiveBudgets(mKeyStr), monthEntries, !!trip);
-  // Until income is set the hero CTA is the only primary button (normal mode only).
-  const secondary = !trip && !(income > 0);
-  document.getElementById('addEntryBtn').classList.toggle('secondary', secondary);
-  document.getElementById('kbSaveBtn').classList.toggle('secondary', secondary);
+  syncEntryTitle();
 
-  const RECENT = 5;
-  const list = trip ? sortEntries(tripEntriesOf(trip.id)) : monthEntries;
-  renderEntryList(document.getElementById('recentList'), list, RECENT, false);
-  document.getElementById('recentTitle').textContent = trip ? 'รายการทริปล่าสุด' : 'รายการล่าสุด';
-  document.getElementById('recentEmptyTxt').textContent = trip ? 'ยังไม่มีรายการในทริปนี้' : 'ยังไม่มีรายการเดือนนี้';
-  document.getElementById('recentEmpty').style.display = list.length === 0 ? 'block' : 'none';
-  document.getElementById('recentAllBtn').style.display = list.length ? '' : 'none';
-  document.getElementById('recentCount').textContent = list.length ? (trip ? `ทริป ${list.length} รายการ` : `เดือนนี้ ${list.length} รายการ`) : '';
+  // วันนี้ card: only what was logged today (in travel mode, today's entries of the active trip)
+  const list = sortEntries(todayEntries(state.entries, todayISO(), trip ? trip.id : ''));
+  renderEntryList(document.getElementById('todayList'), list, null, false, true);
+  document.getElementById('todayTitle').textContent = trip ? 'วันนี้ในทริป' : 'วันนี้';
+  document.getElementById('todayEmpty').style.display = list.length === 0 ? 'block' : 'none';
+  document.getElementById('todayNote').textContent = list.length ? `${list.length} รายการ รวม ${fmt(list.reduce((s,e)=> s + e.amount, 0))}` : '';
+  const hasMore = trip ? tripEntriesOf(trip.id).length > 0 : monthEntries.length > 0;
+  const allBtn = document.getElementById('todayAllBtn');
+  allBtn.style.display = hasMore ? '' : 'none';
+  allBtn.textContent = trip ? 'ดูรายการทั้งทริป' : 'ดูรายการเดือนนี้';
 }
 

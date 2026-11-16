@@ -956,7 +956,7 @@ function setupWealthUi(){
   setupPriceSettings();
 }
 function anyOverlayOpen(){
-  return ['wSheetOverlay','confirmModalOverlay','cardPayOverlay','tripModalOverlay','tripSheetOverlay','editModalOverlay','infoModalOverlay'].some(id => { const e = $w(id); return e && e.style.display !== 'none'; });
+  return ['wSheetOverlay','entrySheetOverlay','confirmModalOverlay','cardPayOverlay','tripModalOverlay','tripSheetOverlay','editModalOverlay','infoModalOverlay'].some(id => { const e = $w(id); return e && e.style.display !== 'none'; });
 }
 // Capture phase: Escape closes the wealth sheet (or the holdings page) before the app's other Escape handler sees it.
 document.addEventListener('keydown', ev => {

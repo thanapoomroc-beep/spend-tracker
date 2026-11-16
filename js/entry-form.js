@@ -100,7 +100,7 @@ function setSplit(n){
   entrySplit = n >= 1 ? Math.min(n, 50) : 1;
   document.getElementById('splitN').value = entrySplit;
   updateConv();
-  updateKbBarLabel();
+  updateSaveLabel();
 }
 function updateConv(){
   const line = document.getElementById('convLine');
@@ -189,12 +189,11 @@ async function saveNewEntry(f, fromForm){
   }
   const d = parseISODate(f.date);
   currentMonth = new Date(d.getFullYear(), d.getMonth(), 1);   // รายการ shows the month the entry went to
-  const ae = document.activeElement;
-  if(ae && ae.blur && ae.closest && ae.closest('#panel-today .card')) ae.blur();
+  closeEntrySheet();   // first, so the count-up and the toast show on the page behind
   document.getElementById('moreDetails').open = false;
   if(fromForm) renderForm(); else updateDateSummary();
   render();
-  updateKbBarLabel();
+  updateSaveLabel();
   const undo = { label:'เลิกทำ', onClick: ()=> undoEntry(entry) };
   const at = activeTrip();
   if(entry.tripId){
