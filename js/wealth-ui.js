@@ -16,7 +16,10 @@ const ICON_MORE = '<svg viewBox="0 0 24 24" width="22" height="22" fill="current
 const ICON_BACK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
 
 /* ---------- Formatting (every baht amount goes through wm so the eye button can mask it) ---------- */
-function wm(text){ return wealthHidden ? W_MASK : text; }
+function wm(text){ return wealthHidden ? W_MASK : text; }   // text contexts only (tooltips, aria-labels, placeholders, textContent)
+// HTML contexts: a screen reader hears "ซ่อนอยู่" instead of the bullets. text must already be safe HTML.
+const W_MASK_HTML = '<span class="w-mask"><span aria-hidden="true">' + W_MASK + '</span><span class="sr-only">ซ่อนอยู่</span></span>';
+function wmHtml(text){ return wealthHidden ? W_MASK_HTML : text; }
 function wMoney(n){ const r = Math.round(n); return r < 0 ? '−' + fmt(-r) : fmt(r); }
 function wSigned(n){ const r = Math.round(n); return r > 0 ? '+' + fmt(r) : r < 0 ? '−' + fmt(-r) : fmt(0); }
 function wPct(p){ const v = Math.round(p * 1000) / 10; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%'; }
@@ -58,12 +61,13 @@ const wEsc = escapeHtml;
 function findWAccount(id){ return state.accounts.find(a => a.id === id && !a.deleted); }
 function liveHoldingsOf(accId){ return wLive(state.holdings).filter(h => h.accountId === accId); }
 function holdingName(h){ return h.assetType === 'gold' ? 'ทองคำ' : h.symbol; }
+// Returns HTML (already escaped).
 function holdingQty(r){
   const h = r.holding;
-  const units = wealthHidden ? '••••' : wNum(h.units);
+  const units = wealthHidden ? W_MASK_HTML : wEsc(wNum(h.units));
   const word = h.assetType === 'gold' ? (h.unit === 'baht' ? 'บาท' : 'กรัม') : ASSET_UNIT_WORD[h.assetType];
-  const price = r.price === null ? '' : ' × ' + (h.assetType === 'gold' ? 'บาทละ ' : '') + (wealthHidden ? W_MASK : wPrice(r.price, r.priceCurrency));
-  return `${units} ${word}${price}`;
+  const price = r.price === null ? '' : ' × ' + (h.assetType === 'gold' ? 'บาทละ ' : '') + (wealthHidden ? W_MASK_HTML : wEsc(wPrice(r.price, r.priceCurrency)));
+  return `${units} ${wEsc(word)}${price}`;
 }
 // Quiet save for housekeeping writes (no "saved" toast).
 function wealthSaveQuiet(){
@@ -216,8 +220,14 @@ function renderWealth(){
 function wealthHeroHtml(sum, series, today){
   const mc = monthChange(state.snapshots, today, buildSnapshot(sum));
   let change = '';
-  if(mc){
-    const part = n => `<span class="${wDir(n)}">${wm(wSigned(n))}</span>`;
+  if(mc && wealthHidden){
+    // Hidden mode keeps one figure: the direction and the percent of last month's net worth.
+    const r = monthChangePct(state.snapshots, mc);
+    const word = r.dir === 'up' ? 'เพิ่มขึ้น' : r.dir === 'down' ? 'ลดลง' : 'เท่าเดิม';
+    const cls = r.dir === 'up' ? 'w-pos' : r.dir === 'down' ? 'w-neg' : '';
+    change = `<div class="w-change-pct"><span class="${cls}">เดือนนี้ ${word}${r.pct !== null && r.dir !== 'flat' ? ' ' + r.pct.toFixed(1) + '%' : ''}</span></div>`;
+  }else if(mc){
+    const part = n => `<span class="${wDir(n)}">${wmHtml(wSigned(n))}</span>`;
     change = `<div>เดือนนี้ ${part(mc.change)}</div><div class="w-change-sub"><span class="nb">ตลาด ${part(mc.market)}</span><span class="nb">เงินเข้า-ออก ${part(mc.flows)}</span></div>`;
   }else{
     const gap = monthChangeGap(state.snapshots, today);
@@ -225,7 +235,7 @@ function wealthHeroHtml(sum, series, today){
   }
   let chart;
   if(series.length >= 2){
-    const rows = series.map(p => `<tr><td>${wEsc(thaiMonthYear(p.month))}</td><td>${wm(wMoney(p.net))}</td><td>${p.change === null ? '-' : wm(wSigned(p.change))}</td></tr>`).join('');
+    const rows = series.map(p => `<tr><td>${wEsc(thaiMonthYear(p.month))}</td><td>${wmHtml(wMoney(p.net))}</td><td>${p.change === null ? '-' : wmHtml(wSigned(p.change))}</td></tr>`).join('');
     chart = `<div class="chart-wrap w-chart"><canvas id="wealthChart" role="img" aria-label="กราฟความมั่งคั่งสุทธิ ${series.length} เดือน ดูตัวเลขในตารางด้านล่าง"></canvas><div class="chart-fallback">ต้องต่อเน็ตถึงจะเห็นกราฟ</div></div>
       <details class="more w-table"><summary><span>ดูเป็นตาราง</span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
       <div class="table-scroll" tabindex="0" role="region" aria-label="ตารางความมั่งคั่งสุทธิรายเดือน"><table><thead><tr><th scope="col">เดือน</th><th scope="col">ความมั่งคั่งสุทธิ</th><th scope="col">เปลี่ยนแปลง</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
@@ -234,10 +244,10 @@ function wealthHeroHtml(sum, series, today){
   }
   return `<div class="card w-hero">
     <div class="w-hero-label">ความมั่งคั่งสุทธิ</div>
-    <div class="w-net">${wm(wMoney(sum.net))}</div>
+    <div class="w-net">${wmHtml(wMoney(sum.net))}</div>
     <div class="w-change">${change}</div>
     ${chart}
-    <div class="w-split"><div><span class="k">ทรัพย์สิน</span><span class="v">${wm(wMoney(sum.assets))}</span></div><div><span class="k">หนี้</span><span class="v">${wm(wMoney(sum.debtTotal))}</span></div></div>
+    <div class="w-split"><div><span class="k">ทรัพย์สิน</span><span class="v">${wmHtml(wMoney(sum.assets))}</span></div><div><span class="k">หนี้</span><span class="v">${wmHtml(wMoney(sum.debtTotal))}</span></div></div>
   </div>`;
 }
 
@@ -246,7 +256,7 @@ function wealthAccountRow(a){
   if(a.hasHoldings) sub = `${a.holdingCount} ตัว ${a.asOf ? wAgeText(a.asOf) : 'ต้องใส่ราคา'}`;
   else sub = wAgeText(a.asOf);
   const pill = a.stale ? '<span class="w-pill warn">ข้อมูลเก่า</span>' : '';
-  return `<button type="button" class="w-row" data-act="acct" data-id="${wEsc(a.id)}"><span class="w-main"><span class="w-name">${wEsc(a.name)}</span><span class="w-sub">${wEsc(sub)}</span></span>${pill}<span class="w-amt">${wm(wMoney(a.value))}${a.dayPct !== null && a.dayPct !== undefined ? `<small class="${wDir(a.dayTHB)}">${wm(wPct(a.dayPct))}</small>` : ''}</span>${ICON_CHEV}</button>`;
+  return `<button type="button" class="w-row" data-act="acct" data-id="${wEsc(a.id)}"><span class="w-main"><span class="w-name">${wEsc(a.name)}</span><span class="w-sub">${wEsc(sub)}</span></span>${pill}<span class="w-amt">${wmHtml(wMoney(a.value))}${a.dayPct !== null && a.dayPct !== undefined ? `<small class="${wDir(a.dayTHB)}">${wmHtml(wPct(a.dayPct))}</small>` : ''}</span>${ICON_CHEV}</button>`;
 }
 function wealthDebtSub(d){
   if(d.overridden) return 'ยอดจริง ' + wAgeText(d.asOf);
@@ -257,10 +267,10 @@ function wealthDebtSub(d){
 }
 function wealthDebtRow(d){
   const pills = (d.auto ? (d.overridden ? '<span class="w-pill">ยอดจริง</span>' : '<span class="w-pill">อัตโนมัติ</span>') : '') + (d.stale ? '<span class="w-pill warn">ข้อมูลเก่า</span>' : '');
-  return `<button type="button" class="w-row" data-act="debt" data-id="${wEsc(d.id)}"><span class="w-main"><span class="w-name">${wEsc(d.name)}</span><span class="w-sub">${wEsc(wealthDebtSub(d))}</span></span>${pills}<span class="w-amt">${wm(wMoney(d.balance))}</span>${ICON_CHEV}</button>`;
+  return `<button type="button" class="w-row" data-act="debt" data-id="${wEsc(d.id)}"><span class="w-main"><span class="w-name">${wEsc(d.name)}</span><span class="w-sub">${wEsc(wealthDebtSub(d))}</span></span>${pills}<span class="w-amt">${wmHtml(wMoney(d.balance))}</span>${ICON_CHEV}</button>`;
 }
 function wealthGroupHtml(title, total, rowsHtml){
-  return `<section class="card w-group" aria-label="${wEsc(title)}"><h2><span>${wEsc(title)}</span><span class="h2-note">${wm(wMoney(total))}</span></h2>${rowsHtml}</section>`;
+  return `<section class="card w-group" aria-label="${wEsc(title)}"><h2><span>${wEsc(title)}</span><span class="h2-note">${wmHtml(wMoney(total))}</span></h2>${rowsHtml}</section>`;
 }
 
 function renderWealthMain(sum){
@@ -358,20 +368,20 @@ function renderHoldingsView(sum){
   const rows = a.holdings;
   let h = `<div class="w-backrow"><button type="button" class="icon-btn" data-act="back" aria-label="กลับ">${ICON_BACK}</button><h1>${wEsc(a.name)}</h1><span class="w-kind">${GROUP_LABEL[a.group]}</span><button type="button" class="icon-btn w-more" data-act="acct-menu" data-id="${wEsc(a.id)}" aria-label="จัดการบัญชี" aria-haspopup="dialog">${ICON_MORE}</button></div>`;
   if(rows.length){
-    const plLine = a.cost > 0 ? `ต้นทุน ${wm(wMoney(a.cost))} <span class="${wDir(a.pl)}">${a.pl >= 0 ? 'กำไร' : 'ขาดทุน'} ${wm(wPlText(a.pl, a.plPct))}</span>` : '';
-    h += `<div class="card w-sum"><div class="k">มูลค่าตอนนี้</div><div class="v">${wm(wMoney(a.value))}</div><div class="m">${plLine}</div>${a.dayTHB !== null ? `<div class="m w-dayline">จากราคาปิดก่อนหน้า <span class="${wDir(a.dayTHB)}">${wm(wSigned(a.dayTHB) + (a.dayPct !== null ? ' (' + wPct(a.dayPct) + ')' : ''))}</span>${a.dayMissing > 0 ? ` <span class="w-dim">ไม่รวม ${a.dayMissing} ตัวที่ไม่มีราคาก่อนหน้า</span>` : ''}</div>` : ''}</div>`;
+    const plLine = a.cost > 0 ? `ต้นทุน ${wmHtml(wMoney(a.cost))} <span class="${wDir(a.pl)}">${a.pl >= 0 ? 'กำไร' : 'ขาดทุน'} ${wmHtml(wPlText(a.pl, a.plPct))}</span>` : '';
+    h += `<div class="card w-sum"><div class="k">มูลค่าตอนนี้</div><div class="v">${wmHtml(wMoney(a.value))}</div><div class="m">${plLine}</div>${a.dayTHB !== null ? `<div class="m w-dayline">จากราคาปิดก่อนหน้า <span class="${wDir(a.dayTHB)}">${wmHtml(wSigned(a.dayTHB) + (a.dayPct !== null ? ' (' + wPct(a.dayPct) + ')' : ''))}</span>${a.dayMissing > 0 ? ` <span class="w-dim">ไม่รวม ${a.dayMissing} ตัวที่ไม่มีราคาก่อนหน้า</span>` : ''}</div>` : ''}</div>`;
     h += priceBarHtml();
     h += '<div class="card w-list">' + rows.map(r => {
       const hd = r.holding;
       let right, sub2 = '';
       if(r.missingPrice) right = '<span class="w-sub">ยังไม่มีราคา</span>';
       else if(r.missingFx) right = `<span class="w-sub">ต้องใส่เรต ${wEsc(r.priceCurrency)}</span>`;
-      else right = `<span>${wm(wMoney(r.value))}</span>` + (r.pl !== null ? `<small class="${wDir(r.pl)}">${wm(wPlText(r.pl, r.plPct))}</small>` : '');
+      else right = `<span>${wmHtml(wMoney(r.value))}</span>` + (r.pl !== null ? `<small class="${wDir(r.pl)}">${wmHtml(wPlText(r.pl, r.plPct))}</small>` : '');
       if(r.stale) sub2 = '<span class="w-pill warn">ข้อมูลเก่า</span>';
       const dayHtml = r.dayPct !== null && r.dayPct !== undefined
-        ? (wealthHidden ? ` <span class="w-day">${W_MASK}</span>`
+        ? (wealthHidden ? ` <span class="w-day">${W_MASK_HTML}</span>`
           : ` <span class="w-day ${wDir(r.dayTHB)}" role="img" aria-label="เปลี่ยนจากราคาปิดก่อนหน้า ${wPct(r.dayPct)}">${wPct(r.dayPct)}</span>`) : '';
-      return `<button type="button" class="w-row" style="min-height:64px;" data-act="hold-edit" data-id="${wEsc(hd.id)}"><span class="w-main"><span class="w-name" style="font-weight:600;">${wEsc(holdingName(hd))}</span><span class="w-sub">${wEsc(holdingQty(r))}${dayHtml}</span>${priceSrcText(r) ? `<span class="w-sub">${wEsc(priceSrcText(r))}</span>` : ''}</span>${sub2}<span class="w-amt">${right}</span>${ICON_CHEV}</button>`;
+      return `<button type="button" class="w-row" style="min-height:64px;" data-act="hold-edit" data-id="${wEsc(hd.id)}"><span class="w-main"><span class="w-name" style="font-weight:600;">${wEsc(holdingName(hd))}</span><span class="w-sub">${holdingQty(r)}${dayHtml}</span>${priceSrcText(r) ? `<span class="w-sub">${wEsc(priceSrcText(r))}</span>` : ''}</span>${sub2}<span class="w-amt">${right}</span>${ICON_CHEV}</button>`;
     }).join('') + '</div>';
   }else{
     h += '<div class="card w-empty"><div class="w-empty-t">ยังไม่มีรายการ</div><p>เพิ่มหุ้น กองทุน ทอง หรือคริปโตทีละตัว แอปจะคูณจำนวนกับราคาให้เอง</p></div>';
@@ -453,7 +463,7 @@ function openBalanceSheet(accId, opener){
     <div class="field-error" id="ws-err" role="alert"></div>` +
     W_CANCEL_SAVE() +
     (a.group === 'invest' ? '<button type="button" class="secondary" id="ws-itemize" style="margin-top:10px;">จดเป็นรายตัว (หุ้น กองทุน ทอง)</button>' : '') +
-    (hist.length ? `<div class="w-hist"><h3>ประวัติยอด</h3>${hist.slice(0, 6).map(b => `<div class="w-hist-row"><span>${wEsc(fmtThaiDate(b.date))}</span><span>${wm(wMoney(b.value))}</span></div>`).join('')}</div>` : '') +
+    (hist.length ? `<div class="w-hist"><h3>ประวัติยอด</h3>${hist.slice(0, 6).map(b => `<div class="w-hist-row"><span>${wEsc(fmtThaiDate(b.date))}</span><span>${wmHtml(wMoney(b.value))}</span></div>`).join('')}</div>` : '') +
     '<button type="button" class="linkbtn w-rename" id="ws-rename">แก้ชื่อบัญชี</button>' +
     '<button type="button" class="link-danger" id="ws-hide">ซ่อนบัญชีนี้</button>' +
     '<button type="button" class="link-danger" id="ws-delacct">ลบบัญชีนี้</button>';
@@ -603,13 +613,13 @@ function openDebtSheet(id, opener){
   let meta = '';
   if(d.kind === 'inst'){
     const m = d.meta;
-    meta = `<div class="m">เดือนละ ${wm(fmt(m.monthly))} งวดที่ ${m.termNo} จาก ${m.total} ผ่อนถึง ${wEsc(thaiMonthYear(m.end))}</div>`;
+    meta = `<div class="m">เดือนละ ${wmHtml(fmt(m.monthly))} งวดที่ ${m.termNo} จาก ${m.total} ผ่อนถึง ${wEsc(thaiMonthYear(m.end))}</div>`;
   }else if(d.kind === 'repay') meta = '<div class="m">ค้างตั้งแต่โอนคืนครั้งล่าสุด</div>';
   else meta = '<div class="m">ยอดที่ยังไม่ได้จ่ายกับรอบนี้</div>';
   const ov = d.overridden;
   const html = wSheetHead(d.name, '', `<span class="w-pill">${ov ? 'ยอดจริง' : 'อัตโนมัติ'}</span>`) +
-    `<div class="w-box"><div class="k">${why}</div><div class="v">${wm(wMoney(d.derivedBalance))}</div>${meta}</div>` +
-    (ov ? `<div class="w-delta" style="margin:0 0 10px;">ตอนนี้ใช้ยอดจริง ${wm(wMoney(d.balance))} ${wEsc(wAgeText(d.asOf))}</div>` : '') +
+    `<div class="w-box"><div class="k">${why}</div><div class="v">${wmHtml(wMoney(d.derivedBalance))}</div>${meta}</div>` +
+    (ov ? `<div class="w-delta" style="margin:0 0 10px;">ตอนนี้ใช้ยอดจริง ${wmHtml(wMoney(d.balance))} ${wEsc(wAgeText(d.asOf))}</div>` : '') +
     '<div class="field-hint">ยอดจากแอปคิดจากรายการที่จดไว้ ถ้ายอดจริงต่างไป เช่น ปิดบางส่วนหรือมีดอกเบี้ย ใส่ยอดจริงทับได้</div>' +
     `<label for="ws-real" class="w-lab">ยอดจริงจากธนาคาร (ไม่ใส่ก็ได้)</label>
     <input id="ws-real" class="w-big" style="font-size:var(--fs-22); min-height:52px;" inputmode="decimal" autocomplete="off" placeholder="${wealthHidden ? '••••' : wEsc(wNum(d.derivedBalance))}" aria-describedby="ws-err">
@@ -855,7 +865,7 @@ function openPriceSheet(accId, opener){
   const curs = [...new Set(hs.map(h => h.currency).filter(c => c && c !== 'THB'))];
   const priceRow = (it, i) => {
     const manual = it.p && it.p.source === 'manual';
-    const old = it.p ? (it.h.assetType === 'gold' ? 'เดิม บาทละ ' : 'เดิม ') + wm(wPrice(it.p.price, it.p.currency)) : 'ยังไม่มีราคา';
+    const old = it.p ? (it.h.assetType === 'gold' ? 'เดิม บาทละ ' : 'เดิม ') + wmHtml(wPrice(it.p.price, it.p.currency)) : 'ยังไม่มีราคา';
     return `<div class="w-price"><div class="w-price-row"><label for="ws-p${i}">${wEsc(holdingName(it.h))}<span>${old}${manual ? ' <b class="w-pill">ราคาที่ใส่เอง</b>' : ''}</span></label>
       <input id="ws-p${i}" data-key="${wEsc(it.key)}" inputmode="decimal" autocomplete="off" value="${it.p && !wealthHidden ? wInputNum(it.p.price) : ''}" placeholder="${wealthHidden ? '••••' : '0'}" aria-label="ราคาใหม่ ${wEsc(holdingName(it.h))}"></div>
       ${manual ? `<div class="w-clear-row"><button type="button" class="w-clear" data-clear="${wEsc(it.key)}">ใช้ราคาอัตโนมัติ</button></div>` : ''}</div>`;
@@ -864,7 +874,7 @@ function openPriceSheet(accId, opener){
     const e = state.fxCache[cur];
     const stale = e && isStale(e.at, todayISO(), STALE_FX_DAYS);
     return `<div class="w-fx-row"><label for="ws-fx${i}">1 ${cur} = ฿</label><input id="ws-fx${i}" data-cur="${cur}" inputmode="decimal" autocomplete="off" value="${e && !wealthHidden ? wInputNum(e.thb) : ''}" placeholder="${wealthHidden ? '••••' : '0'}"></div>
-      <div class="w-delta" style="margin:-4px 0 10px;">${e ? 'เดิม ' + wm('฿' + wInputNum(e.thb)) + ' ' + wEsc(wAgeText(dayOfStamp(e.at))) + (stale ? ' ข้อมูลเก่า' : '') : 'ยังไม่มีเรต ต้องใส่ถึงจะนับมูลค่า'}</div>`;
+      <div class="w-delta" style="margin:-4px 0 10px;">${e ? 'เดิม ' + wmHtml('฿' + wInputNum(e.thb)) + ' ' + wEsc(wAgeText(dayOfStamp(e.at))) + (stale ? ' ข้อมูลเก่า' : '') : 'ยังไม่มีเรต ต้องใส่ถึงจะนับมูลค่า'}</div>`;
   };
   const html = wSheetHead('อัปเดตราคา', acc.name) +
     items.map(priceRow).join('') +

@@ -296,6 +296,19 @@ function monthChange(snapshots, today, nowSnap){
   const change = round2(to.net - from.net);
   return { from: prevDays[prevDays.length - 1], change, market, flows: round2(change - market) };
 }
+// Direction and percent of the month's change against last month's net worth (the snapshot monthChange compared with).
+// pct is null when that base is missing or <= 0 (net worth can be negative). flat = |pct| < 0.05%, or a zero change.
+function monthChangePct(snapshots, mc){
+  if(!mc || !isFinite(mc.change)) return { dir:'flat', pct:null };
+  const snap = snapshots && snapshots[mc.from];
+  const base = snap ? Number(snap.net) : NaN;
+  const hasBase = isFinite(base) && base > 0;
+  const pct = hasBase ? (mc.change / base) * 100 : null;
+  let dir;
+  if(pct !== null) dir = Math.abs(pct) < 0.05 ? 'flat' : (pct > 0 ? 'up' : 'down');
+  else dir = Math.round(mc.change) > 0 ? 'up' : Math.round(mc.change) < 0 ? 'down' : 'flat';
+  return { dir, pct: pct === null ? null : Math.abs(pct) };
+}
 // Why monthChange has nothing to show: 'first' = the earliest snapshot is in the current month, 'gap' = older snapshots exist but none last month.
 // null when monthChange would succeed or there are no snapshots.
 function monthChangeGap(snapshots, today){

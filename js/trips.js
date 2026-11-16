@@ -498,7 +498,7 @@ function renderTripPage(){
         head.innerHTML = `<span>${escapeHtml(word + fmtThaiDate(e.date))}</span><span>${fmt(g.items.filter(x => x.date === e.date).reduce((s,x)=> s + x.amount, 0))}</span>`;
         box.appendChild(head);
       }
-      box.appendChild(entryRowEl(e, 'tripPageList', true, true));
+      box.appendChild(entryRowEl(e, 'tripPageList', true));
     });
   });
 }

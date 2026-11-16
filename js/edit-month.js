@@ -217,7 +217,7 @@ function renderToday(){
 
   const RECENT = 5;
   const list = trip ? sortEntries(tripEntriesOf(trip.id)) : monthEntries;
-  renderEntryList(document.getElementById('recentList'), list, RECENT, false, true);
+  renderEntryList(document.getElementById('recentList'), list, RECENT, false);
   document.getElementById('recentTitle').textContent = trip ? 'รายการทริปล่าสุด' : 'รายการล่าสุด';
   document.getElementById('recentEmptyTxt').textContent = trip ? 'ยังไม่มีรายการในทริปนี้' : 'ยังไม่มีรายการเดือนนี้';
   document.getElementById('recentEmpty').style.display = list.length === 0 ? 'block' : 'none';

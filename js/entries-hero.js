@@ -196,14 +196,12 @@ function entrySub(e){
   return parts.concat([e.note, shortPayName(e.paymentMethod)]).filter(Boolean).join(' · ');
 }
 // One entry row (shared by the lists and the trip summary). `noBadge` hides the trip badge inside the trip page itself.
-function entryRowEl(e, listId, noDelete, noBadge){
+function entryRowEl(e, listId, noBadge){
   const row = document.createElement('div');
   row.className = 'entry-row';
   row.dataset.id = e.id;
-  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}${e.needsReview ? '<span class="review-badge">รอตรวจ</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>${noDelete ? '' : `<button type="button" class="del" aria-label="ลบรายการ ${escapeHtml(e.category)} ${fmt(e.amount)}">${ICON_X}</button>`}`;
+  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}${e.needsReview ? '<span class="review-badge">รอตรวจ</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>`;
   row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, listId));
-  const delBtn = row.querySelector('.del');
-  if(delBtn) delBtn.addEventListener('click', ()=> askDeleteEntry(e.id));
   return row;
 }
 // Search/filter predicate (F5); reads the in-memory filter state.
@@ -228,7 +226,7 @@ function openEntriesFiltered(f){
   const list = document.getElementById('entryList');
   if(list && list.focus){ try{ list.focus({ preventScroll:true }); }catch(e){ list.focus(); } }
 }
-function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
+function renderEntryList(list, monthEntries, limit, useFilters){
   list.innerHTML = '';
   const active = !!useFilters && filterActive();
   let source = monthEntries;
@@ -251,7 +249,7 @@ function renderEntryList(list, monthEntries, limit, useFilters, noDelete){
       head.innerHTML = `<span>${escapeHtml(label)}</span><span>${fmt(total)}</span>`;
       list.appendChild(head);
     }
-    const row = entryRowEl(e, list.id, noDelete, false);
+    const row = entryRowEl(e, list.id, false);
     list.appendChild(row);
   });
   return { active, source, shown };

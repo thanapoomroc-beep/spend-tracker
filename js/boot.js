@@ -5,6 +5,9 @@ async function init(){
   document.getElementById('loadingOverlay').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   setupUi();
+  // Charts inside the folded แนวโน้ม card have no size while it is closed: draw them again when it opens.
+  const trendDet = document.getElementById('trendDetails');
+  if(trendDet) trendDet.addEventListener('toggle', ()=>{ if(trendDet.open){ resizeCharts(); requestAnimationFrame(resizeCharts); } });
   setChartFont();
   initForm();
   render();

@@ -276,7 +276,7 @@ async function askDeleteEntry(id, afterDelete){
   render();
   // The toast comes after saveData, whose own 'บันทึกแล้ว' toast would replace it.
   flashToast('ลบแล้ว', true, { label: 'เลิกทำ', onClick: ()=> undoDelete(e, idx) });
-  // The row's × or the sheet's delete button is gone now, so focus the undo button.
+  // The sheet's delete button is gone now, so focus the undo button.
   const t = document.querySelector('#saveIndicator .toast-action') || document.getElementById('entryList');
   if(t && t.focus) t.focus();
 }

@@ -61,7 +61,7 @@
     background:var(--panel); border:1px solid var(--border); border-radius:var(--r);
     padding:18px 20px; margin-bottom:14px; box-shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px -8px rgba(0,0,0,.35);
   }
-  .card h2{font-size:var(--fs-15); font-weight:600; margin:0 0 12px; color:var(--text); display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+  .card h2{font-size:var(--fs-18); font-weight:700; margin:0 0 12px; color:var(--text); display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
   .card h2 .h2-note{font-size:var(--fs-12); font-weight:400; color:var(--muted);}
   h3{font-size:var(--fs-14); font-weight:600; margin:0 0 10px; color:var(--text);}
   label{display:block; font-size:var(--fs-13); color:var(--muted); margin-bottom:4px;}
@@ -188,7 +188,7 @@
   button.budget-row{margin-bottom:8px;}
   .budget-row .bar,.budget-row .budget-foot{display:block;}
   .sub-sec+.sub-sec{margin-top:22px; padding-top:16px; border-top:1px solid var(--border);}
-  .card h3.sub-h{font-size:var(--fs-14); font-weight:600; margin:0 0 10px; display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+  .card h3.sub-h{font-size:var(--fs-15); font-weight:600; margin:0 0 10px; display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
   .card h3.sub-h .h2-note{font-size:var(--fs-12); font-weight:400; color:var(--muted);}
   .pie-foot{font-size:var(--fs-13); color:var(--muted); margin-top:8px;}
   .pie-legend li{padding:0;}
@@ -216,6 +216,10 @@
   .chip.active,.chip.active:hover{background:var(--accent); color:var(--on-accent); border-color:var(--accent);}
   .chip.active .dot{box-shadow:0 0 0 1.5px var(--on-accent);}
   .more{margin-bottom:12px;}
+  .fold-card>summary{display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; cursor:pointer; list-style:none; border-radius:var(--r-s);}
+  .fold-card>summary::-webkit-details-marker{display:none;}
+  .fold-card>summary h2{margin:0;}
+  .fold-card[open]>summary{margin-bottom:12px;}
   .more summary{display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; cursor:pointer; color:var(--text); font-size:var(--fs-14); list-style:none; border-radius:var(--r-s); padding:0 4px;}
   .more summary::-webkit-details-marker,.card-summary::-webkit-details-marker{display:none;}
   .more summary .muted{color:var(--muted); font-size:var(--fs-13);}
@@ -255,8 +259,6 @@
   .entry-cat{font-size:var(--fs-15);}
   .entry-note{font-size:var(--fs-13); color:var(--muted); font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .entry-amt{font-weight:700; font-variant-numeric:tabular-nums;}
-  .del{width:44px; min-width:44px; height:44px; padding:0; background:none; color:var(--muted); display:grid; place-items:center; flex:0 0 44px;}
-  .del:hover{background:var(--panel2); color:var(--red-text);}
   .empty{color:var(--muted); text-align:center; padding:18px 0; font-size:var(--fs-14);}
   .empty button{width:auto; margin:12px auto 0; padding:0 20px; display:block;}
   #recentAllBtn{margin-top:10px;}
@@ -520,7 +522,7 @@
 
   /* Due card: lighter than the hero */
   #dueCard{padding:12px 14px; box-shadow:none; background:transparent;}
-  #dueCard h2{font-size:var(--fs-14); font-weight:600; margin:0; display:block;}
+  #dueCard h2{font-size:var(--fs-18); font-weight:700; margin:0; display:block;}
   #dueCard .due-note{font-size:var(--fs-13); color:var(--muted); margin:0 0 6px;}
   #dueList li{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:6px 0; font-size:var(--fs-14);}
   #dueList .due-name{min-width:0; overflow-wrap:anywhere;}
@@ -707,6 +709,7 @@
   .w-change{font-size:var(--fs-14); color:var(--muted); min-height:20px;}
   .w-change .pos{color:var(--green); font-weight:600;} .w-change .neg{color:var(--red-text); font-weight:600;}
   .w-change-sub{display:flex; flex-wrap:wrap; justify-content:center; gap:2px 14px; font-size:var(--fs-13); margin-top:2px;}
+  .w-change-pct{font-weight:600;}
   .w-change .nb,.w-change .pos,.w-change .neg{white-space:nowrap;}
   .w-pricebar{margin:0 0 12px; text-align:center;}
   .w-pricebar button.secondary{width:100%; min-height:48px;}

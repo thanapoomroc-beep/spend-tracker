@@ -6,9 +6,14 @@ const ICON_CHECK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" 
 /* ---------- Health card (ทรัพย์สิน tab) ---------- */
 // Percentages and months stay visible when the eye is closed; nothing on this card is a baht amount.
 const H_SEV_LABEL = { act: 'ต้องทำ', watch: 'ควรดู', info: 'ทราบไว้' };
-function hStatusPill(trig, label){
+// The pill uses the same severity words as the list below (H_SEV_LABEL).
+function hStatusPill(trig){
   if(!trig) return '';
-  return `<span class="w-pill ${trig.severity === 'act' ? 'neg' : trig.severity === 'watch' ? 'warn' : ''}">${wEsc(trig.severity === 'act' ? 'ควรรีบดู' : label)}</span>`;
+  return `<span class="w-pill ${trig.severity === 'act' ? 'neg' : trig.severity === 'watch' ? 'warn' : ''}">${wEsc(H_SEV_LABEL[trig.severity] || '')}</span>`;
+}
+// Rows with a value first, rows without one (ยังไม่พอคำนวณ) last; stable otherwise.
+function healthRowsOrdered(rows){
+  return rows.map((r, i) => ({ r, i })).sort((a, b) => ((a.r.value === null) - (b.r.value === null)) || (a.i - b.i)).map(x => x.r);
 }
 function hPctText(p){ return (p < 0 ? '−' : '') + Math.abs(p).toFixed(1) + '%'; }
 // 'รวม SGOV' / 'รวม A, B, C และอีก 2': the flagged holdings that were added to the runway.
@@ -16,23 +21,25 @@ function healthLiquidNote(syms){
   if(!syms || !syms.length) return '';
   return '\n' + 'รวม ' + syms.slice(0, 3).join(', ') + (syms.length > 3 ? ` และอีก ${syms.length - 3}` : '');
 }
-function healthRowHtml(label, value, sub, trig, pillLabel){
+function healthRowHtml(label, value, sub, trig){
   const val = value === null ? '<span class="h-na">ยังไม่พอคำนวณ</span>' : wEsc(value);
-  return `<div class="h-row"><span class="w-main"><span class="w-name">${wEsc(label)}</span>${sub ? `<span class="w-sub">${wEsc(sub)}</span>` : ''}</span>${hStatusPill(trig, pillLabel)}<span class="w-amt">${val}</span></div>`;
+  return `<div class="h-row"><span class="w-main"><span class="w-name">${wEsc(label)}</span>${sub ? `<span class="w-sub">${wEsc(sub)}</span>` : ''}</span>${hStatusPill(trig)}<span class="w-amt">${val}</span></div>`;
 }
+function healthRowSpec(label, value, sub, trig){ return { label, value, sub, trig }; }
 function healthCardHtml(){
   let c;
   try{ c = healthCompute(state, new Date()); }catch(e){ return ''; }
   const byId = id => c.triggers.find(t => t.id === id) || null;
   const th = c.th, hm = c.health;
-  const rows = [
-    healthRowHtml('เงินสำรองพอใช้', hm.cash_runway_months === null ? null : hm.cash_runway_months.toFixed(1) + ' เดือน', `เป้า ${hRound(th.emergencyMonthsTarget, 1)} เดือน` + healthLiquidNote(c.liquidSymbols), byId('T1'), 'ต่ำกว่าเป้า'),
-    healthRowHtml('อัตราการออม 3 เดือน', hm.savings_rate_3m === null ? null : hPctText(hm.savings_rate_3m * 100), `เป้า ${hRound(th.savingsRateTarget * 100, 1)}%`, byId('T9'), 'ต่ำกว่าเป้า'),
-    healthRowHtml('หนี้ต่อทรัพย์สิน', hm.debt_to_assets === null ? null : hPctText(hm.debt_to_assets * 100), '', null),
-    healthRowHtml('ถือหุ้นตัวใหญ่สุด', c.top_single_holding_pct === null ? null : (c.top_single_holding_symbol ? hPctText(c.top_single_holding_pct) : 'ไม่มีหุ้นรายตัว'),
-      c.top_single_holding_symbol ? `${c.top_single_holding_symbol} เกณฑ์ ${hRound(th.maxSingleHoldingPct, 1)}%` : '', byId('T2'), 'เกินเกณฑ์'),
-    healthRowHtml('สินทรัพย์ต่างประเทศ', hm.fx_exposure_pct === null ? null : hPctText(hm.fx_exposure_pct), '', byId('T8'), 'ควรดู')
-  ].join('');
+  const specs = [
+    healthRowSpec('เงินสำรองพอใช้', hm.cash_runway_months === null ? null : hm.cash_runway_months.toFixed(1) + ' เดือน', `เป้า ${hRound(th.emergencyMonthsTarget, 1)} เดือน` + healthLiquidNote(c.liquidSymbols), byId('T1')),
+    healthRowSpec('อัตราการออม 3 เดือน', hm.savings_rate_3m === null ? null : hPctText(hm.savings_rate_3m * 100), `เป้า ${hRound(th.savingsRateTarget * 100, 1)}%`, byId('T9')),
+    healthRowSpec('หนี้ต่อทรัพย์สิน', hm.debt_to_assets === null ? null : hPctText(hm.debt_to_assets * 100), '', null),
+    healthRowSpec('ถือหุ้นตัวใหญ่สุด', c.top_single_holding_pct === null ? null : (c.top_single_holding_symbol ? hPctText(c.top_single_holding_pct) : 'ไม่มีหุ้นรายตัว'),
+      c.top_single_holding_symbol ? `${c.top_single_holding_symbol} เกณฑ์ ${hRound(th.maxSingleHoldingPct, 1)}%` : '', byId('T2')),
+    healthRowSpec('สินทรัพย์ต่างประเทศ', hm.fx_exposure_pct === null ? null : hPctText(hm.fx_exposure_pct), '', byId('T8'))
+  ];
+  const rows = healthRowsOrdered(specs).map(r => healthRowHtml(r.label, r.value, r.sub, r.trig)).join('');
   const list = c.triggers.length
     ? '<ul class="h-trig">' + c.triggers.map(t => `<li><span class="w-pill ${t.severity === 'act' ? 'neg' : t.severity === 'watch' ? 'warn' : ''}">${wEsc(H_SEV_LABEL[t.severity])}</span><span class="h-trig-t">${wEsc(t.text_th)}</span></li>`).join('') + '</ul>'
     : `<div class="h-ok">${ICON_CHECK}<span>ไม่มีอะไรต้องระวัง</span></div>`;
