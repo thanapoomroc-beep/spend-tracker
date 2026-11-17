@@ -25,7 +25,7 @@ function buildChips(container, selected, onSelect, extra, trip){
     b.setAttribute('aria-checked', on ? 'true' : 'false');
     b.tabIndex = (on || (!hasActive && i === 0)) ? 0 : -1;
     b.className = 'chip' + (on ? ' active' : '');
-    b.innerHTML = `<span class="dot" style="background:${trip ? tripCatColor(cat) : categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}`;
+    b.innerHTML = `${catIconSvg(trip ? tripCatIconId(cat) : categoryIconFor(cat), 0, trip ? tripCatColor(cat) : categoryColor(cat))}${escapeHtml(cat)}`;
     b.addEventListener('click', ()=> onSelect(cat));
     b.addEventListener('keydown', ev=>{
       const step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1 : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
@@ -245,7 +245,7 @@ function renderCategorySettings(){
     block.setAttribute('aria-label','หมวด ' + c.name);
     block.innerHTML = `
       <div class="cat-row">
-        <button type="button" class="secondary cat-dot" aria-label="เลือกสีของ ${nm} ตอนนี้สี${slotLabel}" aria-expanded="${openPickerFor === c.name}"><span class="swatch" style="background:${categoryColor(c.name)}"></span></button>
+        <button type="button" class="secondary cat-dot" aria-label="เลือกสีและไอคอนของ ${nm} ตอนนี้สี${slotLabel} ไอคอน${CAT_ICON_LABELS[categoryIconFor(c.name)]}" aria-expanded="${openPickerFor === c.name}">${catIconSvg(categoryIconFor(c.name), 22, categoryColor(c.name))}</button>
         <input type="text" class="cat-name" value="${nm}" maxlength="24" aria-label="ชื่อหมวด" autocomplete="off">
         <button type="button" class="secondary cat-up" aria-label="เลื่อนขึ้น" title="เลื่อนขึ้น"${i === 0 ? ' disabled' : ''}>▲</button>
         <button type="button" class="secondary cat-down" aria-label="เลื่อนลง" title="เลื่อนลง"${i === act.length-1 ? ' disabled' : ''}>▼</button>
@@ -256,14 +256,27 @@ function renderCategorySettings(){
     if(openPickerFor === c.name){
       const pick = document.createElement('div');
       pick.className = 'cat-picker';
-      pick.setAttribute('role','group');
-      pick.setAttribute('aria-label','เลือกสีของ ' + c.name);
+      const colorHead = document.createElement('span'); colorHead.className = 'cat-picker-h'; colorHead.id = 'catColH'; colorHead.textContent = 'สี';
+      const colorGrp = document.createElement('div'); colorGrp.className = 'cat-picker-row'; colorGrp.setAttribute('role','group'); colorGrp.setAttribute('aria-labelledby','catColH');
       const used6 = new Set(state.categories.map(x => x.slot));
       for(let s = 0; s < SLOT_COLORS.length; s++){
         if(used6.has(s) && c.slot !== s) continue;     // only free slots (plus its own)
-        pick.appendChild(slotChip(c, s, SLOT_NAMES[s], SLOT_COLORS[s]));
+        colorGrp.appendChild(slotChip(c, s, SLOT_NAMES[s], SLOT_COLORS[s]));
       }
-      pick.appendChild(slotChip(c, null, 'เทา (อื่นๆ)', NEUTRAL_COLOR));
+      colorGrp.appendChild(slotChip(c, null, 'เทา (อื่นๆ)', NEUTRAL_COLOR));
+      const iconHead = document.createElement('span'); iconHead.className = 'cat-picker-h'; iconHead.id = 'catIcH'; iconHead.textContent = 'ไอคอน';
+      const iconGrp = document.createElement('div'); iconGrp.className = 'cat-picker-row cat-icon-grid'; iconGrp.setAttribute('role','group'); iconGrp.setAttribute('aria-labelledby','catIcH');
+      const curIcon = categoryIconFor(c.name);
+      CAT_ICON_ORDER.forEach(id => {
+        const ib = document.createElement('button');
+        ib.type = 'button'; ib.className = 'ic-btn'; ib.dataset.icon = id;
+        ib.setAttribute('aria-pressed', id === curIcon ? 'true' : 'false');
+        ib.setAttribute('aria-label', CAT_ICON_LABELS[id]);
+        ib.innerHTML = catIconSvg(id, 22, categoryColor(c.name));
+        ib.addEventListener('click', ()=> setCategoryIcon(c.name, id));
+        iconGrp.appendChild(ib);
+      });
+      pick.append(colorHead, colorGrp, iconHead, iconGrp);
       block.appendChild(pick);
     }
     const nameInp = block.querySelector('.cat-name');
@@ -322,6 +335,19 @@ async function setCategorySlot(name, slot){
   openPickerFor = null;
   await afterCategoryChange();
   focusCat(name, '.cat-dot');
+}
+
+async function setCategoryIcon(name, id){
+  const c = findCat(name);
+  if(!c || !CAT_ICONS[id]) return;
+  if(categoryIconFor(name) !== id || c.icon !== id){
+    c.icon = id;
+    c.updatedAt = nowISO();
+    await afterCategoryChange();
+  }
+  const blk = [...document.querySelectorAll('#categoryList .cat-block')].find(b => b.dataset.name === name);
+  const btn = blk && blk.querySelector('.ic-btn[data-icon="' + id + '"]');
+  if(btn) btn.focus(); else focusCat(name, '.cat-dot');
 }
 
 async function moveCategory(name, dir){

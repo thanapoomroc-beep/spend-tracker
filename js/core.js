@@ -80,7 +80,7 @@ function seedCategories(stamp){
 
 // Data shape (v3a). Everything beyond v1 is additive:
 //   schemaVersion: 3
-//   categories: [{ name, slot: 0-5|null, archived, updatedAt }]   (array order = display order)
+//   categories: [{ name, slot: 0-5|null, archived, updatedAt, icon? }]   (icon: optional id from CAT_ICONS)   (array order = display order)
 //   monthlySettings[m]: { income, fixedItems:[{id,name,amount,group, dueDay?, startMonth?, totalTerms?}], updatedAt }
 //   budgetSettings[m]:  { [category]: number }  - a plain map, so it must hold budgets only.
 //   budgetUpdatedAt[m]: ISO string              - the updatedAt of budgetSettings[m] lives here for that reason.
@@ -195,7 +195,9 @@ function migrateState(parsed){
     let slot = (Number.isInteger(c.slot) && c.slot >= 0 && c.slot < SLOT_COLORS.length) ? c.slot : null;
     if(slot !== null && usedSlots.has(slot)) slot = null;   // a slot belongs to one category
     if(slot !== null) usedSlots.add(slot);
-    cats.push({ name, slot, archived: !!c.archived, updatedAt: c.updatedAt || EPOCH });
+    const cat = { name, slot, archived: !!c.archived, updatedAt: c.updatedAt || EPOCH };
+    if(typeof CAT_ICONS !== 'undefined' && typeof c.icon === 'string' && Object.prototype.hasOwnProperty.call(CAT_ICONS, c.icon)) cat.icon = c.icon;
+    cats.push(cat);
   });
   const addUnknown = name => {
     if(typeof name !== 'string' || !name.trim() || seen.has(name)) return;
