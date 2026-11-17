@@ -81,6 +81,10 @@ function tripCatIconId(name){
   return Object.prototype.hasOwnProperty.call(TRIP_CAT_ICON_DEFAULTS, name) ? TRIP_CAT_ICON_DEFAULTS[name] : 'tag';
 }
 function categoryIconFor(name){ const c = findCat(name); return catIconId(name, c && c.icon); }
+// Row icon for an entry or a category name, in its colour (replaces the round dot in rows).
+function entryIconSvg(e){ return catIconSvg(e.tripId ? tripCatIconId(e.category) : categoryIconFor(e.category), 0, entryColor(e)); }
+function catRowIconSvg(name, color){ return catIconSvg(categoryIconFor(name), 0, color || categoryColor(name)); }
+function tripRowIconSvg(name){ return catIconSvg(tripCatIconId(name), 0, tripCatColor(name)); }
 function catIconSvg(id, size, color){
   const body = CAT_ICONS[id] || CAT_ICONS.tag;
   const s = size ? ` width="${size}" height="${size}"` : '';

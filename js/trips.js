@@ -479,7 +479,7 @@ function renderTripPage(){
   $('tpCatCard').style.display = rows.length ? '' : 'none';
   rows.forEach(r=>{
     const li = document.createElement('li');
-    li.innerHTML = `<div class="pb-head"><span class="nm"><span class="dot" style="background:${tripCatColor(r.n)}" aria-hidden="true"></span><span class="t">${escapeHtml(r.n)}</span></span><span class="amt">${fmt(r.sum)}</span><span class="pct">${spent > 0 ? Math.round(r.sum / spent * 100) : 0}%</span></div><div class="pb-bar" aria-hidden="true"><span class="cat" style="width:${rows[0].sum > 0 ? r.sum / rows[0].sum * 100 : 0}%"></span></div>`;
+    li.innerHTML = `<div class="pb-head"><span class="nm">${tripRowIconSvg(r.n)}<span class="t">${escapeHtml(r.n)}</span></span><span class="amt">${fmt(r.sum)}</span><span class="pct">${spent > 0 ? Math.round(r.sum / spent * 100) : 0}%</span></div><div class="pb-bar" aria-hidden="true"><span class="cat" style="width:${rows[0].sum > 0 ? r.sum / rows[0].sum * 100 : 0}%"></span></div>`;
     cb.appendChild(li);
   });
   // by payment method: the same renderer as the monthly card

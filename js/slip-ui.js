@@ -31,7 +31,7 @@ function slipRowHtml(e){
   const cat = escapeHtml(e.category) + (e.aiGuess ? ' (AI เดา)' : '');
   const cards = slRepayCards();
   const who = escapeHtml(e.note || 'ไม่มีชื่อผู้รับ') + ' ' + fmt(e.amount);
-  return `<li class="slip-item" data-id="${escapeHtml(e.id)}"><div class="entry-row" data-id="${escapeHtml(e.id)}"><button type="button" class="entry-main" aria-label="แก้ไขสลิป ${escapeHtml(e.note || 'ไม่มีชื่อผู้รับ')} ${fmt(e.amount)}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${name}</span><span class="entry-note">${escapeHtml(meta)}</span></span><span class="entry-amt">${fmt(e.amount)}<span class="tiny-tag">${cat}</span></span></button></div>` +
+  return `<li class="slip-item" data-id="${escapeHtml(e.id)}"><div class="entry-row" data-id="${escapeHtml(e.id)}"><button type="button" class="entry-main" aria-label="แก้ไขสลิป ${escapeHtml(e.note || 'ไม่มีชื่อผู้รับ')} ${fmt(e.amount)}">${entryIconSvg(e)}<span class="entry-text"><span class="entry-cat">${name}</span><span class="entry-note">${escapeHtml(meta)}</span></span><span class="entry-amt">${fmt(e.amount)}<span class="tiny-tag">${cat}</span></span></button></div>` +
     `<div class="slip-acts"><button type="button" data-act="sl-ok" data-id="${escapeHtml(e.id)}" aria-label="ถูกแล้ว ${who}">ถูกแล้ว</button><button type="button" class="secondary" data-act="sl-not" data-id="${escapeHtml(e.id)}" aria-label="ไม่ใช่รายจ่าย ${who}">ไม่ใช่รายจ่าย</button>${cards.length ? `<button type="button" class="secondary" data-act="sl-repay" data-id="${escapeHtml(e.id)}" aria-label="โอนคืนบัตร ${who}">โอนคืนบัตร</button>` : ''}</div></li>`;
 }
 function slipUnreadHtml(u){

@@ -108,6 +108,10 @@ function renderCardsCard(){
   card.style.display = rows.length ? '' : 'none';
   updateDueMoneyCard();
   rows.forEach(({ m, s }) => body.appendChild(buildCardBlock(m, s)));
+  // One sand primary per card: a statement card that is due wins over a TTB-style repayment.
+  const prim = [...body.querySelectorAll('[data-pay-btn]:not(.secondary)')];
+  const keep = prim.find(b => { const r = rows.find(x => x.m.id === b.dataset.payBtn); return r && r.s.type !== 'repay'; }) || prim[0];
+  prim.forEach(b => { if(b !== keep) b.classList.add('secondary'); });
   if(rows.length){ const n = document.createElement('div'); n.className = 'cc-meta'; n.textContent = 'ยอดบัตรคิดจากรายการที่จดไว้ อาจต่างจากบิลจริง'; body.appendChild(n); }
 }
 function buildCardBlock(m, s){
@@ -117,16 +121,17 @@ function buildCardBlock(m, s){
   div.dataset.id = m.id;
   const repay = s.type === 'repay';
   let main = '', meta = '', btns = '';
-  const payBtn = (label) => `<button type="button" data-pay-btn="${escapeHtml(m.id)}" aria-label="${label} ${nm}">${label}</button>`;
+  // Sand (primary) only when money is due; refreshCardsCard then keeps one sand button per card.
+  const payBtn = (label, due) => `<button type="button"${due ? '' : ' class="secondary"'} data-pay-btn="${escapeHtml(m.id)}" aria-label="${label} ${nm}">${label}</button>`;
   if(repay){
     main = s.owed > 0 ? `<span class="cc-amt">ค้างโอนคืน ประมาณ ${fmt(s.owed)}</span>`
       : s.owed < 0 ? `<span class="cc-amt">โอนเกิน ${fmt(s.over)}</span>` : `<span class="cc-amt">โอนคืนครบแล้ว</span>`;
     if(s.lastPayment) meta = `โอนคืนล่าสุด ${fmtThaiDate(s.lastPayment.date)} ${fmtExact(s.lastPayment.amount)}`;
-    btns = payBtn('โอนคืนแล้ว');
+    btns = payBtn('โอนคืนแล้ว', s.owed > 0);
   }else if(!s.configured){
     main = `<span class="cc-amt">ใช้ไปแล้ว ประมาณ ${fmt(s.unpaid)}</span>`;
     btns = `<button type="button" class="secondary cc-setup" aria-label="ตั้งวันตัดรอบ ${nm}">ตั้งวันตัดรอบ</button>`;
-    if(s.unpaid > 0) btns = payBtn('จ่ายแล้ว') + btns;
+    if(s.unpaid > 0) btns = payBtn('จ่ายแล้ว', true) + btns;
   }else{
     if(s.unpaid > 0){
       const flag = s.daysToDue < 0 ? `<span class="cc-flag neg">เลยกำหนด ${s.overdueDays} วัน</span>` : s.daysToDue <= 3 ? `<span class="cc-flag warn">${dueWhenText(s.daysToDue)}</span>` : '';
@@ -135,7 +140,7 @@ function buildCardBlock(m, s){
       main = `<span class="cc-amt">ไม่มียอดค้าง</span>`;
     }
     meta = `รอบนี้ ${fmt(s.openSpend)} · ตัดรอบ ${fmtThaiDate(s.nextClose)}`;
-    btns = (s.unpaid > 0 ? payBtn('จ่ายแล้ว') : '') + `<button type="button" class="secondary cc-ics" aria-label="เพิ่มในปฏิทิน ${nm}">เพิ่มในปฏิทิน</button>`;
+    btns = (s.unpaid > 0 ? payBtn('จ่ายแล้ว', true) : '') + `<button type="button" class="secondary cc-ics" aria-label="เพิ่มในปฏิทิน ${nm}">เพิ่มในปฏิทิน</button>`;
   }
   const pays = cardPaymentsOf(m.id);
   const histTitle = repay ? 'ประวัติการโอนคืน' : 'ประวัติการจ่าย';

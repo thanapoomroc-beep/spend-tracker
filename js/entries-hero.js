@@ -98,11 +98,11 @@ function updateFilterSummary(){
 function renderFilterChips(){
   const box = document.getElementById('filterChips');
   box.innerHTML = '';
-  const mk = (label, color, pressed, fn)=>{
+  const mk = (label, icon, pressed, fn)=>{
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'fchip';
     b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-    b.innerHTML = (color ? `<span class="dot" style="background:${color}" aria-hidden="true"></span>` : '') + escapeHtml(label);
+    b.innerHTML = (icon || '') + escapeHtml(label);
     b.addEventListener('click', fn);
     box.appendChild(b);
     return b;
@@ -110,7 +110,7 @@ function renderFilterChips(){
   const all = mk('ทั้งหมด', null, filterCats.size === 0 && !filterReview && !filterPay, ()=>{ filterCats.clear(); filterReview = false; filterPay = null; renderFilterChips(); const a2 = document.querySelector('#filterChips [data-all]'); if(a2) a2.focus(); refreshEntryList(); });
   all.dataset.all = '1';
   state.categories.forEach(c=>{
-    const b = mk(c.name + (c.archived ? ' (ซ่อน)' : ''), categoryColor(c.name), filterCats.has(c.name), ()=>{
+    const b = mk(c.name + (c.archived ? ' (ซ่อน)' : ''), catRowIconSvg(c.name), filterCats.has(c.name), ()=>{
       if(filterCats.has(c.name)) filterCats.delete(c.name); else filterCats.add(c.name);
       syncFilterChips(); refreshEntryList();
     });
@@ -171,7 +171,7 @@ function entryRowEl(e, listId, noBadge){
   const row = document.createElement('div');
   row.className = 'entry-row';
   row.dataset.id = e.id;
-  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}"><span class="dot" style="background:${entryColor(e)}" aria-hidden="true"></span><span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}${e.needsReview ? '<span class="review-badge">รอตรวจ</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>`;
+  row.innerHTML = `<button type="button" class="entry-main" aria-label="แก้ไข ${escapeHtml(describeEntry(e))}">${entryIconSvg(e)}<span class="entry-text"><span class="entry-cat">${escapeHtml(e.category)}${e.tripId && !noBadge ? '<span class="trip-badge">ทริป</span>' : ''}${e.needsReview ? '<span class="review-badge">รอตรวจ</span>' : ''}</span>${entrySub(e) ? `<span class="entry-note">${escapeHtml(entrySub(e))}</span>` : ''}</span><span class="entry-amt">${fmt(e.amount)}${e.amountOverridden ? '<span class="tiny-tag">แก้ยอดบาทเอง</span>' : ''}</span></button>`;
   row.querySelector('.entry-main').addEventListener('click', ()=> openEdit(e.id, listId));
   return row;
 }
@@ -346,7 +346,7 @@ function renderBudgetCard(budgets, monthEntries){
     row.className = 'budget-row row-btn';
     row.setAttribute('aria-label', `ดูรายการหมวด ${cat} ใช้ ${fmt(spent)} จากงบ ${fmt(budget)}`);
     row.innerHTML = `
-      <span class="budget-head"><span class="name"><span class="dot" style="background:${categoryColor(cat)}" aria-hidden="true"></span>${escapeHtml(cat)}</span><span class="nums">${fmt(spent)} / ${fmt(budget)}${CHEV_SVG}</span></span>
+      <span class="budget-head"><span class="name">${catRowIconSvg(cat)}${escapeHtml(cat)}</span><span class="nums">${fmt(spent)} / ${fmt(budget)}${CHEV_SVG}</span></span>
       <span class="bar" aria-hidden="true"><span class="${barCls}" style="width:${Math.min(ratio,1)*100}%"></span></span>
       <span class="budget-foot${over ? ' neg' : ''}">${over ? 'เกิน ' + fmt(spent - budget) : 'เหลือ ' + fmt(budget - spent)}</span>`;
     row.addEventListener('click', ()=> openEntriesFiltered({ cats:[cat] }));

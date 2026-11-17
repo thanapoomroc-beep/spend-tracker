@@ -276,7 +276,7 @@ function renderPieChart(monthEntries, fixedItems){
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'row-btn';
     b.setAttribute('aria-label', `ดูรายการหมวด ${sl.label}`);
-    b.innerHTML = `<span class="dot" style="background:${sl.color}" aria-hidden="true"></span><span class="nm">${escapeHtml(sl.label)}</span><span class="amt">${fmt(sl.value)}</span><span class="pct">${Math.round(sl.value / ps.total * 100)}%</span>${CHEV_SVG}`;
+    b.innerHTML = `${catRowIconSvg(sl.label, sl.color)}<span class="nm">${escapeHtml(sl.label)}</span><span class="amt">${fmt(sl.value)}</span><span class="pct">${Math.round(sl.value / ps.total * 100)}%</span>${CHEV_SVG}`;
     b.addEventListener('click', ()=> openEntriesFiltered({ cats: sl.cats }));
     li.appendChild(b);
     legend.appendChild(li);
